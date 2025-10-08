@@ -26,12 +26,108 @@ import json
 import argparse
 import random
 import pandas as pd
-from openai import OpenAI
+from llm import call_llm_wrapper
 
 
-prompt = 'Question: {question}\n\nBank Statement: {context}\n\nULAD DU: {ulad_du}\n\nAnswer the question. Do not think out loud. Return ONLY yes, none, a number, or a valid JSON list of transaction/account IDs, e.g. `["d2rf4l6kq23ndu9seg6g", "d2rf4l6kq23ndu9seg60"]` Your JSON list must be strings enclosed by "" contained within [] and separated by commas.'
+domain_expertise = "A large deposit is defined as exceeding 50% of the borrower's total monthly qualifying income."
 
-client = OpenAI()
+prompt = "Question: {question}\n\nBank Statement: {context}\n\nULAD DU: {ulad_du}\n\nAnswer the question. {domain_expertise}Do not think out loud. {answer_type}."
+
+answer_type_dict = {
+    "id_list": 'Answer with a valid JSON list of transaction/account IDs, e.g. `["d2rf4l6kq23ndu9seg6g", "d2rf4l6kq23ndu9seg60"]`, or [] if there are no IDs. When reporting accounts, use the AccountNumber, not the BankStatementAccountID.',
+    "boolean": "Answer with yes or no.",
+}
+
+
+def load_test_case_json(test_case_number):
+    """Load the JSON file for a given test case number."""
+    json_path = f"data/Test Case {test_case_number} Docs/test_case_{test_case_number}_bank_statement_solo.json"
+
+    if not os.path.exists(json_path):
+        print(f"Warning: JSON file not found: {json_path}")
+        return None
+
+    try:
+        with open(json_path, "r") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading {json_path}: {e}")
+        return None
+
+
+def load_ulad_xml(test_case_number):
+    """Load the ULAD DU XML file for a given test case number."""
+    xml_path = f"data/Test Case {test_case_number} Docs/ulad.xml"
+    with open(xml_path, "r") as f:
+        return f.read()
+
+
+def preprocess_data(
+    excel_path="data/Labeled Questions and Answers.xlsx",
+    output_path="data/preprocessed_data.jsonl",
+):
+    """Preprocess the Excel data and test case docs into JSONL format."""
+    if not os.path.exists(excel_path):
+        print(f"Error: Excel file not found: {excel_path}")
+        return False
+
+    try:
+        df = pd.read_excel(excel_path, sheet_name="6-10", header=1)
+    except Exception as e:
+        print(f"Error reading Excel file: {e}")
+        return False
+
+    print(f"Loaded {len(df)} rows from Excel file")
+    print(f"Columns: {list(df.columns)}")
+
+    with open(output_path, "w") as outfile:
+        for idx, row in df.iterrows():
+            # Extract common columns
+            answer = row["Revised Answer V2"]
+            test_case_number = row["Test Case Number"]
+            answer_type = row["Answer Type"]
+            question = row["Rephrased Question"]
+
+            # Validate answer types and skip invalid ones
+            if answer_type not in ["id_list", "boolean"]:
+                raise ValueError(f"Invalid answer type: {answer_type}")
+
+            # Skip if question is NaN, empty, or "n/a"/"N/A"
+            if pd.isna(question) or str(question).strip().lower() in [
+                "",
+                "n/a",
+                "na",
+            ]:
+                continue
+
+            # Load corresponding JSON file
+            bank_statement = load_test_case_json(int(test_case_number))
+            if bank_statement is None:
+                raise ValueError(
+                    f"No bank statement data for test case {test_case_number}"
+                )
+
+            # Load corresponding ULAD DU XML file
+            try:
+                ulad_du = load_ulad_xml(int(test_case_number))
+            except Exception as e:
+                print(f"Warning: Skipping row {idx} - no ULAD DU data: {e}")
+                continue
+
+            # Create JSONL entry
+            entry = {
+                "question": str(question).strip(),
+                "answer": answer,
+                "bank_statement": bank_statement,
+                "ulad_du": ulad_du,
+                "answer_type": answer_type,
+            }
+
+            # Write to JSONL file
+            outfile.write(json.dumps(entry) + "\n")
+
+    print(f"Successfully created {output_path}")
+    return True
 
 
 def load_dataset(dataset_path="data/preprocessed_data.jsonl"):
@@ -39,15 +135,17 @@ def load_dataset(dataset_path="data/preprocessed_data.jsonl"):
     dataset = []
     with open(dataset_path, "r") as f:
         for line in f:
-            dataset.append(json.loads(line.strip()))
+            data = json.loads(line.strip())
+            dataset.append(data)
     return pd.DataFrame(dataset)
 
 
-def evaluate_model(model_id, df, downsample_size=None):
+def evaluate_model(model_id, df, use_domain_expertise, downsample_size=None):
     """Evaluate a model on the dataset."""
     # Keep a copy of the original dataset
-    original_df = df.copy()
-
+    domain_expertise_str = (
+        f"Domain Expertise: {domain_expertise}\n\n" if use_domain_expertise else ""
+    )
     if downsample_size:
         df = df.sample(n=min(downsample_size, len(df)), random_state=42).reset_index(
             drop=True
@@ -65,16 +163,18 @@ def evaluate_model(model_id, df, downsample_size=None):
         ulad_du = row["ulad_du"]
         # Format the prompt
         formatted_prompt = prompt.format(
-            question=question, context=bank_statement, ulad_du=ulad_du
+            question=question,
+            context=bank_statement,
+            ulad_du=ulad_du,
+            domain_expertise=domain_expertise_str,
+            answer_type=answer_type_dict[answer_type],
         )
 
         # Call the model
-        response = client.chat.completions.create(
-            model=model_id,
+        predicted_answer = call_llm_wrapper(
+            model_id=model_id,
             messages=[{"role": "user", "content": formatted_prompt}],
         )
-
-        predicted_answer = response.choices[0].message.content.strip()
 
         # Check if correct
         correct = is_correct(predicted_answer, answer_type, answer)
@@ -98,26 +198,38 @@ def evaluate_model(model_id, df, downsample_size=None):
 
 def is_correct(predicted_answer, answer_type, answer):
     answer = str(answer)
-    if answer_type == "yes":
-        return predicted_answer == "yes"
-    elif answer_type == "no":
-        return predicted_answer == "no"
-    elif answer_type == "none":
-        return predicted_answer in ["none", "[]"]
+    if answer_type == "boolean":
+        # Convert answer to yes/no format for comparison
+        answer_str = answer.lower()
+        if answer_str in ["yes", "true", "1"]:
+            expected = "yes"
+        elif answer_str in ["no", "false", "0"]:
+            expected = "no"
+        else:
+            print(f"Warning: Invalid boolean answer value: {answer}")
+            return False
+        return predicted_answer.lower() == expected
     elif answer_type == "id_list":
         try:
             pred_as_list = json.loads(predicted_answer)
         except json.JSONDecodeError:
             print(f"warning: invalid json: {predicted_answer} for answer: {answer}")
             return False
-        answer_options = answer.replace(" ", "").split(",")
+        answer = answer.replace(" ", "").split(",")
+        if isinstance(answer, str) and answer.lower() == "none":
+            answer = []
         return set(pred_as_list) == set(answer)
     else:
         raise ValueError(f"Invalid answer type: {answer_type}")
 
 
 def save_results(
-    results, accuracy, model_id, output_dir, downsample_size=None, df=None
+    results,
+    accuracy,
+    model_id,
+    output_dir,
+    downsample_size=None,
+    df=None,
 ):
     """Save evaluation results."""
     # Save results as JSONL with original data plus pred and correct columns
@@ -166,10 +278,8 @@ def save_results(
         errors = [r for r in results if not r["correct"]][:10]
         for i, error in enumerate(errors):
             f.write(f"### Error {i+1}\n")
-            f.write(f"**Question:** {error['question']}\n\n")
-            f.write(
-                f"**Expected:** {error['true_answer']} ({error['answer_type']})\n\n"
-            )
+            f.write(f"**Question:** {error['question']}\n")
+            f.write(f"**Expected:** {error['true_answer']} ({error['answer_type']})\n")
             f.write(f"**Predicted:** {error['predicted_answer']}\n\n")
 
     print(f"Summary saved to {summary_path}")
@@ -189,6 +299,18 @@ def main():
         default="data/preprocessed_data.jsonl",
         help="Path to dataset",
     )
+    parser.add_argument(
+        "--use_domain_expertise", action="store_true", help="Use domain expertise"
+    )
+    parser.add_argument(
+        "--excel_path",
+        type=str,
+        default="data/Labeled Questions and Answers.xlsx",
+        help="Path to Excel file for preprocessing",
+    )
+    parser.add_argument(
+        "--skip_preprocessing", action="store_true", help="Skip preprocessing step"
+    )
 
     args = parser.parse_args()
 
@@ -196,20 +318,56 @@ def main():
     output_dir = f"results/{now}"
     os.makedirs(output_dir, exist_ok=True)
 
-    print(f"Loading dataset from {args.dataset_path}")
+    # Create single dataset
+    if not args.skip_preprocessing or not os.path.exists(args.dataset_path):
+        print("Preprocessing data...")
+        if not preprocess_data(args.excel_path, args.dataset_path):
+            print("Preprocessing failed. Exiting.")
+            return
+    else:
+        print(
+            f"Preprocessed data found at {args.dataset_path}. Skipping preprocessing."
+        )
+
+    print(f"\n{'='*50}")
+    print(f"Running evaluation")
+    print(f"{'='*50}")
+
+    print(f"Loading dataset...")
     dataset = load_dataset(args.dataset_path)
     print(f"Loaded {len(dataset)} samples")
+
+    if len(dataset) == 0:
+        print(f"No samples found. Exiting.")
+        return
 
     if args.downsample_size:
         print(f"Downsampling to {args.downsample_size} samples")
         random.seed(42)  # For reproducibility
 
     print(f"Evaluating model: {args.model_id}")
-    results, accuracy, df = evaluate_model(args.model_id, dataset, args.downsample_size)
+    results, accuracy, df = evaluate_model(
+        args.model_id, dataset, args.use_domain_expertise, args.downsample_size
+    )
 
     print(f"\nFinal Accuracy: {accuracy:.3f} ({accuracy*100:.1f}%)")
 
-    save_results(results, accuracy, args.model_id, output_dir, args.downsample_size, df)
+    # Save results
+    save_results(
+        results,
+        accuracy,
+        args.model_id,
+        output_dir,
+        args.downsample_size,
+        df,
+    )
+
+    print(f"Results saved in {output_dir}")
+
+    print(f"\n{'='*50}")
+    print("Evaluation completed!")
+    print(f"Results saved in {output_dir}")
+    print(f"{'='*50}")
 
 
 if __name__ == "__main__":
