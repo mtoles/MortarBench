@@ -38,6 +38,8 @@ answer_type_dict = {
     "boolean": "Answer with yes or no.",
 }
 
+test_case_map = {6: 86744679655, 7: 81613557991, 8: 84192307554, 9: 83352063666, 10: 81301535410}
+
 
 def load_test_case_json(test_case_number):
     """Load the JSON file for a given test case number."""
@@ -116,6 +118,7 @@ def preprocess_data(
 
             # Create JSONL entry
             entry = {
+                "loan_id": test_case_map[int(test_case_number)],
                 "question": str(question).strip(),
                 "answer": answer,
                 "bank_statement": bank_statement,
@@ -156,6 +159,7 @@ def evaluate_model(model_id, df, use_domain_expertise, downsample_size=None):
     total_count = len(df)
 
     for i, row in df.iterrows():
+        loan_id = row["loan_id"]
         question = row["question"]
         answer = row["answer"]
         answer_type = row["answer_type"]
@@ -171,10 +175,18 @@ def evaluate_model(model_id, df, use_domain_expertise, downsample_size=None):
         )
 
         # Call the model
-        predicted_answer = call_llm_wrapper(
-            model_id=model_id,
-            messages=[{"role": "user", "content": formatted_prompt}],
-        )
+        if model_id == "solo":
+            predicted_answer = call_llm_wrapper(
+                model_id=model_id,
+                messages=[{"role": "user", "content": question}],
+                loan_id=loan_id,
+            )
+        else:
+            predicted_answer = call_llm_wrapper(
+                model_id=model_id,
+                messages=[{"role": "user", "content": formatted_prompt}],
+                loan_id=loan_id,
+            )
 
         # Check if correct
         correct = is_correct(predicted_answer, answer_type, answer)

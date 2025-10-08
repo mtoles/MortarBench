@@ -3,3 +3,4 @@ claude.md
 .venv
 .vscode
 results/
+.env
