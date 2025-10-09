@@ -1,0 +1,361 @@
+{
+  "seed": "pp-lp-platypus-4acct-final-affirm-credit-001",
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 205600,
+      "currency": "USD",
+      "numbers": {
+        "account": "001122334411"
+      },
+      "transactions": [
+        {
+          "date_transacted": "2025-07-20",
+          "date_posted": "2025-07-21",
+          "amount": 92.44,
+          "description": "ONLINE BILL PAY - BALTIMORE CITY WATER PPD ID:123456789",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-20",
+          "date_posted": "2025-07-21",
+          "amount": 132.18,
+          "description": "SAFEWAY #312 BALTIMORE MD",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-20",
+          "date_posted": "2025-07-21",
+          "amount": 14.25,
+          "description": "STARBUCKS #4457 BALTIMORE MD",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-21",
+          "date_posted": "2025-07-22",
+          "amount": 2400,
+          "description": "ACH DEBIT GREYSTAR REAL ESTATE PMT PPD ID:123456789",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-23",
+          "date_posted": "2025-07-24",
+          "amount": 129.99,
+          "description": "VERIZON WIRELESS AUTO-PAY PPD ID:987654321",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-25",
+          "date_posted": "2025-07-26",
+          "amount": -1850,
+          "description": "ACH CREDIT PAYROLL - AAA INC PPD ID:234567890",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-26",
+          "date_posted": "2025-07-27",
+          "amount": 746,
+          "description": "ACH DEBIT - ACE MGT PMT PPD ID:345678901",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-26",
+          "date_posted": "2025-07-27",
+          "amount": 233,
+          "description": "ACH DEBIT - BEST MGT PMT PPD ID:456789012",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-27",
+          "date_posted": "2025-07-28",
+          "amount": 245,
+          "description": "ACH DEBIT - ENLIGHTENED BANK PAYMENT PPD ID:567890123",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-28",
+          "date_posted": "2025-07-29",
+          "amount": -3000,
+          "description": "ACH DEPOSIT COMMUNITY SAVINGS FUND PPD ID:678901234",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-29",
+          "date_posted": "2025-07-30",
+          "amount": 89,
+          "description": "ACH DEBIT - AFFIRM PAYMENTS INC PPD ID:789012345",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-30",
+          "date_posted": "2025-07-31",
+          "amount": 125,
+          "description": "ACH DEBIT - MERRY CC PAYMENT PPD ID:890123456",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-31",
+          "date_posted": "2025-08-01",
+          "amount": 95,
+          "description": "ACH DEBIT - NO NONSENSE CC PAYMENT PPD ID:901234567",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-05",
+          "date_posted": "2025-08-06",
+          "amount": 42.3,
+          "description": "UBER TRIP HELP.UBER.COM",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-10",
+          "date_posted": "2025-08-11",
+          "amount": -2500,
+          "description": "ACH CREDIT - BEFOREPAY PPD ID:012345678",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-16",
+          "date_posted": "2025-08-17",
+          "amount": -1850,
+          "description": "ACH CREDIT PAYROLL - AAA INC PPD ID:109876543",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-17",
+          "date_posted": "2025-08-18",
+          "amount": 2400,
+          "description": "ACH DEBIT GREYSTAR REAL ESTATE PMT PPD ID:123456789",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-19",
+          "date_posted": "2025-08-20",
+          "amount": 92.18,
+          "description": "PEPCO ELECTRIC ONLINE BILL PAY PPD ID:210987654",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-21",
+          "date_posted": "2025-08-22",
+          "amount": 129.99,
+          "description": "VERIZON WIRELESS AUTO-PAY PPD ID:321654987",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-25",
+          "date_posted": "2025-08-26",
+          "amount": -1850,
+          "description": "ACH CREDIT PAYROLL - AAA INC PPD ID:432109876",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-26",
+          "date_posted": "2025-08-27",
+          "amount": 746,
+          "description": "ACH DEBIT - ACE MGT PMT PPD ID:543210987",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-26",
+          "date_posted": "2025-08-27",
+          "amount": 233,
+          "description": "ACH DEBIT - BEST MGT PMT PPD ID:654321098",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-27",
+          "date_posted": "2025-08-28",
+          "amount": 245,
+          "description": "ACH DEBIT - ENLIGHTENED BANK PAYMENT PPD ID:765432109",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-28",
+          "date_posted": "2025-08-29",
+          "amount": -3000,
+          "description": "ACH DEPOSIT COMMUNITY SAVINGS FUND PPD ID:876543210",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-29",
+          "date_posted": "2025-08-30",
+          "amount": 89,
+          "description": "ACH DEBIT - AFFIRM PAYMENTS INC PPD ID:987654321",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-30",
+          "date_posted": "2025-08-31",
+          "amount": 125,
+          "description": "ACH DEBIT - MERRY CC PAYMENT PPD ID:098765432",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-31",
+          "date_posted": "2025-09-01",
+          "amount": 95,
+          "description": "ACH DEBIT - NO NONSENSE CC PAYMENT PPD ID:109876543",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-03",
+          "date_posted": "2025-09-04",
+          "amount": -25000,
+          "description": "WIRE IN CREDIT TRN: SWIFTC20250817001",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-05",
+          "date_posted": "2025-09-06",
+          "amount": -3000,
+          "description": "ACH DEPOSIT COMMUNITY SAVINGS FUND PPD ID:321654987",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-16",
+          "date_posted": "2025-09-17",
+          "amount": -1850,
+          "description": "ACH CREDIT PAYROLL - AAA INC PPD ID:432109876",
+          "currency": "USD"
+        }
+      ],
+      "identity": {
+        "names": [
+          "Patrick Purchaser",
+          "Lorraine Purchaser"
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "country": "US",
+              "city": "Baltimore",
+              "street": "1234 Main St",
+              "postal_code": "20600",
+              "region": "MD"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "depository",
+      "subtype": "savings",
+      "starting_balance": 54500,
+      "currency": "USD",
+      "numbers": {
+        "account": "001122335522"
+      },
+      "transactions": [
+        {
+          "date_transacted": "2025-07-17",
+          "date_posted": "2025-07-18",
+          "amount": -6.75,
+          "description": "INTEREST CREDIT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-31",
+          "date_posted": "2025-08-01",
+          "amount": -500,
+          "description": "ONLINE TRANSFER FROM CHECKING",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-16",
+          "date_posted": "2025-08-17",
+          "amount": -6.9,
+          "description": "INTEREST CREDIT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-17",
+          "date_posted": "2025-08-18",
+          "amount": -7.05,
+          "description": "INTEREST CREDIT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-05",
+          "date_posted": "2025-09-06",
+          "amount": -1000,
+          "description": "ONLINE TRANSFER FROM CHECKING",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-16",
+          "date_posted": "2025-09-17",
+          "amount": -7.25,
+          "description": "INTEREST CREDIT",
+          "currency": "USD"
+        }
+      ],
+      "identity": {
+        "names": [
+          "Patrick Purchaser",
+          "Lorraine Purchaser"
+        ]
+      }
+    },
+    {
+      "type": "investment",
+      "subtype": "utma",
+      "starting_balance": 15000,
+      "currency": "USD",
+      "numbers": {
+        "account": "001122337788"
+      },
+      "transactions": [
+        {
+          "date_transacted": "2025-07-17",
+          "date_posted": "2025-07-18",
+          "amount": -4.5,
+          "description": "INTEREST CREDIT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-30",
+          "date_posted": "2025-07-31",
+          "amount": -150,
+          "description": "ONLINE TRANSFER FROM CHECKING",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-16",
+          "date_posted": "2025-08-17",
+          "amount": -4.65,
+          "description": "INTEREST CREDIT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-17",
+          "date_posted": "2025-08-18",
+          "amount": -4.7,
+          "description": "INTEREST CREDIT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-26",
+          "date_posted": "2025-08-27",
+          "amount": -100,
+          "description": "ONLINE TRANSFER FROM CHECKING",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-16",
+          "date_posted": "2025-09-17",
+          "amount": -4.85,
+          "description": "INTEREST CREDIT",
+          "currency": "USD"
+        }
+      ],
+      "identity": {
+        "names": [
+          "Patrick Purchaser, as custodian for Jordan Purchaser"
+        ]
+      }
+    }
+  ]
+}

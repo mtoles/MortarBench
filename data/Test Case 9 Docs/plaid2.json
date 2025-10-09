@@ -1,0 +1,286 @@
+{
+  "seed": "pp-lp-tartan-4acct-final-affirm-001",
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 9200.0,
+      "currency": "USD",
+      "numbers": {
+        "account": "556677889921"
+      },
+      "identity": {
+        "names": [
+          "Purchaser Home Services LLC",
+          "Patrick Purchaser (authorized signer)"
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "street": "1234 Main St",
+              "city": "Baltimore",
+              "region": "MD",
+              "postal_code": "20600",
+              "country": "US"
+            }
+          }
+        ]
+      },
+      "transactions": [
+        {
+          "date_transacted": "2025-07-20",
+          "date_posted": "2025-07-21",
+          "amount": -85.4,
+          "description": "SHELL FLEET CARD 8821 BALTIMORE MD",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-20",
+          "date_posted": "2025-07-21",
+          "amount": -225.0,
+          "description": "ADOBE CLOUD BUSINESS SUBSCRIPTION PPD ID: 84B1X3V9K2",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-20",
+          "date_posted": "2025-07-21",
+          "amount": -42.33,
+          "description": "RESTAURANT POS - PANERA BREAD #7742",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-22",
+          "date_posted": "2025-07-23",
+          "amount": -312.17,
+          "description": "SHELL COMMERCIAL FUEL #8821",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-24",
+          "date_posted": "2025-07-25",
+          "amount": -149.99,
+          "description": "AMAZON BUSINESS PRIME MEMBERSHIP PPD ID: 7J5H4G2F1E",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-25",
+          "date_posted": "2025-07-26",
+          "amount": 5200.0,
+          "description": "ACH CREDIT - CUSTOMER PAYMENT INV #1042",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-26",
+          "date_posted": "2025-07-27",
+          "amount": -94.6,
+          "description": "STAPLES STORE #220 BALTIMORE MD",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-27",
+          "date_posted": "2025-07-28",
+          "amount": -63.2,
+          "description": "UBER TRIP - CLIENT VISIT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-29",
+          "date_posted": "2025-07-30",
+          "amount": -1800.0,
+          "description": "ONLINE TRANSFER TO JOINT SAVINGS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-07-30",
+          "date_posted": "2025-07-31",
+          "amount": -1450.0,
+          "description": "ACH DEBIT - CONTRACTOR PAYOUTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-01",
+          "date_posted": "2025-08-02",
+          "amount": -58.42,
+          "description": "OFFICE DEPOT #441 BALTIMORE MD",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-02",
+          "date_posted": "2025-08-03",
+          "amount": -75.2,
+          "description": "RESTAURANT POS - CHIPOTLE BUSINESS LUNCH",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-04",
+          "date_posted": "2025-08-05",
+          "amount": -96.21,
+          "description": "UPS SHIPPING CENTER #771",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-08",
+          "date_posted": "2025-08-09",
+          "amount": -84.18,
+          "description": "BEST BUY #1204 SMALL EQUIPMENT",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-11",
+          "date_posted": "2025-08-12",
+          "amount": -225.0,
+          "description": "ADOBE CLOUD BUSINESS SUBSCRIPTION PPD ID: 84B1X3V9K2",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-15",
+          "date_posted": "2025-08-16",
+          "amount": 3800.0,
+          "description": "ACH CREDIT - CUSTOMER PAYMENT INV #1043",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-16",
+          "date_posted": "2025-08-17",
+          "amount": -142.55,
+          "description": "WALMART BUSINESS SUPPLY",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-18",
+          "date_posted": "2025-08-19",
+          "amount": -2400.0,
+          "description": "ACH DEBIT - BUSINESS PPD ID: TYRH202508",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-19",
+          "date_posted": "2025-08-20",
+          "amount": -129.0,
+          "description": "ZOOM PRO BUSINESS SUBSCRIPTION PPD ID: ZM9C8B7A6",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-20",
+          "date_posted": "2025-08-21",
+          "amount": -88.7,
+          "description": "SHELL FLEET CARD 8821 BALTIMORE MD",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-22",
+          "date_posted": "2025-08-23",
+          "amount": -420.18,
+          "description": "UPS SHIPPING CENTER #771",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-23",
+          "date_posted": "2025-08-24",
+          "amount": -52.3,
+          "description": "RESTAURANT POS - SUBWAY BUSINESS LUNCH",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-25",
+          "date_posted": "2025-08-26",
+          "amount": -950.0,
+          "description": "ACH DEBIT - CONTRACTOR PAYOUTS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-27",
+          "date_posted": "2025-08-28",
+          "amount": -36.8,
+          "description": "UBER TRIP - CLIENT MEETING",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-29",
+          "date_posted": "2025-08-30",
+          "amount": -420.18,
+          "description": "UPS SHIPPING CENTER #771",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-08-30",
+          "date_posted": "2025-08-31",
+          "amount": -88.4,
+          "description": "STAPLES STORE #220 BALTIMORE MD",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-01",
+          "date_posted": "2025-09-02",
+          "amount": 6100.0,
+          "description": "ACH CREDIT - CUSTOMER PAYMENT INV #1044",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-03",
+          "date_posted": "2025-09-04",
+          "amount": -129.0,
+          "description": "ZOOM PRO BUSINESS SUBSCRIPTION PPD ID: ZM9C8B7A6",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-04",
+          "date_posted": "2025-09-05",
+          "amount": -68.22,
+          "description": "OFFICE DEPOT #441 BALTIMORE MD",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-06",
+          "date_posted": "2025-09-07",
+          "amount": -1800.0,
+          "description": "ONLINE TRANSFER TO JOINT SAVINGS",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-07",
+          "date_posted": "2025-09-08",
+          "amount": -49.99,
+          "description": "GOOGLE WORKSPACE BUSINESS APPS PPD ID: GWS5D4E3F2",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-08",
+          "date_posted": "2025-09-09",
+          "amount": -225.0,
+          "description": "ADOBE CLOUD BUSINESS SUBSCRIPTION PPD ID: 84B1X3V9K2",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-09",
+          "date_posted": "2025-09-10",
+          "amount": -72.15,
+          "description": "RESTAURANT POS - PANERA BREAD #7742",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-11",
+          "date_posted": "2025-09-12",
+          "amount": -95.0,
+          "description": "FEDEX EXPRESS #4411",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-13",
+          "date_posted": "2025-09-14",
+          "amount": -88.62,
+          "description": "EXXONMOBIL FLEET #5512",
+          "currency": "USD"
+        },
+        {
+          "date_transacted": "2025-09-16",
+          "date_posted": "2025-09-17",
+          "amount": -42.5,
+          "description": "STARBUCKS #5566 BUSINESS TRAVEL",
+          "currency": "USD"
+        }
+      ]
+    }
+  ]
+}
