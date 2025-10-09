@@ -20,7 +20,6 @@ from datetime import datetime, timezone
 # Initialize joblib memory for caching
 memory = Memory("joblib_cache", verbose=0)
 
-client = OpenAI()
 
 STAGING_AUTH_TOKEN = os.getenv("STAGING_AUTH_TOKEN")
 
@@ -42,6 +41,8 @@ admin_headers = {
 
 @memory.cache
 def _cached_llm_call(model_id: str, messages: List[Dict[str, str]]) -> str:
+    client = OpenAI()
+
     """
     Cached LLM call function.
 
@@ -76,8 +77,9 @@ def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) ->
     if model_id == "solo":
         assert len(messages) == 1
         assert messages[-1]["role"] == "user"
-        send_resp = send_message(messages[-1]["content"], kwargs["loan_id"])
-        message, txn_search_result = poll_message(kwargs["loan_id"])
+        message, txn_search_result = send_message(
+            messages[-1]["content"], kwargs["loan_id"]
+        )
         return message["Content"]
 
     else:  # GPT Models
@@ -98,8 +100,9 @@ def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) ->
         return _cached_llm_call(model_id, messages)
 
 
+@memory.cache
 def send_message(message, loan_id):
-    """Sends a message to the chat API."""
+    """Sends a message to the chat API and polls for response."""
     print(f"Sending message: {message}")
 
     # Send Message Config
@@ -131,14 +134,11 @@ def send_message(message, loan_id):
         send_response.raise_for_status()  # Raise an exception for bad status codes
         print("Message sent successfully!")
         print("Response:", send_response.json())  # Print the JSON response
-        return send_response.json()
     except requests.exceptions.RequestException as e:
         print(f"Error sending message: {e}")
         print(f"Response content: {send_response.text}")
-        return None  # Indicate failure
+        return None, None  # Indicate failure
 
-
-def poll_message(loan_id):
     # Poll for response
     print("Polling for response...")
     TIMEOUT_SECONDS = 100
@@ -209,17 +209,17 @@ if __name__ == "__main__":
         for question in QUESTIONS:
             print(f"\n\nUsing loan {loan_id}, with question: {question}")
 
-            send_resp = send_message(question, loan_id)
-            if send_resp is None:
+            message, txn_search_result = send_message(question, loan_id)
+            if message is None:
                 print("Failed to send message")
                 break
 
-            message, txn_search_result = poll_message(loan_id)
             print(message)
             print(json.dumps(txn_search_result, indent=2))
 
     # example call to the send_message function
-    send_message_response = send_message(
+    message, txn_search_result = send_message(
         # "Are there any small deposits under 50 dollars?", "301535410" # from doc
-        "Are there any small deposits under 50 dollars?", "86744679655"
+        "Are there any small deposits under 50 dollars?",
+        "86744679655",
     )

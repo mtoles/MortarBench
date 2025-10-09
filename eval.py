@@ -31,14 +31,21 @@ from llm import call_llm_wrapper
 
 domain_expertise = "A large deposit is defined as exceeding 50% of the borrower's total monthly qualifying income."
 
-prompt = "Question: {question}\n\nBank Statement: {context}\n\nULAD DU: {ulad_du}\n\nAnswer the question. {domain_expertise}Do not think out loud. {answer_type}."
+prompt = "Question: {question}\n\nBank Statement: {context}\n\nULAD DU: {ulad_du}\n\nAnswer the question. {domain_expertise}Do not think out loud. {answer_instruction}."
+solo_prompt = "Question: {question}\n\nAnswer the question. {answer_instruction}"
 
 answer_type_dict = {
     "id_list": 'Answer with a valid JSON list of transaction/account IDs, e.g. `["d2rf4l6kq23ndu9seg6g", "d2rf4l6kq23ndu9seg60"]`, or [] if there are no IDs. When reporting accounts, use the AccountNumber, not the BankStatementAccountID.',
     "boolean": "Answer with yes or no.",
 }
 
-test_case_map = {6: 86744679655, 7: 81613557991, 8: 84192307554, 9: 83352063666, 10: 81301535410}
+test_case_map = {
+    6: 86744679655,
+    7: 81613557991,
+    8: 84192307554,
+    9: 83352063666,
+    10: 81301535410,
+}
 
 
 def load_test_case_json(test_case_number):
@@ -158,30 +165,48 @@ def evaluate_model(model_id, df, use_domain_expertise, downsample_size=None):
     correct_count = 0
     total_count = len(df)
 
+    # Track F1 scores for id_list questions
+    id_list_f1_scores = []
+
     for i, row in df.iterrows():
         loan_id = row["loan_id"]
         question = row["question"]
-        answer = row["answer"]
+        gt_answer = row["answer"]
         answer_type = row["answer_type"]
         bank_statement = json.dumps(row["bank_statement"], indent=2)
         ulad_du = row["ulad_du"]
         # Format the prompt
-        formatted_prompt = prompt.format(
-            question=question,
-            context=bank_statement,
-            ulad_du=ulad_du,
-            domain_expertise=domain_expertise_str,
-            answer_type=answer_type_dict[answer_type],
-        )
 
         # Call the model
         if model_id == "solo":
-            predicted_answer = call_llm_wrapper(
+            formatted_prompt = solo_prompt.format(
+                question=question,
+                answer_instruction=answer_type_dict[answer_type],
+            )
+            solo_answer = call_llm_wrapper(
                 model_id=model_id,
-                messages=[{"role": "user", "content": question}],
+                messages=[{"role": "user", "content": formatted_prompt}],
+                loan_id=loan_id,
+            )
+            cleaned_answer_prompt_template = "Unformatted answer:\n{answer}\n\nConvert the above answer to fit the following specification:\n{answer_instruction}"
+            cleaned_answer_prompt = cleaned_answer_prompt_template.format(
+                answer=solo_answer,
+                answer_instruction=answer_type_dict[answer_type],
+            )
+            predicted_answer = call_llm_wrapper(
+                model_id="gpt-5",
+                messages=[{"role": "user", "content": cleaned_answer_prompt}],
                 loan_id=loan_id,
             )
         else:
+            formatted_prompt = prompt.format(
+                question=question,
+                context=bank_statement,
+                ulad_du=ulad_du,
+                domain_expertise=domain_expertise_str,
+                answer_instruction=answer_type_dict[answer_type],
+            )
+
             predicted_answer = call_llm_wrapper(
                 model_id=model_id,
                 messages=[{"role": "user", "content": formatted_prompt}],
@@ -189,50 +214,104 @@ def evaluate_model(model_id, df, use_domain_expertise, downsample_size=None):
             )
 
         # Check if correct
-        correct = is_correct(predicted_answer, answer_type, answer)
+        correct = is_correct(predicted_answer, answer_type, gt_answer)
         if correct:
             correct_count += 1
 
+        # Calculate F1 score for id_list questions
+        f1_score = None
+        if answer_type == "id_list":
+            f1_score = calculate_id_list_f1_score(predicted_answer, gt_answer)
+            id_list_f1_scores.append(f1_score)
+
         result = {
             "question": question,
-            "true_answer": answer,
+            "true_answer": gt_answer,
             "predicted_answer": predicted_answer,
             "answer_type": answer_type,
             "correct": correct,
+            "f1_score": f1_score,
         }
         results.append(result)
 
         print(f"Progress: {i+1}/{total_count} - Accuracy: {correct_count/(i+1):.3f}")
 
     accuracy = correct_count / total_count
-    return results, accuracy, df
+
+    # Calculate average F1 score for id_list questions
+    avg_f1_score = (
+        sum(id_list_f1_scores) / len(id_list_f1_scores) if id_list_f1_scores else 0.0
+    )
+
+    return results, accuracy, df, avg_f1_score
 
 
-def is_correct(predicted_answer, answer_type, answer):
-    answer = str(answer)
+def calculate_f1_score(predicted_list, ground_truth_list):
+    """Calculate F1 score between predicted and ground truth lists."""
+    if len(ground_truth_list) == 0 and len(predicted_list) == 0:
+        return 1.0  # Perfect match for empty lists
+
+    if len(ground_truth_list) == 0 or len(predicted_list) == 0:
+        return 0.0  # One is empty, other is not
+
+    # Convert to sets for intersection calculation
+    pred_set = set(predicted_list)
+    gt_set = set(ground_truth_list)
+
+    # Calculate precision and recall
+    intersection = len(pred_set.intersection(gt_set))
+
+    precision = intersection / len(pred_set) if len(pred_set) > 0 else 0.0
+    recall = intersection / len(gt_set) if len(gt_set) > 0 else 0.0
+
+    # Calculate F1 score
+    if precision + recall == 0:
+        return 0.0
+
+    f1_score = 2 * (precision * recall) / (precision + recall)
+    return f1_score
+
+
+def is_correct(predicted_answer, answer_type, gt_answer):
+    gt_answer = str(gt_answer)
     if answer_type == "boolean":
         # Convert answer to yes/no format for comparison
-        answer_str = answer.lower()
+        answer_str = gt_answer.lower()
         if answer_str in ["yes", "true", "1"]:
             expected = "yes"
         elif answer_str in ["no", "false", "0"]:
             expected = "no"
         else:
-            print(f"Warning: Invalid boolean answer value: {answer}")
+            print(f"Warning: Invalid boolean answer value: {gt_answer}")
             return False
         return predicted_answer.lower() == expected
     elif answer_type == "id_list":
         try:
             pred_as_list = json.loads(predicted_answer)
         except json.JSONDecodeError:
-            print(f"warning: invalid json: {predicted_answer} for answer: {answer}")
+            print(f"warning: invalid json: {predicted_answer} for answer: {gt_answer}")
             return False
-        answer = answer.replace(" ", "").split(",")
-        if isinstance(answer, str) and answer.lower() == "none":
-            answer = []
-        return set(pred_as_list) == set(answer)
+        gt_answer = gt_answer.replace(" ", "").split(",")
+        if isinstance(gt_answer[0], str) and gt_answer[0].lower() == "none":
+            gt_answer = []
+        return set(pred_as_list) == set(gt_answer)
     else:
         raise ValueError(f"Invalid answer type: {answer_type}")
+
+
+def calculate_id_list_f1_score(predicted_answer, gt_answer):
+    """Calculate F1 score for id_list questions."""
+    try:
+        pred_as_list = json.loads(predicted_answer)
+    except json.JSONDecodeError:
+        print(f"warning: invalid json: {predicted_answer} for answer: {gt_answer}")
+        return 0.0
+
+    gt_answer = str(gt_answer).replace(" ", "").split(",")
+    if isinstance(gt_answer[0], str) and gt_answer[0].lower() == "none":
+        gt_answer = []
+
+    return calculate_f1_score(pred_as_list, gt_answer)
 
 
 def save_results(
@@ -242,6 +321,7 @@ def save_results(
     output_dir,
     downsample_size=None,
     df=None,
+    avg_f1_score=None,
 ):
     """Save evaluation results."""
     # Save results as JSONL with original data plus pred and correct columns
@@ -250,6 +330,7 @@ def save_results(
         df_with_results = df.copy()
         df_with_results["pred"] = [result["predicted_answer"] for result in results]
         df_with_results["correct"] = [result["correct"] for result in results]
+        df_with_results["f1_score"] = [result["f1_score"] for result in results]
 
         jsonl_path = f"{output_dir}/{model_id}_results.jsonl"
         df_with_results.to_json(jsonl_path, orient="records", lines=True)
@@ -272,6 +353,8 @@ def save_results(
         # Accuracy by answer type
         f.write("## Accuracy by Answer Type\n\n")
         answer_type_stats = {}
+        id_list_f1_scores = []
+
         for result in results:
             answer_type = result["answer_type"]
             if answer_type not in answer_type_stats:
@@ -280,11 +363,40 @@ def save_results(
             if result["correct"]:
                 answer_type_stats[answer_type]["correct"] += 1
 
+            # Collect F1 scores for id_list questions
+            if answer_type == "id_list" and result["f1_score"] is not None:
+                id_list_f1_scores.append(result["f1_score"])
+
         for answer_type, stats in answer_type_stats.items():
             acc = stats["correct"] / stats["total"]
             f.write(
                 f"- **{answer_type}:** {acc:.3f} ({acc*100:.1f}%) - {stats['correct']}/{stats['total']}\n"
             )
+
+        # Add F1 score section for id_list questions
+        if id_list_f1_scores:
+            avg_id_list_f1 = sum(id_list_f1_scores) / len(id_list_f1_scores)
+            f.write(f"\n## F1 Score for ID List Questions\n\n")
+            f.write(
+                f"**Average F1 Score:** {avg_id_list_f1:.3f} ({avg_id_list_f1*100:.1f}%)\n"
+            )
+            f.write(f"**Sample Size:** {len(id_list_f1_scores)} id_list questions\n\n")
+
+            # Show comparison between exact match and F1 scores
+            id_list_exact_match = answer_type_stats.get(
+                "id_list", {"correct": 0, "total": 0}
+            )
+            if id_list_exact_match["total"] > 0:
+                exact_match_acc = (
+                    id_list_exact_match["correct"] / id_list_exact_match["total"]
+                )
+                f.write(f"**Comparison:**\n")
+                f.write(
+                    f"- Exact Match Accuracy: {exact_match_acc:.3f} ({exact_match_acc*100:.1f}%)\n"
+                )
+                f.write(
+                    f"- F1 Score: {avg_id_list_f1:.3f} ({avg_id_list_f1*100:.1f}%)\n\n"
+                )
 
         f.write("\n## Sample Errors\n\n")
         errors = [r for r in results if not r["correct"]][:10]
@@ -292,7 +404,10 @@ def save_results(
             f.write(f"### Error {i+1}\n")
             f.write(f"**Question:** {error['question']}\n")
             f.write(f"**Expected:** {error['true_answer']} ({error['answer_type']})\n")
-            f.write(f"**Predicted:** {error['predicted_answer']}\n\n")
+            f.write(f"**Predicted:** {error['predicted_answer']}\n")
+            if error["f1_score"] is not None:
+                f.write(f"**F1 Score:** {error['f1_score']:.3f}\n")
+            f.write("\n")
 
     print(f"Summary saved to {summary_path}")
 
@@ -323,11 +438,14 @@ def main():
     parser.add_argument(
         "--skip_preprocessing", action="store_true", help="Skip preprocessing step"
     )
+    parser.add_argument(
+        "--results_dir", default="eval", help="Directory name for results"
+    )
 
     args = parser.parse_args()
 
     now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    output_dir = f"results/{now}"
+    output_dir = f"results/{args.results_dir}/{now}"
     os.makedirs(output_dir, exist_ok=True)
 
     # Create single dataset
@@ -358,11 +476,15 @@ def main():
         random.seed(42)  # For reproducibility
 
     print(f"Evaluating model: {args.model_id}")
-    results, accuracy, df = evaluate_model(
+    results, accuracy, df, avg_f1_score = evaluate_model(
         args.model_id, dataset, args.use_domain_expertise, args.downsample_size
     )
 
     print(f"\nFinal Accuracy: {accuracy:.3f} ({accuracy*100:.1f}%)")
+    if avg_f1_score is not None:
+        print(
+            f"Average F1 Score (ID List Questions): {avg_f1_score:.3f} ({avg_f1_score*100:.1f}%)"
+        )
 
     # Save results
     save_results(
@@ -372,6 +494,7 @@ def main():
         output_dir,
         args.downsample_size,
         df,
+        avg_f1_score,
     )
 
     print(f"Results saved in {output_dir}")
