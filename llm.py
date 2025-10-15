@@ -8,6 +8,7 @@ with disk-based caching to avoid redundant API calls.
 import json
 from typing import List, Dict, Any
 from openai import OpenAI
+from anthropic import Anthropic
 from joblib import Memory
 import os
 import requests
@@ -41,23 +42,33 @@ admin_headers = {
 
 @memory.cache
 def _cached_llm_call(model_id: str, messages: List[Dict[str, str]]) -> str:
-    client = OpenAI()
-
     """
     Cached LLM call function.
 
     Args:
-        model_id: The model identifier (e.g., 'gpt-4', 'gpt-5')
+        model_id: The model identifier (e.g., 'gpt-4', 'gpt-5', 'claude-3-opus-20240229')
         messages: List of message dictionaries with 'role' and 'content' keys
 
     Returns:
         The model's response content as a string
     """
-    response = client.chat.completions.create(
-        model=model_id,
-        messages=messages,
-    )
-    return response.choices[0].message.content.strip()
+    if model_id.startswith("gpt-"):
+        client = OpenAI()
+        response = client.chat.completions.create(
+            model=model_id,
+            messages=messages,
+        )
+        return response.choices[0].message.content.strip()
+    elif model_id.startswith("claude-"):
+        client = Anthropic()
+        response = client.messages.create(
+            model=model_id,
+            max_tokens=4096,
+            messages=messages,
+        )
+        return response.content[0].text.strip()
+    else:
+        raise ValueError(f"Invalid model ID: {model_id}")
 
 
 def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) -> str:
@@ -80,7 +91,19 @@ def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) ->
         message, txn_search_result = send_message(
             messages[-1]["content"], kwargs["loan_id"]
         )
-        return message["Content"]
+        # if txn_search_result.get("AssetTransactionSearchResult") and txn_search_result["AssetTransactionSearchResult"].get("Transactions"):
+        #     transaction_ids = ", ".join([txn["TransactionID"] for txn in txn_search_result["AssetTransactionSearchResult"]["Transactions"]])
+        # else:
+        #     transaction_ids = "[No transaction data was referenced.]"
+        if not txn_search_result:
+            transaction_ids = "[No transaction data was referenced.]"
+
+        result = (
+            message["Content"]
+            + "\n\nThe Solo Agent referenced the following data:\n\n"
+            + str(txn_search_result)
+        )
+        return result
 
     else:  # GPT Models
         # Validate messages format
@@ -130,14 +153,14 @@ def send_message(message, loan_id):
     send_response = requests.post(
         send_url, headers=admin_headers, data=json.dumps(send_payload)
     )
-    try:
-        send_response.raise_for_status()  # Raise an exception for bad status codes
-        print("Message sent successfully!")
-        print("Response:", send_response.json())  # Print the JSON response
-    except requests.exceptions.RequestException as e:
-        print(f"Error sending message: {e}")
-        print(f"Response content: {send_response.text}")
-        return None, None  # Indicate failure
+    # try:
+    send_response.raise_for_status()  # Raise an exception for bad status codes
+    #     print("Message sent successfully!")
+    #     print("Response:", send_response.json())  # Print the JSON response
+    # except requests.exceptions.RequestException as e:
+    #     print(f"Error sending message: {e}")
+    #     print(f"Response content: {send_response.text}")
+    #     return None, None  # Indicate failure
 
     # Poll for response
     print("Polling for response...")
@@ -157,42 +180,44 @@ def send_message(message, loan_id):
         # print("polling #", cnt+1)
         cnt += 1
 
-        try:
-            get_response = requests.get(poll_url, headers=admin_headers)
-            get_response.raise_for_status()
-            get_response_data = get_response.json()
+        # try:
+        get_response = requests.get(poll_url, headers=admin_headers)
+        get_response.raise_for_status()
+        get_response_data = get_response.json()
 
-            # Check if second to last message is from user, and the last message is from SOLO, that is the message we want
-            last_message = get_response_data["Messages"][-1]
-            second_to_last_message = get_response_data["Messages"][-2]
-            is_last_message_from_solo = last_message.get("FromSystem", False) == True
-            last_message_type = last_message.get("SystemMessageType")
-            last_message_content = last_message.get("Content", "")
+        # Check if second to last message is from user, and the last message is from SOLO, that is the message we want
+        last_message = get_response_data["Messages"][-1]
+        second_to_last_message = get_response_data["Messages"][-2]
+        is_last_message_from_solo = last_message.get("FromSystem", False) == True
+        last_message_type = last_message.get("SystemMessageType")
+        last_message_content = last_message.get("Content", "")
 
-            if (
-                last_message_content != "Thinking..."
-                and is_last_message_from_solo
-                and last_message_type != "system"
-                and last_message_type != "notification"
-            ):
-                # print("\n--- SOLO's Response Text ---")
-                # print(last_message.get('Content', {}))
-                # print("\n--- SOLO's Transaction Search Result ---")
-                # print(json.dumps(last_message.get('Ext', {}), indent=2))
-                response_received = True
-                response = last_message
-                transaction_search_result = last_message.get("Ext", {})
-                break  # Found the response, exit the polling loop
+        if (
+            last_message_content != "Thinking..."
+            and is_last_message_from_solo
+            and last_message_type != "system"
+            and last_message_type != "notification"
+        ):
+            # print("\n--- SOLO's Response Text ---")
+            # print(last_message.get('Content', {}))
+            # print("\n--- SOLO's Transaction Search Result ---")
+            # print(json.dumps(last_message.get('Ext', {}), indent=2))
+            response_received = True
+            response = last_message
+            transaction_search_result = last_message.get("Ext", {})
+            break  # Found the response, exit the polling loop
 
-        except requests.exceptions.RequestException as e:
-            print(f"Error polling for message: {e}")
-            # Continue polling in case of transient errors
+        # except requests.exceptions.RequestException as e:
+        #     # print(f"Error polling for message: {e}")
+        #     raise Exception(f"Error polling for message: {e}")
+        # Continue polling in case of transient errors
 
         time.sleep(3)  # Wait for 3 second before the next poll
 
     if not response_received:
-        print("\nTimeout: Did not receive a response within the specified time.")
-        return None, None
+        raise Exception(
+            "Timeout: Did not receive a response within the specified time."
+        )
     return response, transaction_search_result
 
 
