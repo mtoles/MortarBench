@@ -17,6 +17,11 @@ import uuid
 import time
 import urllib.parse
 from datetime import datetime, timezone
+import time
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Initialize joblib memory for caching
 memory = Memory("joblib_cache", verbose=0)
@@ -123,7 +128,26 @@ def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) ->
         return _cached_llm_call(model_id, messages)
 
 
-@memory.cache
+def clear_messages(loan_id):
+    """Clears messages for a given loan ID."""
+    print(f"Clearing messages for loan ID: {loan_id}")
+    clear_url = f"{AGENT_CLIENT_API_URL}/api/chat/messages/clear"
+    clear_payload = {
+        "LoanID": loan_id
+    }
+    try:
+        clear_response = requests.post(clear_url, headers=admin_headers, data=json.dumps(clear_payload))
+        clear_response.raise_for_status()  # Raise an exception for bad status codes
+        print("Messages cleared successfully!")
+        print("Response:", clear_response.json())
+        return clear_response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error clearing messages: {e}")
+        print(f"Response content: {clear_response.text}")
+        return None
+
+
+# @memory.cache
 def send_message(message, loan_id):
     """Sends a message to the chat API and polls for response."""
     print(f"Sending message: {message}")
@@ -154,7 +178,7 @@ def send_message(message, loan_id):
         send_url, headers=admin_headers, data=json.dumps(send_payload)
     )
     # try:
-    send_response.raise_for_status()  # Raise an exception for bad status codes
+    _ = send_response.raise_for_status()  # Raise an exception for bad status codes
     #     print("Message sent successfully!")
     #     print("Response:", send_response.json())  # Print the JSON response
     # except requests.exceptions.RequestException as e:
@@ -233,6 +257,7 @@ if __name__ == "__main__":
     for loan_id in LOAN_IDS:
         for question in QUESTIONS:
             print(f"\n\nUsing loan {loan_id}, with question: {question}")
+            clear_messages(loan_id)
 
             message, txn_search_result = send_message(question, loan_id)
             if message is None:

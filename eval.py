@@ -44,11 +44,22 @@ answer_type_dict = {
 }
 
 test_case_map = {
+    1: 85670492709,
+    2: 86881713506,
+    3: 84192307554,
+    4: 80731120165,
+    5: 89811904866,
     6: 86744679655,
     7: 81613557991,
     8: 84192307554,
     9: 83352063666,
     10: 81301535410,
+}
+answer_type_map = {
+    "yes": "boolean",
+    "no": "boolean",
+    "boolean": "boolean",
+    "id_list": "id_list",
 }
 
 
@@ -85,7 +96,9 @@ def preprocess_data(
         return False
 
     try:
-        df = pd.read_excel(excel_path, sheet_name="6-10", header=1)
+        df_p1 = pd.read_excel(excel_path, sheet_name="1-5-deprecate", header=0)
+        df_p2 = pd.read_excel(excel_path, sheet_name="6-10", header=1)
+        df = pd.concat([df_p1, df_p2])
     except Exception as e:
         print(f"Error reading Excel file: {e}")
         return False
@@ -98,7 +111,7 @@ def preprocess_data(
             # Extract common columns
             answer = row["Revised Answer V2"]
             test_case_number = row["Test Case Number"]
-            answer_type = row["Answer Type"]
+            answer_type = answer_type_map[row["Answer Type"]]
             question = row["Rephrased Question"]
 
             # Validate answer types and skip invalid ones
@@ -158,11 +171,13 @@ def evaluate_model(
     model_id,
     df,
     use_domain_expertise,
-    no_answer_instruction=False,
     downsample_size=None,
     offset=0,
 ):
     """Evaluate a model on the dataset."""
+    # Determine if answer instruction should be used based on model_id
+    no_answer_instruction = model_id == "solo"
+
     # Keep a copy of the original dataset
     domain_expertise_str = (
         f"Domain Expertise: {domain_expertise}\n\n" if use_domain_expertise else ""
@@ -242,6 +257,7 @@ def evaluate_model(
         f1_sum += metrics["f1_score"]
 
         result = {
+            "loan_id": loan_id,
             "question": question,
             "true_answer": gt_answer,
             "predicted_answer": predicted_answer,
@@ -299,14 +315,12 @@ def is_correct(predicted_answer, answer_type, gt_answer):
         f1_score = 1.0 if exact_match else 0.0
         return {"exact_match": exact_match, "f1_score": f1_score}
     elif answer_type == "id_list":
-        # Strip markdown code block formatting if present using regex
-        # cleaned_answer = re.sub(
-        #     r"```(?:json)?\s*\n|```\s*$",
-        #     "",
-        #     predicted_answer.strip(),
-        #     flags=re.MULTILINE,
-        # ).strip()
-        cleaned_answer = re.search(r"\[(.*)\]", predicted_answer, re.DOTALL).group(0)
+        match = re.search(r"\[(.*)\]", predicted_answer, re.DOTALL)
+        if match is None:
+            # TODO: implement retry logic
+            print(f"warning: no list found in predicted answer: {predicted_answer} for answer: {gt_answer}")
+            return {"exact_match": False, "f1_score": 0.0}
+        cleaned_answer = match.group(0)
 
         try:
             pred_as_list = json.loads(cleaned_answer)
@@ -317,8 +331,11 @@ def is_correct(predicted_answer, answer_type, gt_answer):
         gt_answer = gt_answer.replace(" ", "").split(",")
         if isinstance(gt_answer[0], str) and gt_answer[0].lower() == "none":
             gt_answer = []
-
-        pred_set = set(pred_as_list)
+        try: 
+            pred_set = set(pred_as_list)
+        except TypeError:
+            print(f"warning: invalid list: {pred_as_list} for answer: {gt_answer}")
+            return {"exact_match": False, "f1_score": 0.0}
         gt_set = set(gt_answer)
 
         exact_match = pred_set == gt_set
@@ -419,6 +436,7 @@ def save_results(
             errors = [r for r in results if not r["exact_match"]]
             for i, result in enumerate(errors):
                 f.write(f"### Error {i+1}\n")
+                f.write(f"**Loan ID:** {result['loan_id']}\n")
                 f.write(f"**Question:** {result['question']}\n")
                 f.write(
                     f"**Expected:** {result['true_answer']} ({result['answer_type']})\n"
@@ -439,6 +457,7 @@ def save_results(
             errors = [r for r in results if not r["exact_match"]]
             for i, error in enumerate(errors):
                 f.write(f"### Error {i+1}\n")
+                f.write(f"**Loan ID:** {error['loan_id']}\n")
                 f.write(f"**Question:** {error['question']}\n")
                 f.write(
                     f"**Expected:** {error['true_answer']} ({error['answer_type']})\n"
@@ -484,11 +503,6 @@ def main():
         default=0,
         help="Number of samples to skip from the beginning",
     )
-    parser.add_argument(
-        "--no_answer_instruction",
-        action="store_true",
-        help="Exclude answer instruction from answer_type_dict in the prompt",
-    )
 
     args = parser.parse_args()
 
@@ -528,7 +542,6 @@ def main():
         args.model_id,
         dataset,
         args.use_domain_expertise,
-        args.no_answer_instruction,
         args.downsample_size,
         args.offset,
     )
