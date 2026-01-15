@@ -361,7 +361,7 @@
                       <CURRENT_INCOME_ITEMS>
                         <CURRENT_INCOME_ITEM SequenceNumber="1" xlink:label="CURRENT_INCOME_ITEM_1_1">
                           <CURRENT_INCOME_ITEM_DETAIL>
-                            <CurrentIncomeMonthlyTotalAmount>16666.67</CurrentIncomeMonthlyTotalAmount>
+                            <CurrentIncomeMonthlyTotalAmount>7522</CurrentIncomeMonthlyTotalAmount>
                             <EmploymentIncomeIndicator>true</EmploymentIncomeIndicator>
                             <IncomeType>Base</IncomeType>
                           </CURRENT_INCOME_ITEM_DETAIL>

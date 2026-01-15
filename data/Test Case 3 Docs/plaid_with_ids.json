@@ -14,37 +14,43 @@
           "date_transacted": "2025-07-05",
           "date_posted": "2025-07-05",
           "amount": 150.67,
-          "description": "Withdrawal from COMCAST 8771201 430957880"
+          "description": "Withdrawal from COMCAST 8771201 430957880",
+          "transaction_id": "plaid-3-00001"
         },
         {
           "date_transacted": "2025-07-05",
           "date_posted": "2025-07-05",
           "amount": 9.75,
-          "description": "Withdrawal from CAPITAL ONE ONLINE PMT"
+          "description": "Withdrawal from CAPITAL ONE ONLINE PMT",
+          "transaction_id": "plaid-3-00002"
         },
         {
           "date_transacted": "2025-07-07",
           "date_posted": "2025-07-07",
           "amount": -250.0,
-          "description": "Deposit from 360 Performance Savings XXXXXXX5656"
+          "description": "Deposit from 360 Performance Savings XXXXXXX5656",
+          "transaction_id": "plaid-3-00003"
         },
         {
           "date_transacted": "2025-07-28",
           "date_posted": "2025-07-28",
           "amount": -1500.0,
-          "description": "Deposit from 360 Checking XXXXXXX3434"
+          "description": "Deposit from 360 Checking XXXXXXX3434",
+          "transaction_id": "plaid-3-00004"
         },
         {
           "date_transacted": "2025-07-28",
           "date_posted": "2025-07-28",
           "amount": 1500.0,
-          "description": "Withdrawal to 360 Performance Savings XXXXXXX5656"
+          "description": "Withdrawal to 360 Performance Savings XXXXXXX5656",
+          "transaction_id": "plaid-3-00005"
         },
         {
           "date_transacted": "2025-07-31",
           "date_posted": "2025-07-31",
           "amount": -0.04,
-          "description": "Monthly Interest Paid"
+          "description": "Monthly Interest Paid",
+          "transaction_id": "plaid-3-00006"
         }
       ]
     },
@@ -61,85 +67,99 @@
           "date_transacted": "2025-07-01",
           "date_posted": "2025-07-01",
           "amount": 189.24,
-          "description": "Debit Card Purchase - COSTCO WHSE #0371 BLOOMINGDALE, IL US"
+          "description": "Debit Card Purchase - COSTCO WHSE #0371 BLOOMINGDALE, IL US",
+          "transaction_id": "plaid-3-00007"
         },
         {
           "date_transacted": "2025-07-03",
           "date_posted": "2025-07-03",
           "amount": -720.25,
-          "description": "Deposit from NY MTA DIR DEP"
+          "description": "Deposit from NY MTA DIR DEP",
+          "transaction_id": "plaid-3-00008"
         },
         {
           "date_transacted": "2025-07-10",
           "date_posted": "2025-07-10",
           "amount": 178.23,
-          "description": "Debit Card Purchase - COSTCO WHSE #0342 NAPERVILLE, IL US"
+          "description": "Debit Card Purchase - COSTCO WHSE #0342 NAPERVILLE, IL US",
+          "transaction_id": "plaid-3-00009"
         },
         {
           "date_transacted": "2025-07-14",
           "date_posted": "2025-07-14",
           "amount": 500.0,
-          "description": "Withdrawal to 360 Performance Savings XXXXXXX7878"
+          "description": "Withdrawal to 360 Performance Savings XXXXXXX7878",
+          "transaction_id": "plaid-3-00010"
         },
         {
           "date_transacted": "2025-07-17",
           "date_posted": "2025-07-17",
           "amount": -541.09,
-          "description": "Deposit from NY MTA DIR DEP"
+          "description": "Deposit from NY MTA DIR DEP",
+          "transaction_id": "plaid-3-00011"
         },
         {
           "date_transacted": "2025-07-17",
           "date_posted": "2025-07-17",
           "amount": 0.99,
-          "description": "Debit Card Purchase - APPLE COM BILL 866 712 7753 CA"
+          "description": "Debit Card Purchase - APPLE COM BILL 866 712 7753 CA",
+          "transaction_id": "plaid-3-00012"
         },
         {
           "date_transacted": "2025-07-19",
           "date_posted": "2025-07-19",
           "amount": -750.0,
-          "description": "Deposit from 360 Performance Savings XXXXXXX7878"
+          "description": "Deposit from 360 Performance Savings XXXXXXX7878",
+          "transaction_id": "plaid-3-00013"
         },
         {
           "date_transacted": "2025-07-19",
           "date_posted": "2025-07-19",
           "amount": 1500.0,
-          "description": "Withdrawal to 360 Performance Savings XXXXXXX7878"
+          "description": "Withdrawal to 360 Performance Savings XXXXXXX7878",
+          "transaction_id": "plaid-3-00014"
         },
         {
           "date_transacted": "2025-07-25",
           "date_posted": "2025-07-25",
           "amount": -1500.0,
-          "description": "Deposit from CHASE Bank P2P PAYMNT MOM FIRSTIMER Debit Card Purchase - SMITH BROTHERS NAPERVI"
+          "description": "Deposit from CHASE Bank P2P PAYMNT MOM FIRSTIMER Debit Card Purchase - SMITH BROTHERS NAPERVI",
+          "transaction_id": "plaid-3-00015"
         },
         {
           "date_transacted": "2025-07-26",
           "date_posted": "2025-07-26",
           "amount": 46.04,
-          "description": "NAPERVILLE IL"
+          "description": "NAPERVILLE IL",
+          "transaction_id": "plaid-3-00016"
         },
         {
           "date_transacted": "2025-07-28",
           "date_posted": "2025-07-28",
           "amount": 1500.0,
-          "description": "Withdrawal to 360 Checking XXXXXXX1212 Debit Card Purchase - COSTCO WHSE #0342 NAPERVILLE, IL"
+          "description": "Withdrawal to 360 Checking XXXXXXX1212 Debit Card Purchase - COSTCO WHSE #0342 NAPERVILLE, IL",
+          "transaction_id": "plaid-3-00017"
         },
         {
           "date_transacted": "2025-07-30",
           "date_posted": "2025-07-30",
           "amount": 271.58,
-          "description": "US"
+          "description": "US",
+          "transaction_id": "plaid-3-00018"
         },
         {
           "date_transacted": "2025-07-31",
           "date_posted": "2025-07-31",
           "amount": -681.15,
-          "description": "Deposit from NY MTA DIR DEP"
+          "description": "Deposit from NY MTA DIR DEP",
+          "transaction_id": "plaid-3-00019"
         },
         {
           "date_transacted": "2025-07-31",
           "date_posted": "2025-07-31",
           "amount": -0.08,
-          "description": "Monthly Interest Paid"
+          "description": "Monthly Interest Paid",
+          "transaction_id": "plaid-3-00020"
         }
       ]
     },
@@ -156,61 +176,71 @@
           "date_transacted": "2025-07-02",
           "date_posted": "2025-07-02",
           "amount": 12048.2,
-          "description": "Withdrawal to 360 Performance Savings XXXXXXX7878 Preauthorized Deposit from JPMORGAN CHASE BANK, NA"
+          "description": "Withdrawal to 360 Performance Savings XXXXXXX7878 Preauthorized Deposit from JPMORGAN CHASE BANK, NA",
+          "transaction_id": "plaid-3-00021"
         },
         {
           "date_transacted": "2025-07-03",
           "date_posted": "2025-07-03",
           "amount": -3000.0,
-          "description": "checking account XXXXX1111"
+          "description": "checking account XXXXX1111",
+          "transaction_id": "plaid-3-00022"
         },
         {
           "date_transacted": "2025-07-07",
           "date_posted": "2025-07-07",
           "amount": 250.0,
-          "description": "Withdrawal to 360 Checking XXXXXXX1212"
+          "description": "Withdrawal to 360 Checking XXXXXXX1212",
+          "transaction_id": "plaid-3-00023"
         },
         {
           "date_transacted": "2025-07-14",
           "date_posted": "2025-07-14",
           "amount": 12036.59,
-          "description": "Withdrawal to 360 Performance Savings XXXXXXX7878 Preauthorized Withdrawal to JPMORGAN CHASE BANK, NA"
+          "description": "Withdrawal to 360 Performance Savings XXXXXXX7878 Preauthorized Withdrawal to JPMORGAN CHASE BANK, NA",
+          "transaction_id": "plaid-3-00024"
         },
         {
           "date_transacted": "2025-07-17",
           "date_posted": "2025-07-17",
           "amount": 25000.0,
-          "description": "checking account XXXXX2222 Preauthorized Withdrawal to JPMORGAN CHASE BANK, NA"
+          "description": "checking account XXXXX2222 Preauthorized Withdrawal to JPMORGAN CHASE BANK, NA",
+          "transaction_id": "plaid-3-00025"
         },
         {
           "date_transacted": "2025-07-22",
           "date_posted": "2025-07-22",
           "amount": 750.0,
-          "description": "checking account XXXXX1111"
+          "description": "checking account XXXXX1111",
+          "transaction_id": "plaid-3-00026"
         },
         {
           "date_transacted": "2025-07-23",
           "date_posted": "2025-07-23",
           "amount": 5.0,
-          "description": "Withdrawal from TrustFunds BUYER CONV"
+          "description": "Withdrawal from TrustFunds BUYER CONV",
+          "transaction_id": "plaid-3-00027"
         },
         {
           "date_transacted": "2025-07-23",
           "date_posted": "2025-07-23",
           "amount": 5000.0,
-          "description": "Withdrawal from Coldwell Banker 12114352"
+          "description": "Withdrawal from Coldwell Banker 12114352",
+          "transaction_id": "plaid-3-00028"
         },
         {
           "date_transacted": "2025-07-28",
           "date_posted": "2025-07-28",
           "amount": -1500.0,
-          "description": "Deposit from 360 Checking XXXXXXX1212"
+          "description": "Deposit from 360 Checking XXXXXXX1212",
+          "transaction_id": "plaid-3-00029"
         },
         {
           "date_transacted": "2025-07-31",
           "date_posted": "2025-07-31",
           "amount": -867.25,
-          "description": "Monthly Interest Paid"
+          "description": "Monthly Interest Paid",
+          "transaction_id": "plaid-3-00030"
         }
       ]
     },
@@ -227,79 +257,92 @@
           "date_transacted": "2025-07-01",
           "date_posted": "2025-07-01",
           "amount": 145.56,
-          "description": "Withdrawal from VERIZON WIRELESS PAYMENTS"
+          "description": "Withdrawal from VERIZON WIRELESS PAYMENTS",
+          "transaction_id": "plaid-3-00031"
         },
         {
           "date_transacted": "2025-07-02",
           "date_posted": "2025-07-02",
           "amount": -12048.2,
-          "description": "Deposit from 360 Performance Savings XXXXXXX5656"
+          "description": "Deposit from 360 Performance Savings XXXXXXX5656",
+          "transaction_id": "plaid-3-00032"
         },
         {
           "date_transacted": "2025-07-05",
           "date_posted": "2025-07-05",
           "amount": -1680.6,
-          "description": "Deposit from NY MTA DIR DEP"
+          "description": "Deposit from NY MTA DIR DEP",
+          "transaction_id": "plaid-3-00033"
         },
         {
           "date_transacted": "2025-07-14",
           "date_posted": "2025-07-14",
           "amount": -500.0,
-          "description": "Deposit from 360 Checking XXXXXXX3434"
+          "description": "Deposit from 360 Checking XXXXXXX3434",
+          "transaction_id": "plaid-3-00034"
         },
         {
           "date_transacted": "2025-07-14",
           "date_posted": "2025-07-14",
           "amount": -12036.59,
-          "description": "Deposit from 360 Performance Savings XXXXXXX5656"
+          "description": "Deposit from 360 Performance Savings XXXXXXX5656",
+          "transaction_id": "plaid-3-00035"
         },
         {
           "date_transacted": "2025-07-15",
           "date_posted": "2025-07-15",
           "amount": 354.61,
-          "description": "Withdrawal from CAPITAL ONE CRCARDPMT"
+          "description": "Withdrawal from CAPITAL ONE CRCARDPMT",
+          "transaction_id": "plaid-3-00036"
         },
         {
           "date_transacted": "2025-07-15",
           "date_posted": "2025-07-15",
           "amount": 1000.0,
-          "description": "Withdrawal from REMITLY INC REMITTANCE"
+          "description": "Withdrawal from REMITLY INC REMITTANCE",
+          "transaction_id": "plaid-3-00037"
         },
         {
           "date_transacted": "2025-07-19",
           "date_posted": "2025-07-19",
           "amount": -1262.56,
-          "description": "Deposit from NY MTA DIR DEP"
+          "description": "Deposit from NY MTA DIR DEP",
+          "transaction_id": "plaid-3-00038"
         },
         {
           "date_transacted": "2025-07-19",
           "date_posted": "2025-07-19",
           "amount": 750.0,
-          "description": "Withdrawal to 360 Checking XXXXXXX3434"
+          "description": "Withdrawal to 360 Checking XXXXXXX3434",
+          "transaction_id": "plaid-3-00039"
         },
         {
           "date_transacted": "2025-07-19",
           "date_posted": "2025-07-19",
           "amount": -1500.0,
-          "description": "Deposit from 360 Checking XXXXXXX3434"
+          "description": "Deposit from 360 Checking XXXXXXX3434",
+          "transaction_id": "plaid-3-00040"
         },
         {
           "date_transacted": "2025-07-24",
           "date_posted": "2025-07-24",
           "amount": 858.85,
-          "description": "Withdrawal from CAPITAL ONE ONLINE PMT"
+          "description": "Withdrawal from CAPITAL ONE ONLINE PMT",
+          "transaction_id": "plaid-3-00041"
         },
         {
           "date_transacted": "2025-07-30",
           "date_posted": "2025-07-30",
           "amount": 112.81,
-          "description": "Withdrawal from VERIZON WIRELESS PAYMENTS"
+          "description": "Withdrawal from VERIZON WIRELESS PAYMENTS",
+          "transaction_id": "plaid-3-00042"
         },
         {
           "date_transacted": "2025-07-31",
           "date_posted": "2025-07-31",
           "amount": -178.21,
-          "description": "Monthly Interest Paid"
+          "description": "Monthly Interest Paid",
+          "transaction_id": "plaid-3-00043"
         }
       ]
     }

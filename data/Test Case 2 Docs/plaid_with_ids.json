@@ -15,343 +15,400 @@
           "date_transacted": "2025-06-30",
           "date_posted": "2025-07-01",
           "amount": 89.44,
-          "description": "STREAMING SERVICES BUNDLE"
+          "description": "STREAMING SERVICES BUNDLE",
+          "transaction_id": "plaid-2-00001"
         },
         {
           "date_transacted": "2025-07-01",
           "date_posted": "2025-07-02",
           "amount": 142.18,
-          "description": "GAS & SERVICE STATION"
+          "description": "GAS & SERVICE STATION",
+          "transaction_id": "plaid-2-00002"
         },
         {
           "date_transacted": "2025-07-02",
           "date_posted": "2025-07-03",
           "amount": 58.3,
-          "description": "GROCERY STORE 123"
+          "description": "GROCERY STORE 123",
+          "transaction_id": "plaid-2-00003"
         },
         {
           "date_transacted": "2025-07-04",
           "date_posted": "2025-07-05",
           "amount": -500,
-          "description": "TRANSFER FROM SAVINGS"
+          "description": "TRANSFER FROM SAVINGS",
+          "transaction_id": "plaid-2-00004"
         },
         {
           "date_transacted": "2025-07-04",
           "date_posted": "2025-07-05",
           "amount": 129.99,
-          "description": "CELL PHONE PROVIDER"
+          "description": "CELL PHONE PROVIDER",
+          "transaction_id": "plaid-2-00005"
         },
         {
           "date_transacted": "2025-07-05",
           "date_posted": "2025-07-06",
           "amount": 3000,
-          "description": "RENT PAYMENT - JULY"
+          "description": "RENT PAYMENT - JULY",
+          "transaction_id": "plaid-2-00006"
         },
         {
           "date_transacted": "2025-07-06",
           "date_posted": "2025-07-07",
           "amount": 35,
-          "description": "NSF FEE"
+          "description": "NSF FEE",
+          "transaction_id": "plaid-2-00007"
         },
         {
           "date_transacted": "2025-07-07",
           "date_posted": "2025-07-08",
           "amount": 84.62,
-          "description": "DINING - RESTAURANT"
+          "description": "DINING - RESTAURANT",
+          "transaction_id": "plaid-2-00008"
         },
         {
           "date_transacted": "2025-07-07",
           "date_posted": "2025-07-08",
           "amount": -2200,
-          "description": "SSA US Treasury Deposit"
+          "description": "SSA US Treasury Deposit",
+          "transaction_id": "plaid-2-00009"
         },
         {
           "date_transacted": "2025-07-08",
           "date_posted": "2025-07-09",
           "amount": 92.18,
-          "description": "UTILITY PAYMENT - ELECTRIC CO"
+          "description": "UTILITY PAYMENT - ELECTRIC CO",
+          "transaction_id": "plaid-2-00010"
         },
         {
           "date_transacted": "2025-07-09",
           "date_posted": "2025-07-10",
           "amount": -1500,
-          "description": "TRANSFER FROM SAVINGS"
+          "description": "TRANSFER FROM SAVINGS",
+          "transaction_id": "plaid-2-00011"
         },
         {
           "date_transacted": "2025-07-10",
           "date_posted": "2025-07-11",
           "amount": 64.22,
-          "description": "PHARMACY"
+          "description": "PHARMACY",
+          "transaction_id": "plaid-2-00012"
         },
         {
           "date_transacted": "2025-07-11",
           "date_posted": "2025-07-12",
           "amount": 48.11,
-          "description": "COFFEE SHOP"
+          "description": "COFFEE SHOP",
+          "transaction_id": "plaid-2-00013"
         },
         {
           "date_transacted": "2025-07-13",
           "date_posted": "2025-07-14",
           "amount": 125,
-          "description": "ACH DEBIT - MERRY CREDIT CARD PAYMENT"
+          "description": "ACH DEBIT - MERRY CREDIT CARD PAYMENT",
+          "transaction_id": "plaid-2-00014"
         },
         {
           "date_transacted": "2025-07-14",
           "date_posted": "2025-07-15",
           "amount": -2500,
-          "description": "ACH Direct Deposit - NY MTA"
+          "description": "ACH Direct Deposit - NY MTA",
+          "transaction_id": "plaid-2-00015"
         },
         {
           "date_transacted": "2025-07-14",
           "date_posted": "2025-07-15",
           "amount": 95,
-          "description": "ACH DEBIT - NO NONSENSE CREDIT CARD PAYMENT"
+          "description": "ACH DEBIT - NO NONSENSE CREDIT CARD PAYMENT",
+          "transaction_id": "plaid-2-00016"
         },
         {
           "date_transacted": "2025-07-14",
           "date_posted": "2025-07-15",
           "amount": 79,
-          "description": "ACH DEBIT - AFTERPAY PAYMENT"
+          "description": "ACH DEBIT - AFTERPAY PAYMENT",
+          "transaction_id": "plaid-2-00017"
         },
         {
           "date_transacted": "2025-07-15",
           "date_posted": "2025-07-16",
           "amount": 118.54,
-          "description": "GROCERY STORE 123"
+          "description": "GROCERY STORE 123",
+          "transaction_id": "plaid-2-00018"
         },
         {
           "date_transacted": "2025-07-17",
           "date_posted": "2025-07-18",
           "amount": 124.37,
-          "description": "CHECK #1045"
+          "description": "CHECK #1045",
+          "transaction_id": "plaid-2-00019"
         },
         {
           "date_transacted": "2025-07-18",
           "date_posted": "2025-07-19",
           "amount": 72.94,
-          "description": "DINING - RESTAURANT"
+          "description": "DINING - RESTAURANT",
+          "transaction_id": "plaid-2-00020"
         },
         {
           "date_transacted": "2025-07-19",
           "date_posted": "2025-07-20",
           "amount": -2300,
-          "description": "Cash Deposit - ATM"
+          "description": "Cash Deposit - ATM",
+          "transaction_id": "plaid-2-00021"
         },
         {
           "date_transacted": "2025-07-19",
           "date_posted": "2025-07-20",
           "amount": 62,
-          "description": "ACH DEBIT - KLARNA PAYMENT"
+          "description": "ACH DEBIT - KLARNA PAYMENT",
+          "transaction_id": "plaid-2-00022"
         },
         {
           "date_transacted": "2025-07-20",
           "date_posted": "2025-07-21",
           "amount": 2500,
-          "description": "TRANSFER TO SAVINGS"
+          "description": "TRANSFER TO SAVINGS",
+          "transaction_id": "plaid-2-00023"
         },
         {
           "date_transacted": "2025-07-21",
           "date_posted": "2025-07-22",
           "amount": 212.6,
-          "description": "AUTO INSURANCE PREMIUM"
+          "description": "AUTO INSURANCE PREMIUM",
+          "transaction_id": "plaid-2-00024"
         },
         {
           "date_transacted": "2025-07-23",
           "date_posted": "2025-07-24",
           "amount": 45,
-          "description": "SUBSCRIPTION - CLOUD STORAGE"
+          "description": "SUBSCRIPTION - CLOUD STORAGE",
+          "transaction_id": "plaid-2-00025"
         },
         {
           "date_transacted": "2025-07-25",
           "date_posted": "2025-07-26",
           "amount": 96.21,
-          "description": "GAS & SERVICE STATION"
+          "description": "GAS & SERVICE STATION",
+          "transaction_id": "plaid-2-00026"
         },
         {
           "date_transacted": "2025-07-27",
           "date_posted": "2025-07-28",
           "amount": 92.18,
-          "description": "UTILITY PAYMENT - WATER"
+          "description": "UTILITY PAYMENT - WATER",
+          "transaction_id": "plaid-2-00027"
         },
         {
           "date_transacted": "2025-07-30",
           "date_posted": "2025-07-31",
           "amount": -2500,
-          "description": "ACH Direct Deposit - NY MTA"
+          "description": "ACH Direct Deposit - NY MTA",
+          "transaction_id": "plaid-2-00028"
         },
         {
           "date_transacted": "2025-07-31",
           "date_posted": "2025-08-01",
           "amount": 3000,
-          "description": "RENT PAYMENT - AUGUST"
+          "description": "RENT PAYMENT - AUGUST",
+          "transaction_id": "plaid-2-00029"
         },
         {
           "date_transacted": "2025-08-01",
           "date_posted": "2025-08-02",
           "amount": 129.99,
-          "description": "CELL PHONE PROVIDER"
+          "description": "CELL PHONE PROVIDER",
+          "transaction_id": "plaid-2-00030"
         },
         {
           "date_transacted": "2025-08-02",
           "date_posted": "2025-08-03",
           "amount": -1000,
-          "description": "TRANSFER FROM SAVINGS"
+          "description": "TRANSFER FROM SAVINGS",
+          "transaction_id": "plaid-2-00031"
         },
         {
           "date_transacted": "2025-08-02",
           "date_posted": "2025-08-03",
           "amount": 58.3,
-          "description": "GROCERY STORE 123"
+          "description": "GROCERY STORE 123",
+          "transaction_id": "plaid-2-00032"
         },
         {
           "date_transacted": "2025-08-03",
           "date_posted": "2025-08-04",
           "amount": -2200,
-          "description": "SSA US Treasury Deposit"
+          "description": "SSA US Treasury Deposit",
+          "transaction_id": "plaid-2-00033"
         },
         {
           "date_transacted": "2025-08-04",
           "date_posted": "2025-08-05",
           "amount": 2000,
-          "description": "PRIME VISA Payment"
+          "description": "PRIME VISA Payment",
+          "transaction_id": "plaid-2-00034"
         },
         {
           "date_transacted": "2025-08-05",
           "date_posted": "2025-08-06",
           "amount": 84.62,
-          "description": "DINING - RESTAURANT"
+          "description": "DINING - RESTAURANT",
+          "transaction_id": "plaid-2-00035"
         },
         {
           "date_transacted": "2025-08-06",
           "date_posted": "2025-08-07",
           "amount": 92.18,
-          "description": "Utility Payment - Electric Co"
+          "description": "Utility Payment - Electric Co",
+          "transaction_id": "plaid-2-00036"
         },
         {
           "date_transacted": "2025-08-07",
           "date_posted": "2025-08-08",
           "amount": -50000,
-          "description": "LightStream Proceeds"
+          "description": "LightStream Proceeds",
+          "transaction_id": "plaid-2-00037"
         },
         {
           "date_transacted": "2025-08-08",
           "date_posted": "2025-08-09",
           "amount": 124.37,
-          "description": "CHECK #1046"
+          "description": "CHECK #1046",
+          "transaction_id": "plaid-2-00038"
         },
         {
           "date_transacted": "2025-08-09",
           "date_posted": "2025-08-10",
           "amount": 350,
-          "description": "ALLY BANK AUTO LOAN PAYMENT"
+          "description": "ALLY BANK AUTO LOAN PAYMENT",
+          "transaction_id": "plaid-2-00039"
         },
         {
           "date_transacted": "2025-08-09",
           "date_posted": "2025-08-10",
           "amount": -2000,
-          "description": "TRANSFER FROM SAVINGS"
+          "description": "TRANSFER FROM SAVINGS",
+          "transaction_id": "plaid-2-00040"
         },
         {
           "date_transacted": "2025-08-11",
           "date_posted": "2025-08-12",
           "amount": -2000,
-          "description": "TRANSFER FROM SAVINGS"
+          "description": "TRANSFER FROM SAVINGS",
+          "transaction_id": "plaid-2-00041"
         },
         {
           "date_transacted": "2025-08-12",
           "date_posted": "2025-08-13",
           "amount": 72.94,
-          "description": "DINING - RESTAURANT"
+          "description": "DINING - RESTAURANT",
+          "transaction_id": "plaid-2-00042"
         },
         {
           "date_transacted": "2025-08-13",
           "date_posted": "2025-08-14",
           "amount": 125,
-          "description": "ACH DEBIT - MERRY CREDIT CARD PAYMENT"
+          "description": "ACH DEBIT - MERRY CREDIT CARD PAYMENT",
+          "transaction_id": "plaid-2-00043"
         },
         {
           "date_transacted": "2025-08-13",
           "date_posted": "2025-08-14",
           "amount": -2500,
-          "description": "ACH Direct Deposit - NY MTA"
+          "description": "ACH Direct Deposit - NY MTA",
+          "transaction_id": "plaid-2-00044"
         },
         {
           "date_transacted": "2025-08-14",
           "date_posted": "2025-08-15",
           "amount": 95,
-          "description": "ACH DEBIT - NO NONSENSE CREDIT CARD PAYMENT"
+          "description": "ACH DEBIT - NO NONSENSE CREDIT CARD PAYMENT",
+          "transaction_id": "plaid-2-00045"
         },
         {
           "date_transacted": "2025-08-14",
           "date_posted": "2025-08-15",
           "amount": 79,
-          "description": "ACH DEBIT - AFTERPAY PAYMENT"
+          "description": "ACH DEBIT - AFTERPAY PAYMENT",
+          "transaction_id": "plaid-2-00046"
         },
         {
           "date_transacted": "2025-08-14",
           "date_posted": "2025-08-15",
           "amount": 212.6,
-          "description": "AUTO INSURANCE PREMIUM"
+          "description": "AUTO INSURANCE PREMIUM",
+          "transaction_id": "plaid-2-00047"
         },
         {
           "date_transacted": "2025-08-15",
           "date_posted": "2025-08-16",
           "amount": -2800,
-          "description": "Cash Deposit - ATM"
+          "description": "Cash Deposit - ATM",
+          "transaction_id": "plaid-2-00048"
         },
         {
           "date_transacted": "2025-08-16",
           "date_posted": "2025-08-17",
           "amount": 3000,
-          "description": "TRANSFER TO SAVINGS - SWEEP"
+          "description": "TRANSFER TO SAVINGS - SWEEP",
+          "transaction_id": "plaid-2-00049"
         },
         {
           "date_transacted": "2025-08-17",
           "date_posted": "2025-08-18",
           "amount": 92.18,
-          "description": "UTILITY PAYMENT - GAS"
+          "description": "UTILITY PAYMENT - GAS",
+          "transaction_id": "plaid-2-00050"
         },
         {
           "date_transacted": "2025-08-18",
           "date_posted": "2025-08-19",
           "amount": 118.54,
-          "description": "GROCERY STORE 123"
+          "description": "GROCERY STORE 123",
+          "transaction_id": "plaid-2-00051"
         },
         {
           "date_transacted": "2025-08-19",
           "date_posted": "2025-08-20",
           "amount": 62,
-          "description": "ACH DEBIT - KLARNA PAYMENT"
+          "description": "ACH DEBIT - KLARNA PAYMENT",
+          "transaction_id": "plaid-2-00052"
         },
         {
           "date_transacted": "2025-08-19",
           "date_posted": "2025-08-20",
           "amount": 64.22,
-          "description": "PHARMACY"
+          "description": "PHARMACY",
+          "transaction_id": "plaid-2-00053"
         },
         {
           "date_transacted": "2025-08-21",
           "date_posted": "2025-08-22",
           "amount": 45,
-          "description": "SUBSCRIPTION - CLOUD STORAGE"
+          "description": "SUBSCRIPTION - CLOUD STORAGE",
+          "transaction_id": "plaid-2-00054"
         },
         {
           "date_transacted": "2025-08-22",
           "date_posted": "2025-08-23",
           "amount": 96.21,
-          "description": "GAS & SERVICE STATION"
+          "description": "GAS & SERVICE STATION",
+          "transaction_id": "plaid-2-00055"
         },
         {
           "date_transacted": "2025-08-23",
           "date_posted": "2025-08-24",
           "amount": 84.62,
-          "description": "DINING - RESTAURANT"
+          "description": "DINING - RESTAURANT",
+          "transaction_id": "plaid-2-00056"
         },
         {
           "date_transacted": "2025-08-24",
           "date_posted": "2025-08-25",
           "amount": -2500,
-          "description": "ACH Direct Deposit - NY MTA"
+          "description": "ACH Direct Deposit - NY MTA",
+          "transaction_id": "plaid-2-00057"
         }
       ],
       "identity": {
@@ -399,67 +456,78 @@
           "date_transacted": "2025-06-30",
           "date_posted": "2025-07-01",
           "amount": -12.5,
-          "description": "Monthly Interest Credit"
+          "description": "Monthly Interest Credit",
+          "transaction_id": "plaid-2-00058"
         },
         {
           "date_transacted": "2025-07-04",
           "date_posted": "2025-07-05",
           "amount": 500,
-          "description": "Transfer to Checking"
+          "description": "Transfer to Checking",
+          "transaction_id": "plaid-2-00059"
         },
         {
           "date_transacted": "2025-07-09",
           "date_posted": "2025-07-10",
           "amount": 1500,
-          "description": "Transfer to Checking"
+          "description": "Transfer to Checking",
+          "transaction_id": "plaid-2-00060"
         },
         {
           "date_transacted": "2025-07-20",
           "date_posted": "2025-07-21",
           "amount": -2500,
-          "description": "Incoming Transfer - Bonus Save"
+          "description": "Incoming Transfer - Bonus Save",
+          "transaction_id": "plaid-2-00061"
         },
         {
           "date_transacted": "2025-07-30",
           "date_posted": "2025-07-31",
           "amount": -12.9,
-          "description": "Monthly Interest Credit"
+          "description": "Monthly Interest Credit",
+          "transaction_id": "plaid-2-00062"
         },
         {
           "date_transacted": "2025-07-31",
           "date_posted": "2025-08-01",
           "amount": -13.1,
-          "description": "Monthly Interest Credit"
+          "description": "Monthly Interest Credit",
+          "transaction_id": "plaid-2-00063"
         },
         {
           "date_transacted": "2025-08-02",
           "date_posted": "2025-08-03",
           "amount": 1000,
-          "description": "Transfer to Checking"
+          "description": "Transfer to Checking",
+          "transaction_id": "plaid-2-00064"
         },
         {
           "date_transacted": "2025-08-09",
           "date_posted": "2025-08-10",
           "amount": 2000,
-          "description": "Transfer to Checking"
+          "description": "Transfer to Checking",
+          "transaction_id": "plaid-2-00065"
         },
         {
           "date_transacted": "2025-08-11",
           "date_posted": "2025-08-12",
           "amount": 2000,
-          "description": "Transfer to Checking"
+          "description": "Transfer to Checking",
+          "transaction_id": "plaid-2-00066"
         },
         {
           "date_transacted": "2025-08-16",
           "date_posted": "2025-08-17",
           "amount": -3000,
-          "description": "Incoming Transfer - Sweep"
+          "description": "Incoming Transfer - Sweep",
+          "transaction_id": "plaid-2-00067"
         },
         {
           "date_transacted": "2025-08-24",
           "date_posted": "2025-08-25",
           "amount": -13.2,
-          "description": "Monthly Interest Credit (Prorated)"
+          "description": "Monthly Interest Credit (Prorated)",
+          "transaction_id": "plaid-2-00068"
         }
       ],
       "identity": {

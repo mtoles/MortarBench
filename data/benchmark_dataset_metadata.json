@@ -1,0 +1,812 @@
+[
+  {
+    "question_id": "1-1",
+    "loan_id": "85670492709",
+    "test_case_number": 1,
+    "question": "Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.",
+    "answer": "none",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "1-2",
+    "loan_id": "85670492709",
+    "test_case_number": 1,
+    "question": "Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "1-3",
+    "loan_id": "85670492709",
+    "test_case_number": 1,
+    "question": "Identify any large deposits on the borrower\u2019s bank statements.",
+    "answer": "plaid-1-00011, plaid-1-00030, plaid-1-00035, plaid-1-00068",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "1-4",
+    "loan_id": "85670492709",
+    "test_case_number": 1,
+    "question": "Do the bank statements show evidence of rental payments?",
+    "answer": "plaid-1-00010, plaid-1-00033",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "1-5",
+    "loan_id": "85670492709",
+    "test_case_number": 1,
+    "question": "Compare the borrower\u2019s address on the account statement with the current address on the loan application.",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": true
+  },
+  {
+    "question_id": "1-6",
+    "loan_id": "85670492709",
+    "test_case_number": 1,
+    "question": "Scan the provided bank statements for any recurring payments that indicate a liability for child support, alimony, or wage garnishment. If found, confirm whether the payments were specifically disclosed on the loan application.",
+    "answer": "plaid-1-00005, plaid-1-00037",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "1-7",
+    "loan_id": "85670492709",
+    "test_case_number": 1,
+    "question": "Verify if a deposit matching the gift amount stated on the loan application is reflected in the borrower\u2019s bank statements.",
+    "answer": "plaid-1-00011",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "1-8",
+    "loan_id": "85670492709",
+    "test_case_number": 1,
+    "question": "Review the account activity for any deposits that appear to be from a secured loan.",
+    "answer": "plaid-1-00030",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "1-9",
+    "loan_id": "85670492709",
+    "test_case_number": 1,
+    "question": "Verify that the payroll deposits on the bank statements exactly match the net pay amounts on any of the borrower\u2019s corresponding pay stubs provided.",
+    "answer": "no",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "1-10",
+    "loan_id": "85670492709",
+    "test_case_number": 1,
+    "question": "Which deposits on the bank statement, if any, appear to originate from a cryptocurrency source?",
+    "answer": "plaid-1-00035",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "2-1",
+    "loan_id": "86881713506",
+    "test_case_number": 2,
+    "question": "Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.",
+    "answer": "plaid-2-00052, plaid-2-00022, plaid-2-00017, plaid-2-00046",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "2-2",
+    "loan_id": "86881713506",
+    "test_case_number": 2,
+    "question": "Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "2-3",
+    "loan_id": "86881713506",
+    "test_case_number": 2,
+    "question": "Do the statements reflect any unusually large or irregular deposits requiring documentation?",
+    "answer": "plaid-2-00037, plaid-2-00049",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "2-4",
+    "loan_id": "86881713506",
+    "test_case_number": 2,
+    "question": "Is there evidence of rental payment(s) being made any accounts?",
+    "answer": "plaid-2-00029, plaid-2-00006",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "2-5",
+    "loan_id": "86881713506",
+    "test_case_number": 2,
+    "question": "Compare the borrower\u2019s address on the account statement with the current address on the loan application.",
+    "answer": "no",
+    "answer_type": "boolean",
+    "pii": true
+  },
+  {
+    "question_id": "2-6",
+    "loan_id": "86881713506",
+    "test_case_number": 2,
+    "question": "Are there any overdraft or NSF (non-sufficient funds) fees present in the account activity?",
+    "answer": "plaid-2-00007",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "2-7",
+    "loan_id": "86881713506",
+    "test_case_number": 2,
+    "question": "Is there an unexplained deposit in a bank's transaction history that could be a sign of unsecured borrowed funds?",
+    "answer": "plaid-2-00037",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "2-8",
+    "loan_id": "86881713506",
+    "test_case_number": 2,
+    "question": "Are there recurring debt payments that are not disclosed on the loan application or appearing on the credit report?",
+    "answer": "plaid-2-00022, plaid-2-00052, plaid-2-00046, plaid-2-00017, plaid-2-00016, plaid-2-00045, plaid-2-00043, plaid-2-00014, plaid-2-00039, plaid-2-00034",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "2-9",
+    "loan_id": "86881713506",
+    "test_case_number": 2,
+    "question": "Does the account account reflect any large cash deposits or show a pattern of cash deposits that appears excessive?",
+    "answer": "plaid-2-00021, plaid-2-00048",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "2-10",
+    "loan_id": "86881713506",
+    "test_case_number": 2,
+    "question": "Is there a consistent pattern of deposits on the asset statement that could represent an undisclosed other income source?",
+    "answer": "plaid-2-00033, plaid-2-00009",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "3-1",
+    "loan_id": "84192307554",
+    "test_case_number": 3,
+    "question": "Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.",
+    "answer": "none",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "3-2",
+    "loan_id": "84192307554",
+    "test_case_number": 3,
+    "question": "Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "3-3",
+    "loan_id": "84192307554",
+    "test_case_number": 3,
+    "question": "Do the statements reflect any unusually large or irregular deposits requiring documentation?",
+    "answer": "none",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "3-4",
+    "loan_id": "84192307554",
+    "test_case_number": 3,
+    "question": "Is there evidence of rental payment(s) being made from the account?",
+    "answer": "none",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "3-5",
+    "loan_id": "84192307554",
+    "test_case_number": 3,
+    "question": "Compare the borrower\u2019s address on the account statement with the current address on the loan application. Note any discrepancy.",
+    "answer": "no",
+    "answer_type": "boolean",
+    "pii": true
+  },
+  {
+    "question_id": "3-6",
+    "loan_id": "84192307554",
+    "test_case_number": 3,
+    "question": "Review all asset statements to determine if any account is a joint account. If a joint account is identified, confirm whether all listed account holders are also listed as borrowers on the loan application.",
+    "answer": "3434, 7878",
+    "answer_type": "account_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "3-7",
+    "loan_id": "84192307554",
+    "test_case_number": 3,
+    "question": "Check the bank account activity for a withdrawal that matches the earnest money deposit (EMD) amount specified in the purchase contract. If a matching transaction is found, provide the transaction date, amount, and any available recipient details to confirm its purpose.",
+    "answer": "plaid-3-00028",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "3-8",
+    "loan_id": "84192307554",
+    "test_case_number": 3,
+    "question": "Scan the borrower's bank statements for any payments to creditors that are not listed on either the credit report or the loan application. If found, identify the name of the creditor and the payment amount.",
+    "answer": "plaid-3-00002, plaid-3-00041, plaid-3-00036",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "3-9",
+    "loan_id": "84192307554",
+    "test_case_number": 3,
+    "question": "Compare the borrower\u2019s employer name to any payroll deposits on the bank statements. Note any potential undisclosed employment income.",
+    "answer": "plaid-3-00033, plaid-3-00008, plaid-3-00019, plaid-3-00038, plaid-3-00011",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "4-1",
+    "loan_id": "80731120165",
+    "test_case_number": 4,
+    "question": "Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.",
+    "answer": "plaid-4-00025, plaid-4-00011",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "4-2",
+    "loan_id": "80731120165",
+    "test_case_number": 4,
+    "question": "Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?",
+    "answer": "no",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "4-3",
+    "loan_id": "80731120165",
+    "test_case_number": 4,
+    "question": "Do the statements reflect any unusually large or irregular deposits requiring documentation?",
+    "answer": "plaid-4-00028, plaid-4-00069",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "4-4",
+    "loan_id": "80731120165",
+    "test_case_number": 4,
+    "question": "Is there evidence of rental payment(s) being made from the account?",
+    "answer": "plaid-4-00004, plaid-4-00017, plaid-4-00060",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "4-5",
+    "loan_id": "80731120165",
+    "test_case_number": 4,
+    "question": "Compare the borrower\u2019s address on the account statement with the current address on the loan application.",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": true
+  },
+  {
+    "question_id": "4-6",
+    "loan_id": "80731120165",
+    "test_case_number": 4,
+    "question": "What accounts are business accounts instead of personal accounts?",
+    "answer": "9921",
+    "answer_type": "account_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "4-7",
+    "loan_id": "80731120165",
+    "test_case_number": 4,
+    "question": "Based on the transaction history, are there any deposits that suggest funds from a private savings club or similar informal arrangement?",
+    "answer": "plaid-4-00029, plaid-4-00024, plaid-4-00010",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "4-8",
+    "loan_id": "80731120165",
+    "test_case_number": 4,
+    "question": "Scan the provided account activity for any deposits originating from a payday loan or similar high-interest lending source.",
+    "answer": "plaid-4-00015",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "4-9",
+    "loan_id": "80731120165",
+    "test_case_number": 4,
+    "question": "Review the account statements for any accounts designated as a custodial account.",
+    "answer": "7788",
+    "answer_type": "account_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "4-10",
+    "loan_id": "80731120165",
+    "test_case_number": 4,
+    "question": "Examine the account records for any deposits that could be of foreign origin.",
+    "answer": "plaid-4-00028",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "5-1",
+    "loan_id": "89811904866",
+    "test_case_number": 5,
+    "question": "Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.",
+    "answer": "none",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "5-2",
+    "loan_id": "89811904866",
+    "test_case_number": 5,
+    "question": "Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "5-3",
+    "loan_id": "89811904866",
+    "test_case_number": 5,
+    "question": "Do the statements reflect any unusually large or irregular deposits requiring documentation?",
+    "answer": "none",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "5-4",
+    "loan_id": "89811904866",
+    "test_case_number": 5,
+    "question": "Is there evidence of rental payment(s) being made from the account?",
+    "answer": "none",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "5-5",
+    "loan_id": "89811904866",
+    "test_case_number": 5,
+    "question": "Verify that the borrower\u2019s address on their bank statements aligns with the current address or mailing address provided on the loan application.",
+    "answer": "no",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "5-6",
+    "loan_id": "89811904866",
+    "test_case_number": 5,
+    "question": "Do all bank statements include the financial institution name & account number?",
+    "answer": "no",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "5-7",
+    "loan_id": "89811904866",
+    "test_case_number": 5,
+    "question": "Are there any provided retirement accounts that can be used as a source of funds for the mortgage?",
+    "answer": "6677",
+    "answer_type": "account_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "5-8",
+    "loan_id": "89811904866",
+    "test_case_number": 5,
+    "question": "Do the rental income deposits shown on the bank statements align with the gross rental income reported for the property(ies) listed on the loan application (both subject and REO)?",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "5-9",
+    "loan_id": "89811904866",
+    "test_case_number": 5,
+    "question": "Does the statement reflect the mortgage payment needed to confirm current payment history?",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "9-1",
+    "loan_id": "83352063666",
+    "test_case_number": 9,
+    "question": "Do the statements reflect any unusually large or irregular deposits requiring documentation?",
+    "answer": "plaid-9-00028",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "9-2",
+    "loan_id": "83352063666",
+    "test_case_number": 9,
+    "question": "Examine the account records for any deposits that could be of foreign origin.",
+    "answer": "plaid-9-00028",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "9-3",
+    "loan_id": "83352063666",
+    "test_case_number": 9,
+    "question": "Are there any provided retirement accounts that can be used as a source of funds for the mortgage?",
+    "answer": "none",
+    "answer_type": "account_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "9-4",
+    "loan_id": "83352063666",
+    "test_case_number": 9,
+    "question": "What accounts are business accounts instead of personal accounts?",
+    "answer": "9921",
+    "answer_type": "account_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "9-5",
+    "loan_id": "83352063666",
+    "test_case_number": 9,
+    "question": "Review the account statements for any accounts designated as a custodial account.",
+    "answer": "7788",
+    "answer_type": "account_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "9-6",
+    "loan_id": "83352063666",
+    "test_case_number": 9,
+    "question": "Compare the borrower\u2019s address on the account statement with the current address on the loan application.",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": true
+  },
+  {
+    "question_id": "9-7",
+    "loan_id": "83352063666",
+    "test_case_number": 9,
+    "question": "Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.",
+    "answer": "plaid-9-00025, plaid-9-00011",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "9-8",
+    "loan_id": "83352063666",
+    "test_case_number": 9,
+    "question": "Based on the transaction history, are there any deposits that suggest funds from a private savings club or similar informal arrangement?",
+    "answer": "plaid-9-00029, plaid-9-00024, plaid-9-00010",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "9-9",
+    "loan_id": "83352063666",
+    "test_case_number": 9,
+    "question": "Is there evidence of rental payment(s) being made from the account?",
+    "answer": "plaid-9-00017, plaid-9-00004",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "9-10",
+    "loan_id": "83352063666",
+    "test_case_number": 9,
+    "question": "Scan the provided account activity for any deposits originating from a payday loan or similar high-interest lending source.",
+    "answer": "plaid-9-00015",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "9-11",
+    "loan_id": "83352063666",
+    "test_case_number": 9,
+    "question": "Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "7-1",
+    "loan_id": "81613557991",
+    "test_case_number": 7,
+    "question": "Do the statements reflect any unusually large or irregular deposits requiring documentation?",
+    "answer": "plaid-7-00037",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "7-2",
+    "loan_id": "81613557991",
+    "test_case_number": 7,
+    "question": "Does the account account reflect any large cash deposits or show a pattern of cash deposits that appears excessive?",
+    "answer": "plaid-7-00021, plaid-7-00048",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "7-3",
+    "loan_id": "81613557991",
+    "test_case_number": 7,
+    "question": "Compare the borrower\u2019s address on the account statement with the current address on the loan application.",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": true
+  },
+  {
+    "question_id": "7-4",
+    "loan_id": "81613557991",
+    "test_case_number": 7,
+    "question": "Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.",
+    "answer": "plaid-7-00017, plaid-7-00046, plaid-7-00022, plaid-7-00052",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "7-5",
+    "loan_id": "81613557991",
+    "test_case_number": 7,
+    "question": "Are there recurring debt payments that are not disclosed on the loan application or appearing on the credit report?",
+    "answer": "plaid-7-00014, plaid-7-00043, plaid-7-00016, plaid-7-00045, plaid-7-00017, plaid-7-00046, plaid-7-00022, plaid-7-00052, plaid-7-00034, plaid-7-00039",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "7-6",
+    "loan_id": "81613557991",
+    "test_case_number": 7,
+    "question": "Is there evidence of rental payment(s) being made any accounts?",
+    "answer": "plaid-7-00029, plaid-7-00006",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "7-7",
+    "loan_id": "81613557991",
+    "test_case_number": 7,
+    "question": "Is there an unexplained deposit in a bank's transaction history that could be a sign of unsecured borrowed funds?",
+    "answer": "plaid-7-00037",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "7-8",
+    "loan_id": "81613557991",
+    "test_case_number": 7,
+    "question": "Is there a consistent pattern of deposits on the asset statement that could represent an undisclosed other income source?",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "7-9",
+    "loan_id": "81613557991",
+    "test_case_number": 7,
+    "question": "Is there a consistent pattern of deposits on the asset statement that could represent an undisclosed other income source?",
+    "answer": "plaid-7-00009, plaid-7-00033",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "7-10",
+    "loan_id": "81613557991",
+    "test_case_number": 7,
+    "question": "Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "7-11",
+    "loan_id": "81613557991",
+    "test_case_number": 7,
+    "question": "Are there any overdraft or NSF (non-sufficient funds) fees present in the account activity?",
+    "answer": "plaid-7-00007",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "6-1",
+    "loan_id": "86744679655",
+    "test_case_number": 6,
+    "question": "Identify any large deposits on the borrower\u2019s bank statements.",
+    "answer": "plaid-6-00011, plaid-6-00030, plaid-6-00035",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "6-2",
+    "loan_id": "86744679655",
+    "test_case_number": 6,
+    "question": "Which deposits on the bank statement, if any, appear to originate from a cryptocurrency source?",
+    "answer": "plaid-6-00035",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "6-3",
+    "loan_id": "86744679655",
+    "test_case_number": 6,
+    "question": "Verify if a deposit matching the gift amount stated on the loan application is reflected in the borrower\u2019s bank statements.",
+    "answer": "plaid-6-00011",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "6-4",
+    "loan_id": "86744679655",
+    "test_case_number": 6,
+    "question": "Compare the borrower\u2019s address on the account statement with the current address on the loan application.",
+    "answer": "no",
+    "answer_type": "boolean",
+    "pii": true
+  },
+  {
+    "question_id": "6-5",
+    "loan_id": "86744679655",
+    "test_case_number": 6,
+    "question": "Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.",
+    "answer": "none",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "6-6",
+    "loan_id": "86744679655",
+    "test_case_number": 6,
+    "question": "Scan the provided bank statements for any recurring payments that indicate a liability for child support, alimony, or wage garnishment. If found, confirm whether the payments were specifically disclosed on the loan application.",
+    "answer": "plaid-6-00005, plaid-6-00037",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "6-7",
+    "loan_id": "86744679655",
+    "test_case_number": 6,
+    "question": "Do the bank statements show evidence of any rental payments?",
+    "answer": "plaid-6-00010, plaid-6-00033",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "6-8",
+    "loan_id": "86744679655",
+    "test_case_number": 6,
+    "question": "Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "6-9",
+    "loan_id": "86744679655",
+    "test_case_number": 6,
+    "question": "Verify that the borrower\u2019s payroll deposits in the bank statements are consistent with the income and employment information on the application.",
+    "answer": "plaid-6-00050, plaid-6-00032, plaid-6-00014",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "6-10",
+    "loan_id": "86744679655",
+    "test_case_number": 6,
+    "question": "Verify that the payroll deposits on the bank statements exactly match the net pay amounts on any of the borrower\u2019s corresponding pay stubs provided.",
+    "answer": "no",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "6-11",
+    "loan_id": "86744679655",
+    "test_case_number": 6,
+    "question": "Verify that the payroll deposits on the bank statements exactly match the net pay amounts on any of the borrower\u2019s corresponding pay stubs provided.",
+    "answer": "plaid-6-00050, plaid-6-00032, plaid-6-00014",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "10-1",
+    "loan_id": "81301535410",
+    "test_case_number": 10,
+    "question": "Do the statements reflect any unusually large or irregular deposits requiring documentation?",
+    "answer": "none",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "10-2",
+    "loan_id": "81301535410",
+    "test_case_number": 10,
+    "question": "Verify that the borrower\u2019s address on their bank statements aligns with the current address or mailing address provided on the loan application.",
+    "answer": "no",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "10-3",
+    "loan_id": "81301535410",
+    "test_case_number": 10,
+    "question": "Which list of bank statements do not include the financial institution name & account number?",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "10-4",
+    "loan_id": "81301535410",
+    "test_case_number": 10,
+    "question": "Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.",
+    "answer": "none",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "10-5",
+    "loan_id": "81301535410",
+    "test_case_number": 10,
+    "question": "Is there evidence of rental payment(s) being made from the account?",
+    "answer": "none",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "10-6",
+    "loan_id": "81301535410",
+    "test_case_number": 10,
+    "question": "Does the statement reflect the mortgage payment needed to confirm current payment history?",
+    "answer": "plaid-10-00042, plaid-10-00023, plaid-10-00041, plaid-10-00022",
+    "answer_type": "txn_id_list",
+    "pii": false
+  },
+  {
+    "question_id": "10-7",
+    "loan_id": "81301535410",
+    "test_case_number": 10,
+    "question": "Does the statement reflect the mortgage payment needed to confirm current payment history?",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "10-8",
+    "loan_id": "81301535410",
+    "test_case_number": 10,
+    "question": "Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?",
+    "answer": "yes",
+    "answer_type": "boolean",
+    "pii": false
+  },
+  {
+    "question_id": "10-9",
+    "loan_id": "81301535410",
+    "test_case_number": 10,
+    "question": "Do the rental income deposits shown on the bank statements align with the gross rental income reported for the property(ies) listed on the loan application (both subject and REO)?",
+    "answer": "plaid-10-00020, plaid-10-00039, plaid-10-00025, plaid-10-00044",
+    "answer_type": "txn_id_list",
+    "pii": false
+  }
+]

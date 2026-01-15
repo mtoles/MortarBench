@@ -1,0 +1,2 @@
+activate the venv before running scripts
+do not use .get or unnecessary try/except. instead, just crash. it's ok.

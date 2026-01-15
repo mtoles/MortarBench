@@ -3,3 +3,8 @@ openpyxl
 openai
 anthropic
 matplotlib
+joblib
+requests
+python-dotenv
+google-generativeai
+flask

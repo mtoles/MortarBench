@@ -1,0 +1,450 @@
+{
+    "seed": "andy-america-sandbox-jul3-sep3-2025-costco-rentaddr-rent31",
+    "override_accounts": [
+      {
+        "type": "depository",
+        "subtype": "checking",
+        "starting_balance": 56400,
+        "currency": "USD",
+        "numbers": {
+          "account": "111222333000"
+        },
+        "transactions": [
+          {
+            "date_transacted": "2025-07-02",
+            "date_posted": "2025-07-03",
+            "amount": -5000,
+            "description": "ACH CREDIT - 1013 Bloomfield Ave",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-03",
+            "date_posted": "2025-07-04",
+            "amount": 129.99,
+            "description": "VERIZON WIRELESS AUTO-PAY",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-05",
+            "date_posted": "2025-07-06",
+            "amount": 44.23,
+            "description": "PHARMACY - CVS STORE #9921",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-06",
+            "date_posted": "2025-07-07",
+            "amount": 64.88,
+            "description": "TRADER JOE'S #102 SOMEPLACE NY",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-07",
+            "date_posted": "2025-07-08",
+            "amount": 92.11,
+            "description": "DINING - APPLEBEE'S SOMEPLACE NY",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-09",
+            "date_posted": "2025-07-10",
+            "amount": 96.21,
+            "description": "GAS & SERVICE STATION",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-10",
+            "date_posted": "2025-07-11",
+            "amount": 72.99,
+            "description": "DINING - PIZZA HUT #1123",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-12",
+            "date_posted": "2025-07-13",
+            "amount": 212.66,
+            "description": "UTILITY PAYMENT - CON EDISON",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-14",
+            "date_posted": "2025-07-15",
+            "amount": -3050,
+            "description": "ACH CREDIT PAYROLL - COSTCO PAYROLL DIRECT DEPOSIT",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-14",
+            "date_posted": "2025-07-15",
+            "amount": 225,
+            "description": "ACH DEBIT - CAPITAL ONE CREDIT CARD PAYMENT",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-14",
+            "date_posted": "2025-07-15",
+            "amount": 1200,
+            "description": "ACH DEBIT - PRIME VISA PAYMENT",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-14",
+            "date_posted": "2025-07-15",
+            "amount": 180,
+            "description": "ACH DEBIT - RELENTLESS BANK CREDIT CARD",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-15",
+            "date_posted": "2025-07-16",
+            "amount": 85.25,
+            "description": "RESTAURANT POS - CHIPOTLE #441",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-16",
+            "date_posted": "2025-07-17",
+            "amount": 45,
+            "description": "SPOTIFY SUBSCRIPTION",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-22",
+            "date_posted": "2025-07-23",
+            "amount": 124.37,
+            "description": "CHECK #1051",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-24",
+            "date_posted": "2025-07-25",
+            "amount": 1000,
+            "description": "ONLINE TRANSFER TO SAVINGS",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-26",
+            "date_posted": "2025-07-27",
+            "amount": 350,
+            "description": "GEICO AUTO INSURANCE PREMIUM",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-28",
+            "date_posted": "2025-07-29",
+            "amount": 59.44,
+            "description": "NETFLIX/STREAMING SERVICES",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-30",
+            "date_posted": "2025-07-31",
+            "amount": -3000,
+            "description": "ACH CREDIT - 2308 Logan Rd",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-30",
+            "date_posted": "2025-07-31",
+            "amount": 18.77,
+            "description": "DUNKIN #4432 SOMEPLACE NY",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-31",
+            "date_posted": "2025-08-01",
+            "amount": 1691,
+            "description": "ACH DEBIT - BEST EVER MORTGAGE PAYMENT",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-31",
+            "date_posted": "2025-08-01",
+            "amount": 1671,
+            "description": "ACH DEBIT - CALLABLE MORTGAGE PAYMENT",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-02",
+            "date_posted": "2025-08-03",
+            "amount": -5000,
+            "description": "ACH CREDIT - 1013 Bloomfield Ave",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-03",
+            "date_posted": "2025-08-04",
+            "amount": 129.55,
+            "description": "SAFEWAY #312 SOMEPLACE NY",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-05",
+            "date_posted": "2025-08-06",
+            "amount": 54.35,
+            "description": "UBER TRIP HELP.UBER.COM",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-09",
+            "date_posted": "2025-08-10",
+            "amount": 93.44,
+            "description": "UTILITY PAYMENT - WATER COMPANY",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-14",
+            "date_posted": "2025-08-15",
+            "amount": -3050,
+            "description": "ACH CREDIT PAYROLL - COSTCO PAYROLL DIRECT DEPOSIT",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-14",
+            "date_posted": "2025-08-15",
+            "amount": 225,
+            "description": "ACH DEBIT - CAPITAL ONE CREDIT CARD PAYMENT",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-14",
+            "date_posted": "2025-08-15",
+            "amount": 1200,
+            "description": "ACH DEBIT - PRIME VISA PAYMENT",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-14",
+            "date_posted": "2025-08-15",
+            "amount": 180,
+            "description": "ACH DEBIT - RELENTLESS BANK CREDIT CARD",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-15",
+            "date_posted": "2025-08-16",
+            "amount": 84.22,
+            "description": "DINING - OLIVE GARDEN SOMEPLACE NY",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-16",
+            "date_posted": "2025-08-17",
+            "amount": 35,
+            "description": "SUBSCRIPTION - APPLE ICLOUD STORAGE",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-22",
+            "date_posted": "2025-08-23",
+            "amount": 124.37,
+            "description": "CHECK #1052",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-24",
+            "date_posted": "2025-08-25",
+            "amount": 1000,
+            "description": "ONLINE TRANSFER TO SAVINGS",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-26",
+            "date_posted": "2025-08-27",
+            "amount": 350,
+            "description": "GEICO AUTO INSURANCE PREMIUM",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-28",
+            "date_posted": "2025-08-29",
+            "amount": 59.44,
+            "description": "NETFLIX/STREAMING SERVICES",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-30",
+            "date_posted": "2025-08-31",
+            "amount": -3000,
+            "description": "ACH CREDIT - 2308 Logan Rd",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-30",
+            "date_posted": "2025-08-31",
+            "amount": 18.77,
+            "description": "DUNKIN #4432 SOMEPLACE NY",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-31",
+            "date_posted": "2025-09-01",
+            "amount": 1691,
+            "description": "ACH DEBIT - BEST EVER MORTGAGE PAYMENT",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-31",
+            "date_posted": "2025-09-01",
+            "amount": 1671,
+            "description": "ACH DEBIT - CALLABLE MORTGAGE PAYMENT",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-09-02",
+            "date_posted": "2025-09-03",
+            "amount": -5000,
+            "description": "ACH CREDIT - 1013 Bloomfield Ave",
+            "currency": "USD"
+          }
+        ],
+        "identity": {
+          "names": [
+            "Andy America"
+          ],
+          "emails": [
+            {
+              "primary": true,
+              "type": "primary",
+              "data": "andyamerica@company.com"
+            }
+          ],
+          "addresses": [
+            {
+              "primary": true,
+              "data": {
+                "country": "US",
+                "city": "Someplace",
+                "street": "4321 Cul de Sac St",
+                "postal_code": "10001",
+                "region": "NY"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "depository",
+        "subtype": "savings",
+        "starting_balance": 38000,
+        "currency": "USD",
+        "numbers": {
+          "account": "555666777000"
+        },
+        "transactions": [
+          {
+            "date_transacted": "2025-07-19",
+            "date_posted": "2025-07-20",
+            "amount": -2000,
+            "description": "ACH CREDIT - BONUS SAVINGS CLUB",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-24",
+            "date_posted": "2025-07-25",
+            "amount": -1000,
+            "description": "ONLINE TRANSFER FROM CHECKING",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-30",
+            "date_posted": "2025-07-31",
+            "amount": -11.6,
+            "description": "INTEREST CREDIT",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-31",
+            "date_posted": "2025-08-01",
+            "amount": -11.85,
+            "description": "INTEREST CREDIT",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-24",
+            "date_posted": "2025-08-25",
+            "amount": -1000,
+            "description": "ONLINE TRANSFER FROM CHECKING",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-30",
+            "date_posted": "2025-08-31",
+            "amount": -11.6,
+            "description": "INTEREST CREDIT",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-31",
+            "date_posted": "2025-09-01",
+            "amount": -11.85,
+            "description": "INTEREST CREDIT",
+            "currency": "USD"
+          }
+        ],
+        "identity": {
+          "names": [
+            "Andy America"
+          ]
+        }
+      },
+      {
+        "type": "investment",
+        "subtype": "401k",
+        "starting_balance": 50750,
+        "currency": "USD",
+        "numbers": {
+          "account": "401k556677"
+        },
+        "transactions": [
+          {
+            "date_transacted": "2025-07-14",
+            "date_posted": "2025-07-15",
+            "amount": -525,
+            "description": "401K CONTRIBUTION - EMPLOYEE DEFERRAL (COSTCO PAYROLL)",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-14",
+            "date_posted": "2025-07-15",
+            "amount": -262.5,
+            "description": "401K CONTRIBUTION - EMPLOYER MATCH (COSTCO)",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-07-30",
+            "date_posted": "2025-07-31",
+            "amount": -375,
+            "description": "MARKET APPRECIATION / DIVIDENDS",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-14",
+            "date_posted": "2025-08-15",
+            "amount": -525,
+            "description": "401K CONTRIBUTION - EMPLOYEE DEFERRAL (COSTCO PAYROLL)",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-14",
+            "date_posted": "2025-08-15",
+            "amount": -262.5,
+            "description": "401K CONTRIBUTION - EMPLOYER MATCH (COSTCO)",
+            "currency": "USD"
+          },
+          {
+            "date_transacted": "2025-08-14",
+            "date_posted": "2025-08-15",
+            "amount": -185,
+            "description": "DIVIDEND REINVESTMENT",
+            "currency": "USD"
+          }
+        ],
+        "identity": {
+          "names": [
+            "Andy America"
+          ]
+        }
+      }
+    ]
+  }

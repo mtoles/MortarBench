@@ -19,6 +19,7 @@ import urllib.parse
 from datetime import datetime, timezone
 import time
 from dotenv import load_dotenv
+import google.generativeai as genai
 
 # Load environment variables from .env file
 load_dotenv()
@@ -27,16 +28,24 @@ load_dotenv()
 memory = Memory("joblib_cache", verbose=0)
 
 
-STAGING_AUTH_TOKEN = os.getenv("STAGING_AUTH_TOKEN")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# Configure Google Generative AI with API key
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+
+# Read Anthropic API key from environment
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 ### SOLO Stuff ###
 
 # --- Configuration ---
+STAGING_AUTH_TOKEN = os.getenv("STAGING_AUTH_TOKEN")
 SOLO_ADMIN_TOKEN = (
     str(STAGING_AUTH_TOKEN).strip().replace("\r\n", "").replace("\n", "")
 )  # Ensure it's a string and remove leading/trailing whitespace and newlines
 AGENT_CLIENT_API_URL = "https://staging-api.tidalhq.com"
-SOLO_ACCOUNT_ID = "cn5qbp13nbp48h1trvq0"
+SOLO_ACCOUNT_ID = "d45upb94l9puh1k8kdrg"
 
 admin_headers = {
     "Authorization": f"Bearer {SOLO_ADMIN_TOKEN}",
@@ -46,7 +55,10 @@ admin_headers = {
 
 
 @memory.cache
-def _cached_llm_call(model_id: str, messages: List[Dict[str, str]]) -> str:
+def _cached_llm_call(model_id: str, messages: List[Dict[str, str]]) -> tuple:
+    return _uncached_llm_call(model_id, messages)
+
+def _uncached_llm_call(model_id: str, messages: List[Dict[str, str]]) -> tuple:
     """
     Cached LLM call function.
 
@@ -55,7 +67,7 @@ def _cached_llm_call(model_id: str, messages: List[Dict[str, str]]) -> str:
         messages: List of message dictionaries with 'role' and 'content' keys
 
     Returns:
-        The model's response content as a string
+        Tuple of (response_content, input_tokens, output_tokens)
     """
     if model_id.startswith("gpt-"):
         client = OpenAI()
@@ -63,20 +75,42 @@ def _cached_llm_call(model_id: str, messages: List[Dict[str, str]]) -> str:
             model=model_id,
             messages=messages,
         )
-        return response.choices[0].message.content.strip()
+        content = response.choices[0].message.content.strip()
+        input_tokens = response.usage.prompt_tokens
+        output_tokens = response.usage.completion_tokens
+        # For models with reasoning tokens, count them as output
+        if hasattr(response.usage, 'completion_tokens_details') and response.usage.completion_tokens_details:
+            if hasattr(response.usage.completion_tokens_details, 'reasoning_tokens'):
+                reasoning_tokens = response.usage.completion_tokens_details.reasoning_tokens
+                if reasoning_tokens:
+                    output_tokens += reasoning_tokens
+        return content, input_tokens, output_tokens
     elif model_id.startswith("claude-"):
-        client = Anthropic()
+        client = Anthropic(api_key=ANTHROPIC_API_KEY)
         response = client.messages.create(
             model=model_id,
             max_tokens=4096,
             messages=messages,
+            temperature=1.0,
         )
-        return response.content[0].text.strip()
+        content = response.content[0].text.strip()
+        input_tokens = response.usage.input_tokens
+        output_tokens = response.usage.output_tokens
+        return content, input_tokens, output_tokens
+    elif model_id.startswith("gemini-"):
+        prompt = messages[-1]["content"]
+        model = genai.GenerativeModel(model_id)
+        response = model.generate_content(
+            prompt,
+        )
+        content = response.text.strip()
+        input_tokens = response.usage_metadata.prompt_token_count
+        output_tokens = response.usage_metadata.candidates_token_count
+        return content, input_tokens, output_tokens
     else:
         raise ValueError(f"Invalid model ID: {model_id}")
 
-
-def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) -> str:
+def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) -> tuple:
     """
     Wrapper function for calling LLM models with caching.
 
@@ -85,7 +119,8 @@ def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) ->
         messages: List of message dictionaries with 'role' and 'content' keys
 
     Returns:
-        The model's response content as a string
+        Tuple of (response_content, input_tokens, output_tokens)
+        For solo model, returns (response_content, 0, 0) as it has no cost
 
     Raises:
         NotImplementedError: If model_id is 'solo'
@@ -93,9 +128,22 @@ def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) ->
     if model_id == "solo":
         assert len(messages) == 1
         assert messages[-1]["role"] == "user"
-        message, txn_search_result = send_message(
-            messages[-1]["content"], kwargs["loan_id"]
-        )
+        
+        # Retry logic for timeout errors (up to 5 attempts)
+        max_retries = 5
+        for attempt in range(1, max_retries + 1):
+            try:
+                message, txn_search_result = send_message(
+                    messages[-1]["content"], kwargs["loan_id"]
+                )
+                break  # Success, exit retry loop
+            except TimeoutError as e:
+                if attempt < max_retries:
+                    print(f"Timeout error on attempt {attempt}/{max_retries}. Retrying...")
+                    time.sleep(2)  # Wait 2 seconds before retrying
+                else:
+                    print(f"Failed after {max_retries} attempts.")
+                    raise  # Re-raise the timeout error after all retries exhausted
         # if txn_search_result.get("AssetTransactionSearchResult") and txn_search_result["AssetTransactionSearchResult"].get("Transactions"):
         #     transaction_ids = ", ".join([txn["TransactionID"] for txn in txn_search_result["AssetTransactionSearchResult"]["Transactions"]])
         # else:
@@ -106,11 +154,12 @@ def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) ->
         result = (
             message["Content"]
             + "\n\nThe Solo Agent referenced the following data:\n\n"
+            + "==========\n"
             + str(txn_search_result)
         )
-        return result
+        return result, 0, 0
 
-    else:  # GPT Models
+    else:  # GPT and Claude Models
         # Validate messages format
         if not isinstance(messages, list):
             raise ValueError("Messages must be a list of dictionaries")
@@ -125,11 +174,13 @@ def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) ->
                     "Each message must be a dict with 'role' and 'content' keys"
                 )
 
-        return _cached_llm_call(model_id, messages)
+        # return _cached_llm_call(model_id, messages)
+        return _uncached_llm_call(model_id, messages) # disabling cache to test multiple trials
 
 
 def clear_messages(loan_id):
     """Clears messages for a given loan ID."""
+    loan_id = str(loan_id)
     print(f"Clearing messages for loan ID: {loan_id}")
     clear_url = f"{AGENT_CLIENT_API_URL}/api/chat/messages/clear"
     clear_payload = {
@@ -239,7 +290,7 @@ def send_message(message, loan_id):
         time.sleep(3)  # Wait for 3 second before the next poll
 
     if not response_received:
-        raise Exception(
+        raise TimeoutError(
             "Timeout: Did not receive a response within the specified time."
         )
     return response, transaction_search_result

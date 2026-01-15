@@ -1,0 +1,729 @@
+{
+  "plaid_files": [
+    {
+      "seed": "pp-lp-platypus-4acct-final-affirm-credit-001",
+      "override_accounts": [
+        {
+          "type": "depository",
+          "subtype": "checking",
+          "starting_balance": 205600,
+          "currency": "USD",
+          "numbers": {
+            "account": "001122334411"
+          },
+          "transactions": [
+            {
+              "date_transacted": "2025-06-30",
+              "date_posted": "2025-07-01",
+              "amount": 92.44,
+              "description": "ONLINE BILL PAY - BALTIMORE CITY WATER",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00001"
+            },
+            {
+              "date_transacted": "2025-07-01",
+              "date_posted": "2025-07-02",
+              "amount": 132.18,
+              "description": "SAFEWAY #312 BALTIMORE MD",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00002"
+            },
+            {
+              "date_transacted": "2025-07-02",
+              "date_posted": "2025-07-03",
+              "amount": 14.25,
+              "description": "STARBUCKS #4457 BALTIMORE MD",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00003"
+            },
+            {
+              "date_transacted": "2025-07-04",
+              "date_posted": "2025-07-05",
+              "amount": 2400,
+              "description": "ZELLE PAYMENT - JULY RENT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00004"
+            },
+            {
+              "date_transacted": "2025-07-06",
+              "date_posted": "2025-07-07",
+              "amount": 129.99,
+              "description": "VERIZON WIRELESS AUTO-PAY",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00005"
+            },
+            {
+              "date_transacted": "2025-07-08",
+              "date_posted": "2025-07-09",
+              "amount": -1850,
+              "description": "ACH CREDIT PAYROLL - AAA INC",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00006"
+            },
+            {
+              "date_transacted": "2025-07-09",
+              "date_posted": "2025-07-10",
+              "amount": 746,
+              "description": "ACH DEBIT - ACE MORTGAGE PAYMENT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00007"
+            },
+            {
+              "date_transacted": "2025-07-09",
+              "date_posted": "2025-07-10",
+              "amount": 233,
+              "description": "ACH DEBIT - BEST MORTGAGE PAYMENT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00008"
+            },
+            {
+              "date_transacted": "2025-07-10",
+              "date_posted": "2025-07-11",
+              "amount": 245,
+              "description": "ACH DEBIT - ENLIGHTENED BANK LOAN PAYMENT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00009"
+            },
+            {
+              "date_transacted": "2025-07-11",
+              "date_posted": "2025-07-12",
+              "amount": -3000,
+              "description": "ACH CREDIT - COMMUNITY SAVINGS CLUB FUNDS",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00010"
+            },
+            {
+              "date_transacted": "2025-07-12",
+              "date_posted": "2025-07-13",
+              "amount": 89,
+              "description": "ACH DEBIT - AFFIRM PAYMENTS INC",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00011"
+            },
+            {
+              "date_transacted": "2025-07-13",
+              "date_posted": "2025-07-14",
+              "amount": 125,
+              "description": "ACH DEBIT - MERRY CREDIT CARD PAYMENT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00012"
+            },
+            {
+              "date_transacted": "2025-07-14",
+              "date_posted": "2025-07-15",
+              "amount": 95,
+              "description": "ACH DEBIT - NO NONSENSE CREDIT CARD PAYMENT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00013"
+            },
+            {
+              "date_transacted": "2025-07-19",
+              "date_posted": "2025-07-20",
+              "amount": 42.3,
+              "description": "UBER TRIP HELP.UBER.COM",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00014"
+            },
+            {
+              "date_transacted": "2025-07-24",
+              "date_posted": "2025-07-25",
+              "amount": -2500,
+              "description": "ACH CREDIT - BEFOREPAY",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00015"
+            },
+            {
+              "date_transacted": "2025-07-30",
+              "date_posted": "2025-07-31",
+              "amount": -1850,
+              "description": "ACH CREDIT PAYROLL - AAA INC",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00016"
+            },
+            {
+              "date_transacted": "2025-07-31",
+              "date_posted": "2025-08-01",
+              "amount": 2400,
+              "description": "ZELLE PAYMENT - AUGUST RENT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00017"
+            },
+            {
+              "date_transacted": "2025-08-02",
+              "date_posted": "2025-08-03",
+              "amount": 92.18,
+              "description": "PEPCO ELECTRIC ONLINE BILL PAY",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00018"
+            },
+            {
+              "date_transacted": "2025-08-04",
+              "date_posted": "2025-08-05",
+              "amount": 129.99,
+              "description": "VERIZON WIRELESS AUTO-PAY",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00019"
+            },
+            {
+              "date_transacted": "2025-08-08",
+              "date_posted": "2025-08-09",
+              "amount": -1850,
+              "description": "ACH CREDIT PAYROLL - AAA INC",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00020"
+            },
+            {
+              "date_transacted": "2025-08-09",
+              "date_posted": "2025-08-10",
+              "amount": 746,
+              "description": "ACH DEBIT - ACE MORTGAGE PAYMENT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00021"
+            },
+            {
+              "date_transacted": "2025-08-09",
+              "date_posted": "2025-08-10",
+              "amount": 233,
+              "description": "ACH DEBIT - BEST MORTGAGE PAYMENT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00022"
+            },
+            {
+              "date_transacted": "2025-08-10",
+              "date_posted": "2025-08-11",
+              "amount": 245,
+              "description": "ACH DEBIT - ENLIGHTENED BANK LOAN PAYMENT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00023"
+            },
+            {
+              "date_transacted": "2025-08-11",
+              "date_posted": "2025-08-12",
+              "amount": -3000,
+              "description": "ACH CREDIT - COMMUNITY SAVINGS CLUB FUNDS",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00024"
+            },
+            {
+              "date_transacted": "2025-08-12",
+              "date_posted": "2025-08-13",
+              "amount": 89,
+              "description": "ACH DEBIT - AFFIRM PAYMENTS INC",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00025"
+            },
+            {
+              "date_transacted": "2025-08-13",
+              "date_posted": "2025-08-14",
+              "amount": 125,
+              "description": "ACH DEBIT - MERRY CREDIT CARD PAYMENT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00026"
+            },
+            {
+              "date_transacted": "2025-08-14",
+              "date_posted": "2025-08-15",
+              "amount": 95,
+              "description": "ACH DEBIT - NO NONSENSE CREDIT CARD PAYMENT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00027"
+            },
+            {
+              "date_transacted": "2025-08-17",
+              "date_posted": "2025-08-18",
+              "amount": -25000,
+              "description": "INTL WIRE IN CREDIT - FOREIGN FUNDS TRANSFER",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00028"
+            },
+            {
+              "date_transacted": "2025-08-19",
+              "date_posted": "2025-08-20",
+              "amount": -3000,
+              "description": "ACH CREDIT - COMMUNITY SAVINGS CLUB FUNDS",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00029"
+            },
+            {
+              "date_transacted": "2025-08-30",
+              "date_posted": "2025-08-31",
+              "amount": -1850,
+              "description": "ACH CREDIT PAYROLL - AAA INC",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00030"
+            }
+          ],
+          "identity": {
+            "names": [
+              "Patrick Purchaser",
+              "Lorraine Purchaser"
+            ],
+            "addresses": [
+              {
+                "primary": true,
+                "data": {
+                  "country": "US",
+                  "city": "Baltimore",
+                  "street": "1234 Main St",
+                  "postal_code": "20600",
+                  "region": "MD"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "depository",
+          "subtype": "savings",
+          "starting_balance": 54500,
+          "currency": "USD",
+          "numbers": {
+            "account": "001122335522"
+          },
+          "transactions": [
+            {
+              "date_transacted": "2025-06-30",
+              "date_posted": "2025-07-01",
+              "amount": -6.75,
+              "description": "INTEREST CREDIT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00031"
+            },
+            {
+              "date_transacted": "2025-07-14",
+              "date_posted": "2025-07-15",
+              "amount": -500,
+              "description": "ONLINE TRANSFER FROM CHECKING",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00032"
+            },
+            {
+              "date_transacted": "2025-07-30",
+              "date_posted": "2025-07-31",
+              "amount": -6.9,
+              "description": "INTEREST CREDIT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00033"
+            },
+            {
+              "date_transacted": "2025-07-31",
+              "date_posted": "2025-08-01",
+              "amount": -7.05,
+              "description": "INTEREST CREDIT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00034"
+            },
+            {
+              "date_transacted": "2025-08-19",
+              "date_posted": "2025-08-20",
+              "amount": -1000,
+              "description": "ONLINE TRANSFER FROM CHECKING",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00035"
+            },
+            {
+              "date_transacted": "2025-08-30",
+              "date_posted": "2025-08-31",
+              "amount": -7.25,
+              "description": "INTEREST CREDIT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00036"
+            }
+          ],
+          "identity": {
+            "names": [
+              "Patrick Purchaser",
+              "Lorraine Purchaser"
+            ]
+          }
+        },
+        {
+          "type": "investment",
+          "subtype": "utma",
+          "starting_balance": 15000,
+          "currency": "USD",
+          "numbers": {
+            "account": "001122337788"
+          },
+          "transactions": [
+            {
+              "date_transacted": "2025-06-30",
+              "date_posted": "2025-07-01",
+              "amount": -4.5,
+              "description": "INTEREST CREDIT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00037"
+            },
+            {
+              "date_transacted": "2025-07-13",
+              "date_posted": "2025-07-14",
+              "amount": -150,
+              "description": "ONLINE TRANSFER FROM CHECKING",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00038"
+            },
+            {
+              "date_transacted": "2025-07-30",
+              "date_posted": "2025-07-31",
+              "amount": -4.65,
+              "description": "INTEREST CREDIT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00039"
+            },
+            {
+              "date_transacted": "2025-07-31",
+              "date_posted": "2025-08-01",
+              "amount": -4.7,
+              "description": "INTEREST CREDIT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00040"
+            },
+            {
+              "date_transacted": "2025-08-09",
+              "date_posted": "2025-08-10",
+              "amount": -100,
+              "description": "ONLINE TRANSFER FROM CHECKING",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00041"
+            },
+            {
+              "date_transacted": "2025-08-30",
+              "date_posted": "2025-08-31",
+              "amount": -4.85,
+              "description": "INTEREST CREDIT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00042"
+            }
+          ],
+          "identity": {
+            "names": [
+              "Patrick Purchaser, as custodian for Jordan Purchaser"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "seed": "pp-lp-tartan-4acct-final-affirm-001",
+      "override_accounts": [
+        {
+          "type": "depository",
+          "subtype": "checking",
+          "starting_balance": 90200,
+          "currency": "USD",
+          "numbers": {
+            "account": "556677889921"
+          },
+          "transactions": [
+            {
+              "date_transacted": "2025-06-30",
+              "date_posted": "2025-07-01",
+              "amount": 85.4,
+              "description": "SHELL FLEET CARD 8821 BALTIMORE MD",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00043"
+            },
+            {
+              "date_transacted": "2025-07-01",
+              "date_posted": "2025-07-02",
+              "amount": 225,
+              "description": "ADOBE CLOUD BUSINESS SUBSCRIPTION",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00044"
+            },
+            {
+              "date_transacted": "2025-07-02",
+              "date_posted": "2025-07-03",
+              "amount": 42.33,
+              "description": "RESTAURANT POS - PANERA BREAD #7742",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00045"
+            },
+            {
+              "date_transacted": "2025-07-04",
+              "date_posted": "2025-07-05",
+              "amount": 312.17,
+              "description": "SHELL COMMERCIAL FUEL #8821",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00046"
+            },
+            {
+              "date_transacted": "2025-07-06",
+              "date_posted": "2025-07-07",
+              "amount": 149.99,
+              "description": "AMAZON BUSINESS PRIME MEMBERSHIP",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00047"
+            },
+            {
+              "date_transacted": "2025-07-07",
+              "date_posted": "2025-07-08",
+              "amount": -5200,
+              "description": "ACH CREDIT - CUSTOMER PAYMENT INV #1042",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00048"
+            },
+            {
+              "date_transacted": "2025-07-08",
+              "date_posted": "2025-07-09",
+              "amount": 94.6,
+              "description": "STAPLES STORE #220 BALTIMORE MD",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00049"
+            },
+            {
+              "date_transacted": "2025-07-09",
+              "date_posted": "2025-07-10",
+              "amount": 63.2,
+              "description": "UBER TRIP - CLIENT VISIT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00050"
+            },
+            {
+              "date_transacted": "2025-07-11",
+              "date_posted": "2025-07-12",
+              "amount": 1800,
+              "description": "ONLINE TRANSFER TO JOINT SAVINGS",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00051"
+            },
+            {
+              "date_transacted": "2025-07-12",
+              "date_posted": "2025-07-13",
+              "amount": 1450,
+              "description": "ACH DEBIT - CONTRACTOR PAYOUTS",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00052"
+            },
+            {
+              "date_transacted": "2025-07-14",
+              "date_posted": "2025-07-15",
+              "amount": 58.42,
+              "description": "OFFICE DEPOT #441 BALTIMORE MD",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00053"
+            },
+            {
+              "date_transacted": "2025-07-15",
+              "date_posted": "2025-07-16",
+              "amount": 75.2,
+              "description": "RESTAURANT POS - CHIPOTLE BUSINESS LUNCH",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00054"
+            },
+            {
+              "date_transacted": "2025-07-17",
+              "date_posted": "2025-07-18",
+              "amount": 96.21,
+              "description": "UPS SHIPPING CENTER #771",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00055"
+            },
+            {
+              "date_transacted": "2025-07-21",
+              "date_posted": "2025-07-22",
+              "amount": 84.18,
+              "description": "BEST BUY #1204 SMALL EQUIPMENT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00056"
+            },
+            {
+              "date_transacted": "2025-07-24",
+              "date_posted": "2025-07-25",
+              "amount": 225,
+              "description": "ADOBE CLOUD BUSINESS SUBSCRIPTION",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00057"
+            },
+            {
+              "date_transacted": "2025-07-28",
+              "date_posted": "2025-07-29",
+              "amount": -3800,
+              "description": "ACH CREDIT - CUSTOMER PAYMENT INV #1043",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00058"
+            },
+            {
+              "date_transacted": "2025-07-29",
+              "date_posted": "2025-07-30",
+              "amount": 142.55,
+              "description": "WALMART BUSINESS SUPPLY",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00059"
+            },
+            {
+              "date_transacted": "2025-07-31",
+              "date_posted": "2025-08-01",
+              "amount": 2400,
+              "description": "ACH DEBIT - BUSINESS RENT",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00060"
+            },
+            {
+              "date_transacted": "2025-08-01",
+              "date_posted": "2025-08-02",
+              "amount": 129,
+              "description": "ZOOM PRO BUSINESS SUBSCRIPTION",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00061"
+            },
+            {
+              "date_transacted": "2025-08-02",
+              "date_posted": "2025-08-03",
+              "amount": 88.7,
+              "description": "SHELL FLEET CARD 8821 BALTIMORE MD",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00062"
+            },
+            {
+              "date_transacted": "2025-08-04",
+              "date_posted": "2025-08-05",
+              "amount": 420.18,
+              "description": "UPS SHIPPING CENTER #771",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00063"
+            },
+            {
+              "date_transacted": "2025-08-05",
+              "date_posted": "2025-08-06",
+              "amount": 52.3,
+              "description": "RESTAURANT POS - SUBWAY BUSINESS LUNCH",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00064"
+            },
+            {
+              "date_transacted": "2025-08-07",
+              "date_posted": "2025-08-08",
+              "amount": 950,
+              "description": "ACH DEBIT - CONTRACTOR PAYOUTS",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00065"
+            },
+            {
+              "date_transacted": "2025-08-09",
+              "date_posted": "2025-08-10",
+              "amount": 36.8,
+              "description": "UBER TRIP - CLIENT MEETING",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00066"
+            },
+            {
+              "date_transacted": "2025-08-11",
+              "date_posted": "2025-08-12",
+              "amount": 420.18,
+              "description": "UPS SHIPPING CENTER #771",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00067"
+            },
+            {
+              "date_transacted": "2025-08-12",
+              "date_posted": "2025-08-13",
+              "amount": 88.4,
+              "description": "STAPLES STORE #220 BALTIMORE MD",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00068"
+            },
+            {
+              "date_transacted": "2025-08-14",
+              "date_posted": "2025-08-15",
+              "amount": -6100,
+              "description": "ACH CREDIT - CUSTOMER PAYMENT INV #1044",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00069"
+            },
+            {
+              "date_transacted": "2025-08-16",
+              "date_posted": "2025-08-17",
+              "amount": 129,
+              "description": "ZOOM PRO BUSINESS SUBSCRIPTION",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00070"
+            },
+            {
+              "date_transacted": "2025-08-17",
+              "date_posted": "2025-08-18",
+              "amount": 68.22,
+              "description": "OFFICE DEPOT #441 BALTIMORE MD",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00071"
+            },
+            {
+              "date_transacted": "2025-08-19",
+              "date_posted": "2025-08-20",
+              "amount": 1800,
+              "description": "ONLINE TRANSFER TO JOINT SAVINGS",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00072"
+            },
+            {
+              "date_transacted": "2025-08-20",
+              "date_posted": "2025-08-21",
+              "amount": 49.99,
+              "description": "GOOGLE WORKSPACE BUSINESS APPS",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00073"
+            },
+            {
+              "date_transacted": "2025-08-21",
+              "date_posted": "2025-08-22",
+              "amount": 225,
+              "description": "ADOBE CLOUD BUSINESS SUBSCRIPTION",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00074"
+            },
+            {
+              "date_transacted": "2025-08-22",
+              "date_posted": "2025-08-23",
+              "amount": 72.15,
+              "description": "RESTAURANT POS - PANERA BREAD #7742",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00075"
+            },
+            {
+              "date_transacted": "2025-08-24",
+              "date_posted": "2025-08-25",
+              "amount": 95,
+              "description": "FEDEX EXPRESS #4411",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00076"
+            },
+            {
+              "date_transacted": "2025-08-26",
+              "date_posted": "2025-08-27",
+              "amount": 88.62,
+              "description": "EXXONMOBIL FLEET #5512",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00077"
+            },
+            {
+              "date_transacted": "2025-08-29",
+              "date_posted": "2025-08-30",
+              "amount": 42.5,
+              "description": "STARBUCKS #5566 BUSINESS TRAVEL",
+              "currency": "USD",
+              "transaction_id": "plaid-4-00078"
+            }
+          ],
+          "identity": {
+            "names": [
+              "Purchaser Home Services LLC",
+              "Patrick Purchaser (authorized signer)"
+            ],
+            "addresses": [
+              {
+                "primary": true,
+                "data": {
+                  "country": "US",
+                  "city": "Baltimore",
+                  "street": "1234 Main St",
+                  "postal_code": "20600",
+                  "region": "MD"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
