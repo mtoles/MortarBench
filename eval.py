@@ -24,7 +24,8 @@ Answer Types:
     - account_id_list: Questions requiring account number lists (last 4 digits)
 
 Usage:
-    python eval.py --model_id gpt-5 --trials 3 --use_domain_expertise
+    python eval.py --model_id gpt-5 --model_type baseline --trials 3 --use_domain_expertise
+    python eval.py --model_type solo --trials 3 --use_domain_expertise
 
 See --help for full list of command-line options.
 """
@@ -43,6 +44,7 @@ import threading
 import time
 from decimal import Decimal, InvalidOperation
 from llm import call_llm_wrapper, clear_messages
+from agents import SoloAgent, BaselineAgent
 
 
 # Pricing per million tokens (as of November 2025)
@@ -74,6 +76,7 @@ cleaning_answer_instruction = {
     "boolean": "Return only yes or no. DO NOT output any other text.",
     "account_id_list": 'Return ONLY a valid JSON list of account numbers (last 4 digits only). e.g. `["1234", "5678"]`, or [] if there are no account numbers.',
 }
+
 
 LOAN_IDXS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 LOAN_IDS = [
@@ -659,6 +662,7 @@ def get_answer_type(answer):
 
 def evaluate_model(
     model_id,
+    model_type,
     df,
     use_domain_expertise,
     downsample_size=None,
@@ -756,19 +760,16 @@ def evaluate_model(
         model_answer_instruction_str = model_answer_instruction[answer_type]
         cleaning_answer_instruction_str = cleaning_answer_instruction[answer_type]
 
-        # Clear messages once per loan before processing its questions
-        if model_id == "solo":
-            with cleared_loans_lock:
-                if loan_id not in cleared_loans:
-                    clear_messages(loan_id)
-                    cleared_loans.add(loan_id)
-
-        # Enforce 50s spacing between questions for the same loan (solo only)
-        if model_id == "solo":
-            wait_for_loan_gap(loan_id)
+        # Create agent instance
+        if model_type == "solo":
+            agent = SoloAgent(None, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap)
+        else:
+            agent = BaselineAgent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap, prompt)
+        
+        # Setup loan (clears messages, waits for gap if solo)
+        agent.setup_loan()
 
         predicted_answers = []
-        solo_answers = [] if model_id == "solo" else None
         trial_metrics = []
         row_input_tokens = 0
         row_output_tokens = 0
@@ -776,158 +777,41 @@ def evaluate_model(
         for trial_idx in range(trials):
             try:
                 # First call: model produces a textual answer (no IDs expected)
-                if model_id == "solo":
-                    formatted_prompt = question
-                    raw_answer, input_tok, output_tok = call_llm_wrapper(
-                        model_id=model_id,
-                        messages=[{"role": "user", "content": formatted_prompt}],
-                        loan_id=loan_id,
-                    )
-                    solo_answers.append(raw_answer)
-                else:
-                    formatted_prompt = prompt.format(
-                        question=question,
-                        context=bank_statement,
-                        ulad_du=ulad_du,
-                        domain_expertise=domain_expertise_str,
-                        answer_instruction=model_answer_instruction_str,
-                    )
-                    raw_answer, input_tok, output_tok = call_llm_wrapper(
-                        model_id=model_id,
-                        messages=[{"role": "user", "content": formatted_prompt}],
-                        loan_id=loan_id,
-                    )
+                formatted_prompt = agent.get_initial_prompt(
+                    question=question,
+                    bank_statement=bank_statement,
+                    ulad_du=ulad_du,
+                    domain_expertise_str=domain_expertise_str,
+                    answer_instruction_str=model_answer_instruction_str,
+                )
+                # Use hardcoded "solo" for solo model_type, otherwise use model_id
+                llm_model_id = "solo" if model_type == "solo" else model_id
+                raw_answer, input_tok, output_tok = call_llm_wrapper(
+                    model_id=llm_model_id,
+                    messages=[{"role": "user", "content": formatted_prompt}],
+                    loan_id=loan_id,
+                )
+                
+                if model_type == "solo":
+                    agent.solo_answers.append(raw_answer)
 
                 row_input_tokens += input_tok
                 row_output_tokens += output_tok
 
                 # Cleaning / normalization stage (extract IDs/accounts using solo bank JSON)
                 if answer_type == "boolean":
-                    cleaned_answer_prompt = (
-                        f"Question: {question}\n\nUnformatted answer: {raw_answer}\n\n"
-                        "The answer given should be either yes or no. "
-                        "Read the question and answer, and simplify the answer to yes or no. "
-                        "Ignore any boilerplate (e.g., 'analysis report is outdated' or suggestion/help sections); they are not part of the answer."
-                    )
-                    cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-                        model_id=CLEANUP_MODEL_ID,
-                        messages=[{"role": "user", "content": cleaned_answer_prompt}],
-                        loan_id=loan_id,
+                    cleaned_answer, clean_in_tok, clean_out_tok = agent.process_boolean(
+                        question, raw_answer, loan_id
                     )
                 elif answer_type == "txn_id_list":
-                    if model_id == "solo":
-                        solo_answer_parts = raw_answer.split("==========\n")
-                        solo_text_answer = (
-                            solo_answer_parts[0].strip()
-                            if solo_answer_parts
-                            else raw_answer
-                        )
-                        txn_info_display = (
-                            "Solo agent referenced data intentionally omitted; rely exclusively on the narrative answer."
-                        )
-                        solo_txn_info_for_mapping = None
-                    else:
-                        solo_text_answer = raw_answer
-                        # Use the authoritative transactions JSON for mapping IDs.
-                        txn_info_display = transactions_json
-                        solo_txn_info_for_mapping = None
-
-                    cleaned_answer_prompt = (
-                        "Question: {question}\n\n"
-                        "Unformatted answer text (source of truth):\n{solo_text}\n\n"
-                        "Unformatted transaction JSON (may be incomplete or wrong):\n{txn_info}\n\n"
-                        "Reference bank statement transactions JSON:\n{transactions}\n\n"
-                        "Step-by-step:\n"
-                        "1) From the text only, count how many distinct transactions or payment occurrences are implied (call this N, allow that it might be N+ if frequency/pattern suggests more occurrences).\n"
-                        "2) Using the reference transactions JSON, find all matching transactions (titles/descriptions/amounts/dates). Do not stop at the first N; include additional matches if the pattern implies more than N.\n"
-                        "3) If the text says none / no matching transactions, return []. Otherwise return ONLY a JSON list of all matching TransactionID values (no prose, no extra text).\n"
-                        "Ignore any TransactionIDs in the unformatted JSON portion if they conflict with the text. "
-                        "If nothing matches, return an empty list ([]).\n"
-                        "Ignore any boilerplate such as 'analysis report is outdated' or suggestion/help sections; they are not part of the answer.\n\n"
-                        "{answer_instruction}"
-                    ).format(
-                        question=question,
-                        solo_text=solo_text_answer,
-                        txn_info=txn_info_display,
-                        transactions=transactions_json,
-                        answer_instruction=cleaning_answer_instruction_str,
-                    )
-                    cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-                        model_id=CLEANUP_MODEL_ID,
-                        messages=[{"role": "user", "content": cleaned_answer_prompt}],
-                        loan_id=loan_id,
-                    )
-                    fenced_match = re.search(
-                        r"```(?:json)?\s*(\[[\s\S]*?\])\s*```",
-                        cleaned_answer,
-                    )
-                    if fenced_match:
-                        cleaned_answer = fenced_match.group(1).strip()
-                    else:
-                        list_match = re.search(r"\[[^\]]*\]", cleaned_answer, re.DOTALL)
-                        if list_match:
-                            cleaned_answer = list_match.group(0).strip()
-                    cleaned_answer = normalize_transaction_answer(
-                        cleaned_answer,
-                        answer_type,
-                        plaid_transactions_flat,
-                        solo_txn_info=solo_txn_info_for_mapping,
+                    cleaned_answer, clean_in_tok, clean_out_tok = agent.process_txn_id_list(
+                        question, raw_answer, loan_id, transactions_json,
+                        cleaning_answer_instruction_str, plaid_transactions_flat
                     )
                 elif answer_type == "account_id_list":
-                    if model_id == "solo":
-                        solo_answer_parts = raw_answer.split("==========\n")
-                        solo_text_answer = (
-                            solo_answer_parts[0].strip()
-                            if solo_answer_parts
-                            else raw_answer
-                        )
-                        txn_info = (
-                            "==========\n".join(solo_answer_parts[1:]).strip()
-                            if len(solo_answer_parts) > 1
-                            else raw_answer
-                        )
-                    else:
-                        solo_text_answer = raw_answer
-                        # Use the authoritative solo accounts JSON for mapping IDs.
-                        txn_info = accounts_json
-
-                    cleaned_answer_prompt = (
-                        "Question: {question}\n\n"
-                        "Unformatted answer text (source of truth):\n{solo_text}\n\n"
-                        "Unformatted transaction/account JSON (may be incomplete or wrong):\n{txn_info}\n\n"
-                        "Reference bank statement accounts JSON:\n{accounts}\n\n"
-                        "Use the text portion to decide which accounts the answer refers to. "
-                        "Match the mentioned account names/descriptions to the BankStatementAccounts in the reference JSON and "
-                        "return ONLY a JSON list of the last 4 digits of the matching AccountNumber values (no prose, no extra text). "
-                        "Ignore any account IDs in the unformatted JSON if they conflict with the text. "
-                        "If nothing matches, return an empty list ([]).\n"
-                        "Ignore any boilerplate such as 'analysis report is outdated' or suggestion/help sections; they are not part of the answer.\n\n"
-                        "{answer_instruction}"
-                    ).format(
-                        question=question,
-                        solo_text=solo_text_answer,
-                        txn_info=txn_info,
-                        accounts=accounts_json,
-                        answer_instruction=cleaning_answer_instruction_str,
-                    )
-                    cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-                        model_id=CLEANUP_MODEL_ID,
-                        messages=[{"role": "user", "content": cleaned_answer_prompt}],
-                        loan_id=loan_id,
-                    )
-                    fenced_match = re.search(
-                        r"```(?:json)?\s*(\[[\s\S]*?\])\s*```",
-                        cleaned_answer,
-                    )
-                    if fenced_match:
-                        cleaned_answer = fenced_match.group(1).strip()
-                    else:
-                        list_match = re.search(r"\[[^\]]*\]", cleaned_answer, re.DOTALL)
-                        if list_match:
-                            cleaned_answer = list_match.group(0).strip()
-                    cleaned_answer = normalize_account_answer(
-                        cleaned_answer,
-                        account_last4_values,
+                    cleaned_answer, clean_in_tok, clean_out_tok = agent.process_account_id_list(
+                        question, raw_answer, loan_id, accounts_json,
+                        cleaning_answer_instruction_str, account_last4_values
                     )
                 else:
                     raise ValueError(f"Invalid answer type: {answer_type}")
@@ -948,8 +832,8 @@ def evaluate_model(
                 
                 error_msg = f"ERROR: {str(e)}"
                 predicted_answers.append(error_msg)
-                if model_id == "solo":
-                    solo_answers.append(error_msg)
+                if model_type == "solo":
+                    agent.solo_answers.append(error_msg)
                 
                 trial_metrics.append({"exact_match": None, "f1_score": None})
 
@@ -974,8 +858,8 @@ def evaluate_model(
             "f1_score": [m["f1_score"] for m in trial_metrics],
         }
 
-        if model_id == "solo":
-            result["solo_answer"] = solo_answers
+        if model_type == "solo":
+            result["solo_answer"] = agent.solo_answers
 
         return (
             row_idx,
@@ -1031,7 +915,9 @@ def evaluate_model(
         exact_match_accuracy = 0
         avg_f1_accuracy = 0
 
-    pricing = MODEL_PRICING[model_id]
+    # Use "solo" for pricing lookup when model_type is solo, otherwise use model_id
+    pricing_key = "solo" if model_type == "solo" else model_id
+    pricing = MODEL_PRICING[pricing_key]
     input_cost = (total_input_tokens / 1_000_000) * pricing["input"]
     output_cost = (total_output_tokens / 1_000_000) * pricing["output"]
     total_cost = input_cost + output_cost
@@ -1130,6 +1016,7 @@ def save_results(
     results,
     f1_accuracy,
     model_id,
+    model_type,
     output_dir,
     df,
     downsample_size=None,
@@ -1145,19 +1032,21 @@ def save_results(
     df_with_results["f1_score"] = [result["f1_score"] for result in results]
 
     # Add solo_answer field for solo model results
-    if model_id == "solo":
+    if model_type == "solo":
         df_with_results["solo_answer"] = [
             result["solo_answer"] for result in results
         ]
 
-    jsonl_path = f"{output_dir}/{model_id}_results.jsonl"
+    # Use "solo" for output file names when model_type is solo, otherwise use model_id
+    output_model_id = "solo" if model_type == "solo" else model_id
+    jsonl_path = f"{output_dir}/{output_model_id}_results.jsonl"
     df_with_results.to_json(jsonl_path, orient="records", lines=True)
     print(f"JSONL results saved to {jsonl_path}")
 
     # Create markdown summary
-    summary_path = f"{output_dir}/{model_id}_summary.md"
+    summary_path = f"{output_dir}/{output_model_id}_summary.md"
     with open(summary_path, "w") as f:
-        f.write(f"# Evaluation Results: {model_id}\n\n")
+        f.write(f"# Evaluation Results: {output_model_id}\n\n")
         f.write(
             f"**Date:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
         )
@@ -1170,7 +1059,8 @@ def save_results(
                 f.write(f"- **{key}:** {value}\n")
             f.write("\n")
 
-        f.write(f"**Model:** {model_id}\n\n")
+        f.write(f"**Model ID:** {model_id if model_id else 'N/A'}\n\n")
+        f.write(f"**Model Type:** {model_type}\n\n")
         f.write(f"**Dataset Size:** {len(results)}")
         if downsample_size:
             f.write(f" (downsampled from original)")
@@ -1282,7 +1172,7 @@ def save_results(
             f.write(f"  F1 Score: {avg_f1:.3f} ({avg_f1*100:.1f}%)\n")
 
         # Add detailed results section for solo model (errors only)
-        if model_id == "solo":
+        if model_type == "solo":
             f.write("\n## Detailed Results with Raw Solo Output (Errors Only)\n\n")
             # Only count as error if valid trial and not exact match
             errors = []
@@ -1313,7 +1203,7 @@ def save_results(
                 f.write("\n")
 
         # Only show sample errors section for non-solo models (solo models already have detailed results above)
-        if model_id != "solo":
+        if model_type != "solo":
             f.write("\n## Sample Errors\n\n")
             # Only count as error if valid trial and not exact match
             errors = []
@@ -1344,7 +1234,11 @@ def main():
         description="Evaluate models on bank statement QA dataset"
     )
     parser.add_argument(
-        "--model_id", type=str, default="gpt-5", help="Model ID to evaluate"
+        "--model_id", type=str, default="gpt-5", help="Model ID to evaluate (HuggingFace or solo model identifier)"
+    )
+    parser.add_argument(
+        "--model_type", type=str, default="baseline", choices=["baseline", "solo"],
+        help="Model type indicating which Agent class to use. 'baseline' uses BaselineAgent, 'solo' uses SoloAgent and does not use model_id."
     )
     parser.add_argument("--downsample_size", type=int, help="Number of samples to use")
     parser.add_argument(
@@ -1483,9 +1377,17 @@ def main():
         print(f"Downsampling to {args.downsample_size} samples")
         random.seed(42)  # For reproducibility
 
-    print(f"Evaluating model: {args.model_id}")
+    # Validate model_type and model_id combination
+    if args.model_type == "solo" and args.model_id:
+        print(f"Warning: model_type is 'solo', so model_id '{args.model_id}' will not be used for LLM calls.")
+    
+    if args.model_type == "baseline" and not args.model_id:
+        raise ValueError("model_id is required when model_type is 'baseline'")
+    
+    print(f"Evaluating model: {args.model_id if args.model_id else 'N/A'} (type: {args.model_type})")
     results, f1_accuracy, df, cost_info = evaluate_model(
         args.model_id,
+        args.model_type,
         dataset,
         args.use_domain_expertise,
         args.downsample_size,
@@ -1522,6 +1424,7 @@ def main():
         results,
         f1_accuracy,
         args.model_id,
+        args.model_type,
         output_dir,
         df,
         args.downsample_size,
