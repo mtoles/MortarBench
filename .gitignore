@@ -1,6 +1,8 @@
-claude.md
-.claude
 .venv
 .vscode
-results/
+__pycache__/
+*.pyc
+.cursorrules
 .env
+app/results/
+results/

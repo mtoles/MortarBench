@@ -24,8 +24,7 @@ Answer Types:
     - account_id_list: Questions requiring account number lists (last 4 digits)
 
 Usage:
-    python eval.py --model_id gpt-5 --model_type baseline --trials 3 --use_domain_expertise
-    python eval.py --model_type solo --trials 3 --use_domain_expertise
+    python eval.py --model_id gpt-5 --trials 3 --use_domain_expertise
 
 See --help for full list of command-line options.
 """
@@ -44,7 +43,7 @@ import threading
 import time
 from decimal import Decimal, InvalidOperation
 from llm import call_llm_wrapper, clear_messages
-from agents import SoloAgent, BaselineAgent
+from agents import SoloAgent, BaselineAgent, ExperimentalAgent
 
 
 # Pricing per million tokens (as of November 2025)
@@ -76,7 +75,6 @@ cleaning_answer_instruction = {
     "boolean": "Return only yes or no. DO NOT output any other text.",
     "account_id_list": 'Return ONLY a valid JSON list of account numbers (last 4 digits only). e.g. `["1234", "5678"]`, or [] if there are no account numbers.',
 }
-
 
 LOAN_IDXS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 LOAN_IDS = [
@@ -660,14 +658,24 @@ def get_answer_type(answer):
         return "txn_id_list"
     raise ValueError(f"Unknown answer type: {answer}")
 
+
+def create_agent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, prompt_template, model_type="baseline"):
+    """Factory function to create the appropriate agent based on model_type."""
+    if model_type == "solo":
+        return SoloAgent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func)
+    elif model_type == "experimental":
+        return ExperimentalAgent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, prompt_template)
+    else:
+        return BaselineAgent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, prompt_template)
+
 def evaluate_model(
     model_id,
-    model_type,
     df,
     use_domain_expertise,
     downsample_size=None,
     offset=0,
     trials=None,
+    model_type="baseline",
 ):
     """Evaluate a model on the dataset."""
     domain_expertise_str = (
@@ -760,16 +768,18 @@ def evaluate_model(
         model_answer_instruction_str = model_answer_instruction[answer_type]
         cleaning_answer_instruction_str = cleaning_answer_instruction[answer_type]
 
-        # Create agent instance
-        if model_type == "solo":
-            agent = SoloAgent(None, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap)
-        else:
-            agent = BaselineAgent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap, prompt)
+        # Create agent instance for this loan
+        agent = create_agent(
+            model_id, loan_id, cleared_loans, cleared_loans_lock, 
+            wait_for_loan_gap, prompt, model_type=model_type
+        )
         
-        # Setup loan (clears messages, waits for gap if solo)
+        # Setup loan (clears messages, enforces spacing for solo)
         agent.setup_loan()
 
         predicted_answers = []
+        raw_answers = []
+        solo_answers = [] if isinstance(agent, SoloAgent) else None
         trial_metrics = []
         row_input_tokens = 0
         row_output_tokens = 0
@@ -778,39 +788,33 @@ def evaluate_model(
             try:
                 # First call: model produces a textual answer (no IDs expected)
                 formatted_prompt = agent.get_initial_prompt(
-                    question=question,
-                    bank_statement=bank_statement,
-                    ulad_du=ulad_du,
-                    domain_expertise_str=domain_expertise_str,
-                    answer_instruction_str=model_answer_instruction_str,
+                    question, bank_statement, ulad_du, domain_expertise_str, model_answer_instruction_str
                 )
-                # Use hardcoded "solo" for solo model_type, otherwise use model_id
-                llm_model_id = "solo" if model_type == "solo" else model_id
                 raw_answer, input_tok, output_tok = call_llm_wrapper(
-                    model_id=llm_model_id,
+                    model_id=model_id,
                     messages=[{"role": "user", "content": formatted_prompt}],
                     loan_id=loan_id,
                 )
                 
-                if model_type == "solo":
-                    agent.solo_answers.append(raw_answer)
+                if isinstance(agent, SoloAgent):
+                    solo_answers.append(raw_answer)
 
                 row_input_tokens += input_tok
                 row_output_tokens += output_tok
 
-                # Cleaning / normalization stage (extract IDs/accounts using solo bank JSON)
+                # Cleaning / normalization stage (extract IDs/accounts using agent methods)
                 if answer_type == "boolean":
-                    cleaned_answer, clean_in_tok, clean_out_tok = agent.process_boolean(
+                    processed_raw_answer, cleaned_answer, clean_in_tok, clean_out_tok = agent.process_boolean(
                         question, raw_answer, loan_id
                     )
                 elif answer_type == "txn_id_list":
-                    cleaned_answer, clean_in_tok, clean_out_tok = agent.process_txn_id_list(
-                        question, raw_answer, loan_id, transactions_json,
+                    processed_raw_answer, cleaned_answer, clean_in_tok, clean_out_tok = agent.process_txn_id_list(
+                        question, raw_answer, loan_id, transactions_json, 
                         cleaning_answer_instruction_str, plaid_transactions_flat
                     )
                 elif answer_type == "account_id_list":
-                    cleaned_answer, clean_in_tok, clean_out_tok = agent.process_account_id_list(
-                        question, raw_answer, loan_id, accounts_json,
+                    processed_raw_answer, cleaned_answer, clean_in_tok, clean_out_tok = agent.process_account_id_list(
+                        question, raw_answer, loan_id, accounts_json, 
                         cleaning_answer_instruction_str, account_last4_values
                     )
                 else:
@@ -820,6 +824,7 @@ def evaluate_model(
                 row_output_tokens += clean_out_tok
 
                 predicted_answers.append(cleaned_answer)
+                raw_answers.append(processed_raw_answer)
 
                 if is_pii:
                     metrics = {"exact_match": None, "f1_score": None}
@@ -832,8 +837,9 @@ def evaluate_model(
                 
                 error_msg = f"ERROR: {str(e)}"
                 predicted_answers.append(error_msg)
-                if model_type == "solo":
-                    agent.solo_answers.append(error_msg)
+                raw_answers.append(error_msg)
+                if isinstance(agent, SoloAgent):
+                    solo_answers.append(error_msg)
                 
                 trial_metrics.append({"exact_match": None, "f1_score": None})
 
@@ -853,13 +859,14 @@ def evaluate_model(
             "question": question,
             "true_answer": gt_answer,
             "predicted_answer": predicted_answers,
+            "raw_answer": raw_answers,
             "answer_type": answer_type,
             "exact_match": [m["exact_match"] for m in trial_metrics],
             "f1_score": [m["f1_score"] for m in trial_metrics],
         }
 
-        if model_type == "solo":
-            result["solo_answer"] = agent.solo_answers
+        if isinstance(agent, SoloAgent):
+            result["solo_answer"] = solo_answers
 
         return (
             row_idx,
@@ -915,9 +922,7 @@ def evaluate_model(
         exact_match_accuracy = 0
         avg_f1_accuracy = 0
 
-    # Use "solo" for pricing lookup when model_type is solo, otherwise use model_id
-    pricing_key = "solo" if model_type == "solo" else model_id
-    pricing = MODEL_PRICING[pricing_key]
+    pricing = MODEL_PRICING[model_id]
     input_cost = (total_input_tokens / 1_000_000) * pricing["input"]
     output_cost = (total_output_tokens / 1_000_000) * pricing["output"]
     total_cost = input_cost + output_cost
@@ -1016,7 +1021,6 @@ def save_results(
     results,
     f1_accuracy,
     model_id,
-    model_type,
     output_dir,
     df,
     downsample_size=None,
@@ -1028,25 +1032,24 @@ def save_results(
     # Add prediction and correctness columns to the dataframe
     df_with_results = df.copy()
     df_with_results["pred"] = [result["predicted_answer"] for result in results]
+    df_with_results["raw_answer"] = [result["raw_answer"] for result in results]
     df_with_results["exact_match"] = [result["exact_match"] for result in results]
     df_with_results["f1_score"] = [result["f1_score"] for result in results]
 
     # Add solo_answer field for solo model results
-    if model_type == "solo":
+    if model_id == "solo":
         df_with_results["solo_answer"] = [
             result["solo_answer"] for result in results
         ]
 
-    # Use "solo" for output file names when model_type is solo, otherwise use model_id
-    output_model_id = "solo" if model_type == "solo" else model_id
-    jsonl_path = f"{output_dir}/{output_model_id}_results.jsonl"
+    jsonl_path = f"{output_dir}/{model_id}_results.jsonl"
     df_with_results.to_json(jsonl_path, orient="records", lines=True)
     print(f"JSONL results saved to {jsonl_path}")
 
     # Create markdown summary
-    summary_path = f"{output_dir}/{output_model_id}_summary.md"
+    summary_path = f"{output_dir}/{model_id}_summary.md"
     with open(summary_path, "w") as f:
-        f.write(f"# Evaluation Results: {output_model_id}\n\n")
+        f.write(f"# Evaluation Results: {model_id}\n\n")
         f.write(
             f"**Date:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
         )
@@ -1059,8 +1062,10 @@ def save_results(
                 f.write(f"- **{key}:** {value}\n")
             f.write("\n")
 
-        f.write(f"**Model ID:** {model_id if model_id else 'N/A'}\n\n")
-        f.write(f"**Model Type:** {model_type}\n\n")
+        f.write(f"**Model:** {model_id}\n")
+        if args is not None and hasattr(args, 'model_type'):
+            f.write(f"**Agent Type:** {args.model_type}\n")
+        f.write("\n")
         f.write(f"**Dataset Size:** {len(results)}")
         if downsample_size:
             f.write(f" (downsampled from original)")
@@ -1172,7 +1177,7 @@ def save_results(
             f.write(f"  F1 Score: {avg_f1:.3f} ({avg_f1*100:.1f}%)\n")
 
         # Add detailed results section for solo model (errors only)
-        if model_type == "solo":
+        if model_id == "solo":
             f.write("\n## Detailed Results with Raw Solo Output (Errors Only)\n\n")
             # Only count as error if valid trial and not exact match
             errors = []
@@ -1192,7 +1197,8 @@ def save_results(
                 f.write(
                     f"**Expected:** {result['true_answer']} ({result['answer_type']})\n"
                 )
-                f.write(f"**Predicted:** {result['predicted_answer']}\n")
+                f.write(f"**Predicted (cleaned):** {result['predicted_answer']}\n")
+                f.write(f"**Raw Answer:** {result['raw_answer']}\n")
                 f.write(f"**F1 Score:** {result['f1_score']}\n")
 
                 if "solo_answer" in result and result["solo_answer"] is not None:
@@ -1203,7 +1209,7 @@ def save_results(
                 f.write("\n")
 
         # Only show sample errors section for non-solo models (solo models already have detailed results above)
-        if model_type != "solo":
+        if model_id != "solo":
             f.write("\n## Sample Errors\n\n")
             # Only count as error if valid trial and not exact match
             errors = []
@@ -1223,7 +1229,8 @@ def save_results(
                 f.write(
                     f"**Expected:** {error['true_answer']} ({error['answer_type']})\n"
                 )
-                f.write(f"**Predicted:** {error['predicted_answer']}\n")
+                f.write(f"**Predicted (cleaned):** {error['predicted_answer']}\n")
+                f.write(f"**Raw Answer:** {error['raw_answer']}\n")
                 f.write("\n")
 
     print(f"Summary saved to {summary_path}")
@@ -1234,11 +1241,14 @@ def main():
         description="Evaluate models on bank statement QA dataset"
     )
     parser.add_argument(
-        "--model_id", type=str, default="gpt-5", help="Model ID to evaluate (HuggingFace or solo model identifier)"
+        "--model_id", type=str, default="gpt-5", help="Model ID to evaluate"
     )
     parser.add_argument(
-        "--model_type", type=str, default="baseline", choices=["baseline", "solo"],
-        help="Model type indicating which Agent class to use. 'baseline' uses BaselineAgent, 'solo' uses SoloAgent and does not use model_id."
+        "--model_type",
+        type=str,
+        default="baseline",
+        choices=["solo", "baseline", "experimental"],
+        help="Type of agent to use: solo, baseline, or experimental",
     )
     parser.add_argument("--downsample_size", type=int, help="Number of samples to use")
     parser.add_argument(
@@ -1377,22 +1387,15 @@ def main():
         print(f"Downsampling to {args.downsample_size} samples")
         random.seed(42)  # For reproducibility
 
-    # Validate model_type and model_id combination
-    if args.model_type == "solo" and args.model_id:
-        print(f"Warning: model_type is 'solo', so model_id '{args.model_id}' will not be used for LLM calls.")
-    
-    if args.model_type == "baseline" and not args.model_id:
-        raise ValueError("model_id is required when model_type is 'baseline'")
-    
-    print(f"Evaluating model: {args.model_id if args.model_id else 'N/A'} (type: {args.model_type})")
+    print(f"Evaluating model: {args.model_id} (type: {args.model_type})")
     results, f1_accuracy, df, cost_info = evaluate_model(
         args.model_id,
-        args.model_type,
         dataset,
         args.use_domain_expertise,
         args.downsample_size,
         args.offset,
         args.trials,
+        args.model_type,
     )
 
     # Calculate exact match accuracy for display
@@ -1424,7 +1427,6 @@ def main():
         results,
         f1_accuracy,
         args.model_id,
-        args.model_type,
         output_dir,
         df,
         args.downsample_size,

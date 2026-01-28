@@ -1,4 +1,9 @@
-./.venv/bin/python3 eval.py --model_id solo --results_dir presentation --trials 1
+python3 eval.py --model_id gpt-5 --model_type experimental --use_domain_expertise --trials 3 --results_dir paper
+# python3 eval.py --model_id gpt-5 --model_type baseline --use_domain_expertise --trials 3 --results_dir paper
+
+
+
+# ./.venv/bin/python3 eval.py --model_id solo --results_dir presentation --trials 1
 # ./.venv/bin/python3 eval.py --model_id gpt-5 --results_dir presentation --use_domain_expertise --trials 1
 # ./.venv/bin/python3 eval.py --model_id claude-sonnet-4-5 --results_dir presentation --use_domain_expertise --trials 1
 # ./.venv/bin/python3 eval.py --model_id gemini-2.5-flash --results_dir presentation --use_domain_expertise --trials 1

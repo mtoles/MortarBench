@@ -55,35 +55,41 @@ admin_headers = {
 
 
 @memory.cache
-def _cached_llm_call(model_id: str, messages: List[Dict[str, str]]) -> tuple:
-    return _uncached_llm_call(model_id, messages)
+def _cached_llm_call(model_id: str, messages: List[Dict[str, str]], tools: List[Dict[str, Any]] = None) -> tuple:
+    return _uncached_llm_call(model_id, messages, tools)
 
-def _uncached_llm_call(model_id: str, messages: List[Dict[str, str]]) -> tuple:
+def _uncached_llm_call(model_id: str, messages: List[Dict[str, str]], tools: List[Dict[str, Any]] = None) -> tuple:
     """
     Cached LLM call function.
 
     Args:
         model_id: The model identifier (e.g., 'gpt-4', 'gpt-5', 'claude-3-opus-20240229')
         messages: List of message dictionaries with 'role' and 'content' keys
+        tools: Optional list of tool dictionaries (e.g., [{"type": "web_search"}])
 
     Returns:
         Tuple of (response_content, input_tokens, output_tokens)
     """
     if model_id.startswith("gpt-"):
         client = OpenAI()
-        response = client.chat.completions.create(
-            model=model_id,
-            messages=messages,
-        )
-        content = response.choices[0].message.content.strip()
+        # Use Chat Completions API which supports messages directly
+        kwargs = {"model": model_id, "messages": messages}
+        if tools:
+            kwargs["tools"] = tools
+        
+        response = client.chat.completions.create(**kwargs)
+        
+        content = response.choices[0].message.content.strip() if response.choices[0].message.content else ""
         input_tokens = response.usage.prompt_tokens
         output_tokens = response.usage.completion_tokens
-        # For models with reasoning tokens, count them as output
+        
+        # Check for reasoning tokens if available
         if hasattr(response.usage, 'completion_tokens_details') and response.usage.completion_tokens_details:
             if hasattr(response.usage.completion_tokens_details, 'reasoning_tokens'):
                 reasoning_tokens = response.usage.completion_tokens_details.reasoning_tokens
                 if reasoning_tokens:
                     output_tokens += reasoning_tokens
+        
         return content, input_tokens, output_tokens
     elif model_id.startswith("claude-"):
         client = Anthropic(api_key=ANTHROPIC_API_KEY)
@@ -98,11 +104,23 @@ def _uncached_llm_call(model_id: str, messages: List[Dict[str, str]]) -> tuple:
         output_tokens = response.usage.output_tokens
         return content, input_tokens, output_tokens
     elif model_id.startswith("gemini-"):
-        prompt = messages[-1]["content"]
+        # Convert messages to Gemini's chat format
         model = genai.GenerativeModel(model_id)
-        response = model.generate_content(
-            prompt,
-        )
+        
+        # Convert messages to Gemini chat history format
+        chat_history = []
+        for msg in messages[:-1]:  # All messages except the last one
+            role = "user" if msg["role"] == "user" else "model"
+            chat_history.append({"role": role, "parts": [msg["content"]]})
+        
+        # Start chat with history
+        if chat_history:
+            chat = model.start_chat(history=chat_history)
+            response = chat.send_message(messages[-1]["content"])
+        else:
+            # Single message case
+            response = model.generate_content(messages[0]["content"])
+        
         content = response.text.strip()
         input_tokens = response.usage_metadata.prompt_token_count
         output_tokens = response.usage_metadata.candidates_token_count
@@ -174,8 +192,10 @@ def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) ->
                     "Each message must be a dict with 'role' and 'content' keys"
                 )
 
-        # return _cached_llm_call(model_id, messages)
-        return _uncached_llm_call(model_id, messages) # disabling cache to test multiple trials
+        # Extract tools from kwargs if provided
+        tools = kwargs.get("tools", None)
+        # return _cached_llm_call(model_id, messages, tools)
+        return _uncached_llm_call(model_id, messages, tools) # disabling cache to test multiple trials
 
 
 def clear_messages(loan_id):

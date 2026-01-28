@@ -19,7 +19,7 @@ def after_request(response):
     return response
 
 # Hardcoded paths to results
-GPT5_RESULTS_PATH = Path("app/results/2025-12-30_21-20-58/gpt-5_results.jsonl")
+GPT5_RESULTS_PATH = Path("app/results/2026-01-16_13-15-59/gpt-5_results.jsonl")
 SOLO_RESULTS_PATH = Path("app/results/2025-12-31_12-14-29/solo_results.jsonl")
 
 def load_model_results(path):
@@ -93,12 +93,12 @@ def compare_models(gpt5_results, other_results, other_model_name):
             f'{other_model_name}_f1': other_f1,
         }
         
-        # Add solo_answer if it exists
-        if 'solo_answer' in other:
-            solo_ans = other['solo_answer']
-            if isinstance(solo_ans, list) and len(solo_ans) > 0:
-                solo_ans = solo_ans[0]
-            comparison['solo_answer'] = solo_ans
+        # Add raw_answer from GPT-5 if it exists
+        if 'raw_answer' in gpt5:
+            gpt5_raw = gpt5['raw_answer']
+            if isinstance(gpt5_raw, list) and len(gpt5_raw) > 0:
+                gpt5_raw = gpt5_raw[0]
+            comparison['gpt5_raw_answer'] = gpt5_raw
         
         comparisons.append(comparison)
     
@@ -425,10 +425,10 @@ HTML_TEMPLATE = """
             </div>
             <div class="header-indicators">
                 <span class="indicator {% if comp.gpt5_correct %}correct{% else %}wrong{% endif %}">
-                    GPT-5: {% if comp.gpt5_correct %}✓{% else %}✗{% endif %}
+                    GPT-5: {% if comp.gpt5_correct %}✓{% else %}✗{% endif %} (F1: {% if comp.gpt5_f1 is not none %}{{ "%.3f"|format(comp.gpt5_f1) }}{% else %}N/A{% endif %})
                 </span>
                 <span class="indicator {% if comp[model_name + '_correct'] %}correct{% else %}wrong{% endif %}">
-                    {{ model_name }}: {% if comp[model_name + '_correct'] %}✓{% else %}✗{% endif %}
+                    {{ model_name }}: {% if comp[model_name + '_correct'] %}✓{% else %}✗{% endif %} (F1: {% if comp[model_name + '_f1'] is not none %}{{ "%.3f"|format(comp[model_name + '_f1']) }}{% else %}N/A{% endif %})
                 </span>
                 <span class="toggle-icon" id="icon-{{ loop.index0 }}">▶</span>
             </div>
@@ -488,10 +488,10 @@ HTML_TEMPLATE = """
                 </div>
             </div>
             
-            {% if 'solo_answer' in comp %}
+            {% if 'gpt5_raw_answer' in comp %}
             <div class="solo-answer">
-                <div class="solo-answer-label">Raw Solo Output (before cleaning)</div>
-                <div class="solo-answer-content">{{ comp.solo_answer }}</div>
+                <div class="solo-answer-label">Raw GPT-5 Output (before cleaning)</div>
+                <div class="solo-answer-content">{{ comp.gpt5_raw_answer }}</div>
             </div>
             {% endif %}
         </div>
