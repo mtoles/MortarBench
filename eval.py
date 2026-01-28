@@ -24,7 +24,8 @@ Answer Types:
     - account_id_list: Questions requiring account number lists (last 4 digits)
 
 Usage:
-    python eval.py --model_id gpt-5 --trials 3 --use_domain_expertise
+    python eval.py --model_id gpt-5 --model_type baseline --trials 3 --use_domain_expertise
+    python eval.py --model_type solo --trials 3 --use_domain_expertise
 
 See --help for full list of command-line options.
 """
@@ -75,6 +76,7 @@ cleaning_answer_instruction = {
     "boolean": "Return only yes or no. DO NOT output any other text.",
     "account_id_list": 'Return ONLY a valid JSON list of account numbers (last 4 digits only). e.g. `["1234", "5678"]`, or [] if there are no account numbers.',
 }
+
 
 LOAN_IDXS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 LOAN_IDS = [
@@ -670,12 +672,12 @@ def create_agent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_
 
 def evaluate_model(
     model_id,
+    model_type,
     df,
     use_domain_expertise,
     downsample_size=None,
     offset=0,
     trials=None,
-    model_type="baseline",
 ):
     """Evaluate a model on the dataset."""
     domain_expertise_str = (
@@ -922,7 +924,9 @@ def evaluate_model(
         exact_match_accuracy = 0
         avg_f1_accuracy = 0
 
-    pricing = MODEL_PRICING[model_id]
+    # Use "solo" for pricing lookup when model_type is solo, otherwise use model_id
+    pricing_key = "solo" if model_type == "solo" else model_id
+    pricing = MODEL_PRICING[pricing_key]
     input_cost = (total_input_tokens / 1_000_000) * pricing["input"]
     output_cost = (total_output_tokens / 1_000_000) * pricing["output"]
     total_cost = input_cost + output_cost
@@ -1021,6 +1025,7 @@ def save_results(
     results,
     f1_accuracy,
     model_id,
+    model_type,
     output_dir,
     df,
     downsample_size=None,
@@ -1037,19 +1042,21 @@ def save_results(
     df_with_results["f1_score"] = [result["f1_score"] for result in results]
 
     # Add solo_answer field for solo model results
-    if model_id == "solo":
+    if model_type == "solo":
         df_with_results["solo_answer"] = [
             result["solo_answer"] for result in results
         ]
 
-    jsonl_path = f"{output_dir}/{model_id}_results.jsonl"
+    # Use "solo" for output file names when model_type is solo, otherwise use model_id
+    output_model_id = "solo" if model_type == "solo" else model_id
+    jsonl_path = f"{output_dir}/{output_model_id}_results.jsonl"
     df_with_results.to_json(jsonl_path, orient="records", lines=True)
     print(f"JSONL results saved to {jsonl_path}")
 
     # Create markdown summary
-    summary_path = f"{output_dir}/{model_id}_summary.md"
+    summary_path = f"{output_dir}/{output_model_id}_summary.md"
     with open(summary_path, "w") as f:
-        f.write(f"# Evaluation Results: {model_id}\n\n")
+        f.write(f"# Evaluation Results: {output_model_id}\n\n")
         f.write(
             f"**Date:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
         )
@@ -1177,7 +1184,7 @@ def save_results(
             f.write(f"  F1 Score: {avg_f1:.3f} ({avg_f1*100:.1f}%)\n")
 
         # Add detailed results section for solo model (errors only)
-        if model_id == "solo":
+        if model_type == "solo":
             f.write("\n## Detailed Results with Raw Solo Output (Errors Only)\n\n")
             # Only count as error if valid trial and not exact match
             errors = []
@@ -1209,7 +1216,7 @@ def save_results(
                 f.write("\n")
 
         # Only show sample errors section for non-solo models (solo models already have detailed results above)
-        if model_id != "solo":
+        if model_type != "solo":
             f.write("\n## Sample Errors\n\n")
             # Only count as error if valid trial and not exact match
             errors = []
@@ -1241,7 +1248,7 @@ def main():
         description="Evaluate models on bank statement QA dataset"
     )
     parser.add_argument(
-        "--model_id", type=str, default="gpt-5", help="Model ID to evaluate"
+        "--model_id", type=str, default="gpt-5", help="Model ID to evaluate (HuggingFace or solo model identifier)"
     )
     parser.add_argument(
         "--model_type",
@@ -1390,12 +1397,12 @@ def main():
     print(f"Evaluating model: {args.model_id} (type: {args.model_type})")
     results, f1_accuracy, df, cost_info = evaluate_model(
         args.model_id,
+        args.model_type,
         dataset,
         args.use_domain_expertise,
         args.downsample_size,
         args.offset,
         args.trials,
-        args.model_type,
     )
 
     # Calculate exact match accuracy for display
@@ -1427,6 +1434,7 @@ def main():
         results,
         f1_accuracy,
         args.model_id,
+        args.model_type,
         output_dir,
         df,
         args.downsample_size,
