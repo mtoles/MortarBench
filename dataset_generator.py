@@ -43,10 +43,7 @@ ECONOMIC_PROFILES = {
         "undisclosed_debt": (50, 150),
         "payday": (200, 500), # Amount received
         "foreign": (100, 500),
-        "large_deposit": (2000, 5000), # Lower threshold for what's considered "Large" for this profile? or absolute benchmarks? 
-        # Benchmark questions usually look for specific large numbers, so we should probably keep "Large" large enough to trigger flags,
-        # but relative to income it might be smaller. However, for "Large Deposit" question, usually >50-50% of income. 
-        # I will keep "Large Deposit" significantly high but maybe scaled down slightly or rare. 
+        "large_deposit": (0.55, 2.0), # Multiplier of monthly income (must be > 0.5)
         "cash_deposit": (100, 800),
         "earnest": (500, 2000),
         "unsecured": (500, 2500),
@@ -74,7 +71,7 @@ ECONOMIC_PROFILES = {
         "undisclosed_debt": (100, 600),
         "payday": (300, 1000),
         "foreign": (500, 2000),
-        "large_deposit": (5000, 20000),
+        "large_deposit": (0.55, 3.0), # Multiplier
         "cash_deposit": (200, 2000),
         "earnest": (2000, 10000),
         "unsecured": (2000, 10000),
@@ -103,7 +100,7 @@ ECONOMIC_PROFILES = {
         "payday": (1000, 3000), # Rare but possible? Or maybe they don't use payday loans. 
         # But we need to inject it if the question asks. We'll simulate it as high cost short term lending.
         "foreign": (5000, 50000),
-        "large_deposit": (25000, 100000),
+        "large_deposit": (0.55, 4.0), # Multiplier
         "cash_deposit": (1000, 10000),
         "earnest": (15000, 100000),
         "unsecured": (10000, 50000),
@@ -211,8 +208,10 @@ class PlaidGenerator:
         checking_txns.append(self._create_txn(random.choice(KEYWORDS["Foreign"]), -round(random.uniform(r[0], r[1]), 2)))
         
         # Large Deposit (Unusual) (Credit)
+        # Using multiplier of actual payroll base to ensure it exceeds 50%
         r = profile["large_deposit"]
-        checking_txns.append(self._create_txn("Wire Transfer", -round(random.uniform(r[0], r[1]), 2))) 
+        large_deposit_amount = round(payroll_base * random.uniform(r[0], r[1]), 2)
+        checking_txns.append(self._create_txn("Wire Transfer", -large_deposit_amount)) 
         
         # Cash Deposit (Credit)
         r = profile["cash_deposit"]
