@@ -53,14 +53,15 @@ python dataset_generator.py -n <number_of_datasets> -o <output_directory>
 ```
 
 **Arguments:**
+- `--ulad-template`: The path to the ULAD template file (default: `data/ulad_template.json`).
 - `-n`, `--number`: The number of unique dataset files to generate (default: 1).
 - `-o`, `--output`: The directory where JSON files will be saved (default: `generated_data`).
 
 **Example:**
 ```bash
-python dataset_generator.py -n 5 -o ./data/test_batch_1
+python dataset_generator.py -n 5 -o ./data/test_batch_1 --ulad-template ./data/ulad_template.json
 ```
-This will create 5 JSON files in the `./data/test_batch_1` folder, each with unique transaction and account IDs.
+This will create 5 JSON files in the `./data/test_batch_1` folder, each with unique transaction and account IDs. It will also create 5 ULAD JSON files in the `./data/test_batch_1` folder, each with unique ULAD data.
 
 ## Question Coverage
 
