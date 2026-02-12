@@ -432,6 +432,13 @@ class PlaidGenerator:
             }
             accounts.append(business_account)
 
+        # Calculate End Balance for each account
+        for account in accounts:
+            starting = account.get("starting_balance", 0.0)
+            txns = account.get("transactions", [])
+            net_flow = sum(t.get("amount", 0.0) for t in txns)
+            account["end_balance"] = round(starting + net_flow, 2)
+
         return {
             "seed": f"generated-test-{self.dataset_id}",
             "override_accounts": accounts
