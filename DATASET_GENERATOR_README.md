@@ -88,3 +88,27 @@ The following table details how specific `id_list` questions from the benchmark 
 | **Custodial Accounts** | Generates an account named "Custodial Account for Jr". |
 | **Business Accounts** | Generates an account owned by "John's Business LLC". |
 | **Retirement Funds** | Generates a standard 401k investment account. |
+
+
+## Transaction Tags
+
+Each transaction in the generated dataset is classified with a `tag` field to support automated analysis. The following tags are available:
+
+- `large deposits`: Significant lump-sum deposits (e.g., Wire Transfers, Gifts).
+- `rental payments`: Payments to landlords or property management.
+- `BNPL transactions`: Buy Now, Pay Later services (Klarna, Affirm, etc.).
+- `secured loan`: Deposits from secured loans.
+- `deposit from cryptocurrency source`: Inflows from crypto exchanges.
+- `overdraft or NSF`: Fees indicating insufficient funds.
+- `withdrawal`: General withdrawals including crypto purchases and earnest money.
+- `payday loan or high-interest lending source`: Transactions involving payday lenders.
+- `custodial account`: Transfers or indicators of custodial accounts.
+- `foreign origin`: International wires or transfers.
+- `retirement accounts`: Indicators of 401k or IRA accounts.
+- `retirement assets`: Contributions or identifying transactions for retirement assets.
+- `additional account holder`: Transactions suggesting another person is using the account.
+- `undisclosed housing payments`: Mortgage or housing payments not disclosed.
+- `undisclosed income source`: Side gigs or consulting income.
+- `unexplained deposits`: Deposits from unsecured loans or unknown sources.
+- `excessive cash deposits`: Frequent or large cash deposits (relative to income).
+
