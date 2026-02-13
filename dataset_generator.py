@@ -5,6 +5,8 @@ import datetime
 import argparse
 import os
 
+from ulad_generator import UladGenerator
+
 # --- Configuration & Constants ---
 
 KEYWORDS = {
@@ -482,6 +484,7 @@ class PlaidGenerator:
 
 def main():
     parser = argparse.ArgumentParser(description="Generate Plaid-like datasets for Mortgage Benchmark.")
+    parser.add_argument("--ulad-template", type=str, default="data/ulad_template.json", help="Input template file")
     parser.add_argument("-n", "--number", type=int, default=1, help="Number of datasets to generate")
     parser.add_argument("-o", "--output", type=str, default="generated_data", help="Output directory")
     
@@ -507,15 +510,21 @@ def main():
         os.makedirs(args_output)
         
     for i in range(args_number):
-        gen = PlaidGenerator()
-        data = gen.generate_single_dataset()
-        filename = f"dataset_{data['seed']}.json"
-        filepath = os.path.join(args_output, filename)
+        plaid_generator = PlaidGenerator()
+        plaid_data = plaid_generator.generate_single_dataset()
+        ulad_generator = UladGenerator(args.ulad_template, plaid_data, args_output)
+        ulad_data = ulad_generator.generate_ulad()
+
+        plaid_filename = f"plaid_{plaid_data['seed']}.json"
+        plaid_filepath = os.path.join(args_output, plaid_filename)
+        ulad_filename = f"ulad_{plaid_data['seed']}.json"
+        ulad_filepath = os.path.join(args_output, ulad_filename)
         
-        with open(filepath, 'w') as f:
-            json.dump(data, f, indent=2)
-            
-        print(f"Generated {filepath}")
+        with open(plaid_filepath, 'w') as f:
+            json.dump(plaid_data, f, indent=2)
+        with open(ulad_filepath, 'w') as f:
+            json.dump(ulad_data, f, indent=2)
+        print(f"Generated {plaid_filepath} and {ulad_filepath}")
 
 if __name__ == "__main__":
     main()
