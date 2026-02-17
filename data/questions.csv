@@ -1,0 +1,255 @@
+test_case_number,label,answer_type,question,rephrased_question,revised_answer,gid,need_bank_statement,need_ulad,old_id
+1,has_any,id_list,Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.,"Which list of transactions, if any, correspond to recurring payments or debit transactions made to known BNPL providers?",,0,1,0,1-1
+1,consistency,boolean,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Yes,1,1,1,1-2
+1,has_any,id_list,Identify any large deposits on the borrower’s bank statements.,"Which list of deposits, if any, are considered as large deposits?","4 large deposit transactions:
+1) July 11, 2025 - WIRE IN CREDIT - MARY HOMEOWNER GIFT - $50,000.00  
+2) July 28, 2025 ACH CREDIT - FIDELITY 401K LOAN $60,000.00 
+3) August 2, 2025 ACH CREDIT - COINBASE $20,000.00 
+4) August 24, 2025 ONLINE TRANSFER FROM CHKG $5,000.00",2,1,0,1-3
+1,has_any,id_list,Do the bank statements show evidence of rental payments?,"Which list of transactions, if any, correspond to rental payments?","2 transactions showing rental payments:
+1) July 10, 2025: $2,400.00 - ZELLE PAYMENT - LANDLORD JULY RENT
+2) August 1, 2025: $2,400.00 - ZELLE PAYMENT - LANDLORD AUG RENT",3,1,0,1-4
+1,statement_integrity,boolean,Compare the borrower’s address on the account statement with the current address on the loan application.,Does the borrower’s address on the account statement match the current address on the loan application? Answer yes or no.,Matches,4,1,1,1-5
+1,has_any,id_list,"Scan the provided bank statements for any recurring payments that indicate a liability for child support, alimony, or wage garnishment. If found, confirm whether the payments were specifically disclosed on the loan application.
+","Which list of transactions, if any, correspond to recurring payments for child support, alimony, or wage garnishment that were not disclosed on the loan application?","Recurring payment identified - not disclosed on loan application:
+July 5, 2025: $1,200.00 - ACH DEBIT CHILD SUPPORT DC OAG
+August 5, 2025: $1,200.00 - ACH DEBIT CHILD SUPPORT DC OAG",5,1,1,1-6
+1,"has_any, transaction_consistency",id_list,"Verify if a deposit matching the gift amount stated on the loan application is reflected in the borrower’s bank statements.
+","Which list of transactions, if any, corresponds to a deposit matching the gift amount stated on the loan application?","Matching deposit:
+July 11, 2025 WIRE IN CREDIT - MARY HOMEOWNER GIFT $50,000.00",6,1,1,1-7
+1,has_any,id_list,"Review the account activity for any deposits that appear to be from a secured loan.
+","Which list of transactions, if any, correspond to deposits that appear to be from a secured loan?","One transaction:
+July 28, 2025 ACH CREDIT - FIDELITY 401K LOAN $60,000.00",7,1,0,1-8
+1,transaction_consistency,boolean,"Verify that the payroll deposits on the bank statements exactly match the net pay amounts on any of the borrower’s corresponding pay stubs provided.
+",Do the payroll deposits on the bank statements exactly match the net pay amounts on any of the borrower’s corresponding pay stubs? Answer yes or no.,"Mismatch:
+The August 15, 2025 paystub from AAA shows a net pay of $3,650.00 with the corresponding bank deposit showing $3,050.00. This represents a $600.00 difference between the paystub and the actual deposit.",8,1,0,1-9
+1,has_any,id_list,"Which deposits on the bank statement, if any, appear to originate from a cryptocurrency source?","Which list of transactions, if any, correspond to deposits that appear to originate from a cryptocurrency source?","One transaction:
+August 2, 2025 ACH CREDIT - COINBASE $20,000.00",9,1,0,1-10
+2,has_any,id_list,Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.,"Which list of transactions, if any, correspond to recurring payments or debit transactions made to known BNPL providers?","4 Buy Now Pay Later (BNPL) transactions identified:
+• August 20, 2025: Klarna payment of $62
+• August 15, 2025: Afterpay payment of $79
+• July 20, 2025: Klarna payment of $62
+• July 15, 2025: Afterpay payment of $79",10,1,0,2-1
+2,consistency,boolean,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Payroll deposits are consistent.,11,1,1,2-2
+2,has_any,id_list,"Do the statements reflect any unusually large or irregular deposits requiring documentation, not including cash deposits?","Which list of deposits, if any, are considered as large deposits, not including cash deposits?","Noted large deposits:
+August 7, 2025 LightStream Proceeds $50,000.00
+August 16, 2025 Incoming Transfer - Sweep $3,000.00",12,1,0,2-3
+2,has_any,id_list,"Is there evidence of rental payment(s) being made any accounts?
+","Which list of transactions, if any, correspond to rental payments?","2 consistent payments found:
+July 6, 2025 RENT PAYMENT - JULY --- $3,000.00
+August 1, 2025 RENT PAYMENT - AUGUST --- $3,000.00",13,1,0,2-4
+2,statement_integrity,boolean,Compare the borrower’s address on the account statement with the current address on the loan application.,Does the borrower’s address on the account statement match the current address on the loan application? Answer yes or no.,"Bank statement address of 4321 Cul de Sac St, Someplace, NY 10001 varies from borrower current address of 4321 Cul de Sac St, Someplace, MA 02723.",14,1,1,2-5
+2,has_any,id_list,Are there any overdraft or NSF (non-sufficient funds) fees present in the account activity? ,"Which list of transactions, if any, correspond to overdraft or NSF (non-sufficient funds) fees?","One fee noted:
+July 7, 2025 NSF FEE --- $35.00",15,1,0,2-6
+2,has_any,id_list,Is there an unexplained deposit in a bank's transaction history that could be a sign of unsecured borrowed funds?,"Which list of transactions, if any, correspond to unexplained deposits that could be a sign of unsecured borrowed funds?","One transaction:
+August 7, 2025 LightStream Proceeds $50,000.00",16,1,0,2-7
+2,"has_any, transaction_consistency",id_list,"Are there recurring debt payments that are not disclosed on the loan application or appearing on the credit report, not including cash deposits? ","Which list of transactions, if any, correspond to recurring debt payments that were not disclosed on the loan application or credit report, not including cash deposits?","Potential undisclosed debts:
+1. Klarna BNPL account ($62/month)
+2. Afterpay BNPL account ($79/month)
+3. No Nonsense credit card ($95/month)
+4. Merry credit card ($125/month)
+5. Ally Bank Auto Loan ($350 payment)",17,1,1,2-8
+2,has_any,id_list,"Does the account account reflect any large cash deposits or show a pattern of cash deposits that appears excessive?
+","Which list of transactions, if any, correspond to large cash deposits or show a pattern of excessive cash deposits?","2 deposits noted:
+July 19, 2025 Cash Deposit - ATM $2,300.00
+August 15, 2025 Cash Deposit - ATM $2,800.00",18,1,0,2-9
+2,"has_any, transaction_consistency",id_list,"Is there a consistent pattern of deposits on the asset statement that could represent an undisclosed other income source, not including cash deposits?","Which list of transactions, if any, form a consistent pattern of deposits that could represent an undisclosed income source, not including cash deposits?","SSI/Disability Income:
+July 7, 2025 SSA US Treasury Deposit $2,200.00
+August 3, 2025 SSA US Treasury Deposit $2,200.00",19,1,1,2-10
+3,has_any,id_list,Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.,"Which list of transactions, if any, correspond to recurring payments or debit transactions made to known BNPL providers?",None found.,20,1,0,3-1
+3,consistency,boolean,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Yes - consistent. ,21,1,1,3-2
+3,has_any,id_list,Do the statements reflect any unusually large or irregular deposits requiring documentation?,"Which list of deposits, if any, are considered as large deposits?","None. Large deposits are sourced as account transfers:
+July 2, 2025: $12,048.20 transfer from Performance Savings account
+2. July 14, 2025: $12,036.59 transfer from Performance Savings account
+",22,1,0,3-3
+3,has_any,id_list,Is there evidence of rental payment(s) being made from the account?,"Which list of transactions, if any, correspond to rental payments?",None noted.,23,1,0,3-4
+3,statement_integrity,boolean,Compare the borrower’s address on the account statement with the current address on the loan application. Note any discrepancy.,Does the borrower’s address on the account statement match the current address on the loan application? Answer yes or no.,"Discrepancy: 
+Bank statement address: 73 Dwight Drive, Ocean, NJ 07712
+Current Address on Loan Application: 9991 Warford St Dawson IA 50066
+
+",24,1,1,3-5
+3,metadata_consistency,id_list_account,"Review all asset statements to determine if any account is a joint account. If a joint account is identified, confirm whether all listed account holders are also listed as borrowers on the loan application.","Which list of accounts, if any, are joint accounts where one or more account holders are not listed as borrowers on the loan application?","1. Checking account #3625S553434:
+   - Account holders: Alice Firstimer and DAD FIRSTIMER
+   - DAD FIRSTIMER is not listed as a borrower on the loan application
+
+2. Performance Savings account #36299997878:
+   - Account holders: Alice Firstimer and DAD FIRSTIMER
+   - DAD FIRSTIMER is not listed as a borrower on the loan application",25,1,1,3-6
+3,"pooling, transaction_consistency",id_list,"Check the bank account activity for a withdrawal that matches the earnest money deposit (EMD) amount specified in the purchase contract. If a matching transaction is found, provide the transaction date, amount, and any available recipient details to confirm its purpose.
+","Which list of transactions, if any, correspond to a withdrawal matching the earnest money deposit (EMD) amount in the purchase contract?","Withdrawal from Coldwell Banker 12114352 Debit - $5,000.00",26,1,0,3-7
+3,"has_any, transaction_consistency",id_list,"Scan the borrower's bank statements for any payments to creditors that are not listed on either the credit report or the loan application. If found, identify the name of the creditor and the payment amount.","Which list of transactions, if any, correspond to payments to creditors that are not listed on the credit report or the loan application?","Capital One payments:
+2025-07-24 - Withdrawal from CAPITAL ONE ONLINE PMT - $858.85
+2025-07-15 - Withdrawal from CAPITAL ONE CRCARDPMT - $354.61
+2025-07-05 - Withdrawal from CAPITAL ONE ONLINE PMT - $9.75
+",27,1,1,3-8
+3,"has_any, transaction_consistency",id_list,"Compare the borrower’s employer name to any payroll deposits on the bank statements. Note any potential undisclosed employment income.
+
+","Which list of transactions, if any, correspond to payroll deposits from an employer not listed on the loan application?","Borrower employment stated as ""Wawa"" but payroll deposits are from “NY MTA DIR DEP.”",28,1,1,3-9
+4,has_any,id_list,Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.,"Which list of transactions, if any, correspond to recurring payments or debit transactions made to known BNPL providers?","Affirm payments:
+July 13, 2025 ACH DEBIT - AFFIRM PAYMENTS INC --- $89.00
+August 13, 2025 ACH DEBIT - AFFIRM PAYMENTS INC --- $89.00",29,1,0,4-1
+4,consistency,boolean,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,"Payroll deposits from AAA. $3,700 net monthly income.
+App just shows Patrick at Amazon with $10,833.33 monthly income.
+Signficant discrepancy with employer & employment income.",30,1,1,4-2
+4,has_any,id_list,Do the statements reflect any unusually large or irregular deposits requiring documentation?,"Which list of deposits, if any, are considered as large deposits?","2 large deposits:
+August 17, 2025 - INTL WIRE IN CREDIT - FOREIGN FUNDS TRANSFER - $25,000.00
+July 7, 2025 - ACH CREDIT - CUSTOMER PAYMENT INV #1042 - $5,200.00",31,1,0,4-3
+4,has_any,id_list,Is there evidence of rental payment(s) being made from the account?,"Which list of transactions, if any, correspond to rental payments?","July 5, 2025 ZELLE PAYMENT - JULY RENT --- $2,400.00
+August 1, 2025 ZELLE PAYMENT - AUGUST RENT --- $2,400.00
+August 1, 2025 ACH DEBIT - BUSINESS RENT --- $2,400.00
+",32,1,0,4-4
+4,statement_integrity,boolean,"Compare the borrower’s address on the account statement with the current address on the loan application.
+
+",Does the borrower’s address on the account statement match the current address on the loan application? Answer yes or no.,Borrower current residence consistent with address on bank statements.,33,1,1,4-5
+4,metadata_consistency,id_list_account,What accounts are business accounts instead of personal accounts? ,which list of accounts are classified as a business account instead of a personal account?,First Gingham Credit Union #9921. Registered under Patrick Purchaser (authorized signer) Purchaser Home Services LLC.,34,1,0,4-6
+4,has_any,id_list,"Based on the transaction history, are there any deposits that suggest funds from a private savings club or similar informal arrangement?","Which list of deposits, if any, suggest funds from a private savings club or similar informal arrangement?","3 deposits:
+July 11, 2025 - ACH CREDIT - COMMUNITY SAVINGS CLUB FUNDS - $3,000.00
+August 11, 2025 - ACH CREDIT - COMMUNITY SAVINGS CLUB FUNDS - $3,000.00
+August 19, 2025 - ACH CREDIT - COMMUNITY SAVINGS CLUB FUNDS - $3,000.00",35,1,0,4-7
+4,has_any,id_list,Scan the provided account activity for any deposits originating from a payday loan or similar high-interest lending source.,"Which list of deposits, if any, originate from a payday loan or similar high-interest lending source?","one payday loan:
+July 24, 2025 ACH CREDIT - BEFOREPAY $2,500.00",36,1,0,4-8
+4,has_any,id_list_account,Review the account statements for any accounts designated as a custodial account. ,"Which list of accounts, if any, are designated as a custodial account?",First Platypus Bank - UTMA - #7788,37,1,0,4-9
+4,has_any,id_list,Examine the account records for any deposits that could be of foreign origin.,"Which list of deposits, if any, could be of foreign origin?","August 17, 2025 - INTL WIRE IN CREDIT - FOREIGN FUNDS TRANSFER - $25,000.00",38,1,0,4-10
+5,has_any,id_list,Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.,"Which list of transactions, if any, correspond to recurring payments or debit transactions made to known BNPL providers?",None noted.,39,1,0,5-1
+5,consistency,boolean,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Yes - consistent. ,40,1,1,5-2
+5,has_any,id_list,Do the statements reflect any unusually large or irregular deposits requiring documentation?,"Which list of deposits, if any, are considered as large deposits?",None noted.,41,1,0,5-3
+5,has_any,id_list,Is there evidence of rental payment(s) being made from the account?,"Which list of transactions, if any, correspond to rental payments?",None noted.,42,1,0,5-4
+5,statement_integrity,boolean,Verify that the borrower’s address on their bank statements aligns with the current address or mailing address provided on the loan application.,Does the borrower’s address on the account statement match the current address on the loan application? Answer yes or no.,Mismatch,43,1,1,5-5
+5,statement_integrity,boolean,"Do all bank statements include the financial institution name & account number?
+","Do all bank statements include the financial institution name & account number?
+","[SOLO transaction parsing is wrong here, treated a supplementary bank statement as a new one]",44,1,0,5-6
+5,metadata_consistency,id_list_account,"Are there any provided retirement accounts that can be used as a source of funds for the mortgage?
+","Which list of accounts, if any, are retirement accounts that can be used as a source of funds for the mortgage?",,45,1,0,5-7
+5,transaction_consistency,boolean,Do the rental income deposits shown on the bank statements align with the gross rental income reported for the property(ies) listed on the loan application (both subject and REO)? ,Do the rental income deposits on the bank statements align with the gross rental income reported on the loan application? Answer yes or no.,[the application borrower has 2 properties one with rental income. But bank statement shows recurring rental income for both properties],46,1,1,5-8
+5,transaction_consistency,boolean,Does the statement reflect the mortgage payment needed to confirm current payment history?,Does the statement reflect the mortgage payment needed to confirm current payment history? Answer yes or no.,,47,1,0,5-9
+9,has_any,id_list,Do the statements reflect any unusually large or irregular deposits requiring documentation?,"Which list of deposits, if any, are considered as large deposits?","September 3, 2025 WIRE IN CREDIT TRN: SWIFTC20250817001 $25,000.00",48,1,0,9-1
+9,has_any,id_list,Examine the account records for any deposits that could be of foreign origin.,"Which list of deposits, if any, could be of foreign origin?","September 3, 2025 WIRE IN CREDIT TRN: SWIFTC20250817001 $25,000.00 ",49,1,0,9-2
+9,metadata_consistency,id_list_account,"Are there any provided retirement accounts that can be used as a source of funds for the mortgage?
+","Are there any retirement assets that may be restricted for use on the transaction?
+","First Platypus Bank Plaid 401k #6677 $50,750.00",50,1,0,9-3
+9,metadata_consistency,id_list_account,What accounts are business accounts instead of personal accounts? ,which list of accounts are classified as a business account instead of a personal account?,First Gingham Credit Union #9921 - Patrick Purchaser (authorized signer) Purchaser Home Services LLC,51,1,0,9-4
+9,has_any,id_list_account,Review the account statements for any accounts designated as a custodial account. ,"Which list of accounts, if any, are designated as a custodial account?",First Platypus Bank - Utma #7788,52,1,0,9-5
+9,statement_integrity,boolean,"Compare the borrower’s address on the account statement with the current address on the loan application.
+
+",Does the borrower’s address on the account statement match the current address on the loan application? Answer yes or no.,Yes - matches,53,1,1,9-6
+9,has_any,id_list,Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.,"Which list of transactions, if any, correspond to recurring payments or debit transactions made to known BNPL providers?","July 30, 2025 ACH DEBIT - AFFIRM PAYMENTS INC PPD ID:789012345 --- $89.00
+August 30, 2025 ACH DEBIT - AFFIRM PAYMENTS INC PPD ID:987654321 --- $89.00 ",54,1,0,9-7
+9,has_any,id_list,"Based on the transaction history, are there any deposits that suggest funds from a private savings club or similar informal arrangement?","Which list of deposits, if any, suggest funds from a private savings club or similar informal arrangement?","July 28, 2025 ACH DEPOSIT COMMUNITY SAVINGS FUND PPD ID:678901234 $3,000.00
+August 28, 2025 ACH DEPOSIT COMMUNITY SAVINGS FUND PPD ID:876543210 $3,000.00 
+September 5, 2025 ACH DEPOSIT COMMUNITY SAVINGS FUND PPD ID:321654987 $3,000.00",55,1,0,9-8
+9,has_any,id_list,Is there evidence of rental payment(s) being made from the account?,"Which list of transactions, if any, correspond to rental payments?","July 22, 2025 ACH DEBIT GREYSTAR REAL ESTATE PMT PPD ID:123456789 --- $2,400.00
+August 18, 2025 ACH DEBIT GREYSTAR REAL ESTATE PMT PPD ID:123456789 --- $2,400.00
+",56,1,0,9-9
+9,has_any,id_list,Scan the provided account activity for any deposits originating from a payday loan or similar high-interest lending source.,"Which list of deposits, if any, originate from a payday loan or similar high-interest lending source?","August 10, 2025 ACH CREDIT - BEFOREPAY PPD ID:012345678 $2,500.00 ",57,1,0,9-10
+9,consistency,boolean,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Yes,58,1,1,9-11
+7,has_any,id_list,"Do the statements reflect any unusually large or irregular deposits requiring documentation, not including cash deposits?","Which list of deposits, if any, are considered as large deposits, not including cash deposits?","August 27, 2025 LIGHTSTREAM ACH PPD ID:123123123 $50,000.00",59,1,0,7-1
+7,has_any,id_list,"Does the account account reflect any large cash deposits or show a pattern of cash deposits that appears excessive?
+","Which list of transactions, if any, correspond to cash deposits?","August 8, 2025 ATM CASH DEPOSIT *ATM LOC $12,300.00
+September 4, 2025 ATM CASH DEPOSIT *ATM LOC $12,800.00",60,1,0,7-2
+7,statement_integrity,boolean,Compare the borrower’s address on the account statement with the current address on the loan application.,Does the borrower’s address on the account statement match the current address on the loan application? Answer yes or no.,Yes,61,1,1,7-3
+7,has_any,id_list,Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.,"Which list of transactions, if any, correspond to recurring payments or debit transactions made to known BNPL providers?","August 4, 2025 ACH DEBIT AFTERPAY INC PMT PPD ID:998877665 --- $79.00
+August 9, 2025 ACH DEBIT KLARNA PMT PPD ID:445566778 --- $62.00
+September 4, 2025 ACH DEBIT AFTERPAY INC PMT PPD ID:998877665 --- $79.00
+September 9, 2025 ACH DEBIT KLARNA PMT PPD ID:445566778 --- $62.00 ",62,1,0,7-4
+7,"has_any, transaction_consistency",id_list,Are there recurring debt payments that are not disclosed on the loan application or appearing on the credit report? ,"Which list of transactions, if any, correspond to recurring debt payments that were not disclosed on the loan application or credit report?","August 3, 2025 ACH DEBIT AMEX PAYMENT PPD ID:112233445 --- $125.00
+August 4, 2025 ACH DEBIT CAPITAL ONE PMT PPD ID:678901234 --- $95.00
+August 4, 2025 ACH DEBIT AFTERPAY INC PMT PPD ID:998877665 --- $79.00
+August 9, 2025 ACH DEBIT KLARNA PMT PPD ID:445566778 --- $62.00
+August 25, 2025 ACH DEBIT VISA CREDIT CARD PMT PPD ID:234567890 --- $2,000.00
+August 30, 2025 ACH DEBIT ALLY BANK PMT PPD ID:321654987 --- $350.00
+September 3, 2025 ACH DEBIT AMEX PAYMENT PPD ID:112233445 --- $125.00
+September 4, 2025 ACH DEBIT CAPITAL ONE PMT PPD ID:678901234 --- $95.00
+September 4, 2025 ACH DEBIT AFTERPAY INC PMT PPD ID:998877665 --- $79.00
+September 9, 2025 ACH DEBIT KLARNA PMT PPD ID:445566778 --- $62.00 ",63,1,1,7-5
+7,has_any,id_list,"Is there evidence of rental payment(s) being made any accounts?
+","Which list of transactions, if any, correspond to rental payments?","Transactions consistent with monthly rent stated on the application:
+July 26, 2025 ZELLE PAYMENT TO JOHN SMITH --- $3,000.00
+August 21, 2025 ZELLE PAYMENT TO JOHN SMITH --- $3,000.00
+",64,1,0,7-6
+7,has_any,id_list,"Is there an unexplained deposit in a bank's transaction history that could be a sign of unsecured borrowed funds, not including cash deposits?","Which list of transactions, if any, correspond to unexplained deposits that could be a sign of unsecured borrowed funds, not including cash deposits?","August 27, 2025 LIGHTSTREAM ACH PPD ID:123123123 $50,000.00",65,1,0,7-7
+7,"has_any, transaction_consistency",boolean,Is there a consistent pattern of deposits on the asset statement that could represent an undisclosed other income source?,"Are there any recurring deposits that could be an income source?
+","Payroll deposits:
+ACH DEPOSIT NY MTA PAYROLL PPD ID:667788990 Sep 13 $2,500.00
+ACH DEPOSIT NY MTA PAYROLL PPD ID:667788990 Aug 19 $2,500.00
+ACH DEPOSIT NY MTA PAYROLL PPD ID:667788990 Sep 2 $2,500.00
+ACH DEPOSIT NY MTA PAYROLL PPD ID:667788990 Aug 3 $2,500.00
+Deposits from SSA:
+July 27, 2025 ACH CREDIT SSA US TREASURY PPD ID:555444333 $2,200.00
+August 23, 2025 ACH CREDIT SSA US TREASURY PPD ID:555444333 $2,200.00",66,1,1,7-8
+7,"has_any, transaction_consistency",id_list,"Is there a consistent pattern of deposits on the asset statement that could represent an undisclosed other income source, not including cash deposits?","Are there any recurring deposits that could be an undisclosed income source, not including cash deposits?","Payroll deposits:
+ACH DEPOSIT NY MTA PAYROLL PPD ID:667788990 Sep 13 $2,500.00
+ACH DEPOSIT NY MTA PAYROLL PPD ID:667788990 Aug 19 $2,500.00
+ACH DEPOSIT NY MTA PAYROLL PPD ID:667788990 Sep 2 $2,500.00
+ACH DEPOSIT NY MTA PAYROLL PPD ID:667788990 Aug 3 $2,500.00
+Deposits from SSA:
+July 27, 2025 ACH CREDIT SSA US TREASURY PPD ID:555444333 $2,200.00
+August 23, 2025 ACH CREDIT SSA US TREASURY PPD ID:555444333 $2,200.00",67,1,1,7-9
+7,consistency,boolean,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,"Yes
+Payroll deposits from MTA match borrower's employer of MTA:
+ACH DEPOSIT NY MTA PAYROLL PPD ID:667788990 Sep 13 $2,500.00
+ACH DEPOSIT NY MTA PAYROLL PPD ID:667788990 Aug 19 $2,500.00
+ACH DEPOSIT NY MTA PAYROLL PPD ID:667788990 Sep 2 $2,500.00
+ACH DEPOSIT NY MTA PAYROLL PPD ID:667788990 Aug 3 $2,500.00",68,1,1,7-10
+7,has_any,id_list,Are there any overdraft or NSF (non-sufficient funds) fees present in the account activity? ,"Which list of transactions, if any, correspond to overdraft or NSF (non-sufficient funds) fees?","July 27, 2025 NSF FEE CHARGE --- $35.00 ",69,1,0,7-11
+6,has_any,id_list,Identify any large deposits on the borrower’s bank statements.,"Which list of deposits, if any, are considered as large deposits?","3 transactions:
+1) July 31, 2025 WIRE TRANSFER IN MARY HOMEOWNER REF#456789/ACH PPD ID:456789012 $50,000.00
+2) August 17, 2025 ACH CREDIT FIDELITY INVESTMENTS DEPOSIT PPD ID:210987654 $60,000.00 
+2) August 22, 2025 ACH CREDIT COINBASE ID:CASH-OUT PPD ID:432109876 $20,000.00",70,1,0,6-1
+6,has_any,id_list,"Which deposits on the bank statement, if any, appear to originate from a cryptocurrency source?","Which list of transactions, if any, correspond to deposits that appear to originate from a cryptocurrency source?","August 22, 2025 ACH CREDIT COINBASE ID:CASH-OUT PPD ID:432109876 $20,000.00 ",71,1,0,6-2
+6,"has_any, transaction_consistency",id_list,"Verify if a deposit matching the gift amount stated on the loan application is reflected in the borrower’s bank statements.
+","Which list of transactions, if any, corresponds to a deposit matching the gift amount stated on the loan application?","July 31, 2025 WIRE TRANSFER IN MARY HOMEOWNER REF#456789/ACH PPD ID:456789012 $50,000.00",72,1,1,6-3
+6,statement_integrity,boolean,Compare the borrower’s address on the account statement with the current address on the loan application.,"Does the borrower’s address on the account statement match the borrower’s current living or mailing address on the loan application? Answer yes or no.
+",Yes,73,1,1,6-4
+6,has_any,id_list,Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.,"Which list of transactions, if any, correspond to recurring payments or debit transactions made to known BNPL providers?",,74,1,0,6-5
+6,has_any,id_list,"Scan the provided bank statements for any recurring payments that indicate a liability for child support, alimony, or wage garnishment. If found, confirm whether the payments were specifically disclosed on the loan application.
+","Which list of transactions, if any, correspond to recurring payments for child support, alimony, or wage garnishment that were not disclosed on the loan application?","July 25, 2025 ACH DEBIT NJFSPC ID:4567-001 PPD ID:234567890 --- $1,200.00
+August 25, 2025 ACH DEBIT NJFSPC ID:4567-002 PPD ID:543210987 --- $1,200.00",75,1,1,6-6
+6,has_any,id_list,Do the bank statements show evidence of any rental payments?,"Which list of transactions, if any, correspond to rental payments?","July 30, 2025 ZELLE PAYMENT TO SAMUEL P - JULY --- $2,400.00
+August 21, 2025 ZELLE PAYMENT TO SAMUEL P - AUGUST --- $2,400.00",76,1,0,6-7
+6,consistency,boolean,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,"Yes
+1) August 3, 2025 ACH DEPOSIT AAA INC PAYROLL ID:XYZ1234 PPD ID:567890123 $3,050.00
+2) August 19, 2025 ACH DEPOSIT AAA INC PAYROLL ID:XYZ1234 PPD ID:321654987 $3,050.00
+3) September 3, 2025 ACH DEPOSIT AAA INC PAYROLL ID:XYZ1234 PPD ID:321654987 $3,050.00
+Consistent with Employer stated on application.",77,1,1,6-8
+6,consistency,id_list,"Verify that the borrower’s payroll deposits in the bank statements are consistent with the income and employment information on the application.
+",Are the borrower’s payroll deposits in the bank statements consistent with the income and employment information on the application? Answer with a list of relevant transactions,"Yes
+1) August 3, 2025 ACH DEPOSIT AAA INC PAYROLL ID:XYZ1234 PPD ID:567890123 $3,050.00
+2) August 19, 2025 ACH DEPOSIT AAA INC PAYROLL ID:XYZ1234 PPD ID:321654987 $3,050.00
+3) September 3, 2025 ACH DEPOSIT AAA INC PAYROLL ID:XYZ1234 PPD ID:321654987 $3,050.00
+Consistent with Employer stated on application.",78,1,1,6-9
+6,transaction_consistency,boolean,"Verify that the payroll deposits on the bank statements exactly match the net pay amounts on any of the borrower’s corresponding pay stubs provided.
+",Do the payroll deposits on the bank statements exactly match the net pay amounts on any of the borrower’s corresponding pay stubs? Answer yes or no.,"No
+Paystub shows a $3,650 deposit into First Platypus #3344 on 8/14/25 with no corresponding payroll deposit.
+Payroll deposits of:
+1) August 3, 2025 ACH DEPOSIT AAA INC PAYROLL ID:XYZ1234 PPD ID:567890123 $3,050.00
+2) August 19, 2025 ACH DEPOSIT AAA INC PAYROLL ID:XYZ1234 PPD ID:321654987 $3,050.00
+3) September 3, 2025 ACH DEPOSIT AAA INC PAYROLL ID:XYZ1234 PPD ID:321654987 $3,050.00",79,1,0,6-10
+6,transaction_consistency,id_list,"Verify that the payroll deposits on the bank statements exactly match the net pay amounts on any of the borrower’s corresponding pay stubs provided.
+",Do the payroll deposits on the bank statements exactly match the net pay amounts on any of the borrower’s corresponding pay stubs? Answer with a list of relevant transactions.,"No
+Paystub shows a $3,650 deposit into First Platypus #3344 on 8/14/25 with no corresponding payroll deposit.
+Payroll deposits of:
+1) August 3, 2025 ACH DEPOSIT AAA INC PAYROLL ID:XYZ1234 PPD ID:567890123 $3,050.00
+2) August 19, 2025 ACH DEPOSIT AAA INC PAYROLL ID:XYZ1234 PPD ID:321654987 $3,050.00
+3) September 3, 2025 ACH DEPOSIT AAA INC PAYROLL ID:XYZ1234 PPD ID:321654987 $3,050.00",80,1,0,6-11
+10,has_any,id_list,Do the statements reflect any unusually large or irregular deposits requiring documentation?,"Which list of deposits, if any, are considered as large deposits?",,81,1,0,10-1
+10,statement_integrity,boolean,Verify that the borrower’s address on their bank statements aligns with the current address or mailing address provided on the loan application.,"Does the address on the bank statement match the borrower’s current address in the loan data?
+",no,82,1,1,10-2
+10,statement_integrity,boolean,Which list of bank statements do not include the financial institution name & account number?,Which list of bank statements do not include the financial institution name & account number?,Yes,83,1,0,10-3
+10,has_any,id_list,Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.,"Which list of transactions, if any, correspond to recurring payments or debit transactions made to known BNPL providers?",,84,1,0,10-4
+10,has_any,id_list,Is there evidence of rental payment(s) being made from the account?,"Which list of transactions, if any, correspond to rental payments?",,85,1,0,10-5
+10,transaction_consistency,id_list,Does the statement reflect the mortgage payment needed to confirm current payment history?,Does the statement reflect the mortgage payment needed to confirm current payment history? List specific transactions.,"Yes: 
+August 15, 2025 ACH DEBIT - CALLABLE MORTGAGE PAYMENT PPD ID:333444555 $1,671.00 
+August 15, 2025 ACH DEBIT - BEST EVER MORTGAGE PAYMENT PPD ID:222333444 $1,691.00
+September 15, 2025 ACH DEBIT - BEST EVER MORTGAGE PAYMENT PPD ID:222333445 $1,691.00
+September 15, 2025 ACH DEBIT - CALLABLE MORTGAGE PAYMENT PPD ID:333444556 $1,671.00",86,1,0,10-6
+10,transaction_consistency,boolean,Does the statement reflect the mortgage payment needed to confirm current payment history?,Does the statement reflect the mortgage payment needed to confirm current payment history? Answer yes or no,"Yes: 
+August 15, 2025 ACH DEBIT - CALLABLE MORTGAGE PAYMENT PPD ID:333444555 $1,671.00 
+August 15, 2025 ACH DEBIT - BEST EVER MORTGAGE PAYMENT PPD ID:222333444 $1,691.00
+September 15, 2025 ACH DEBIT - BEST EVER MORTGAGE PAYMENT PPD ID:222333445 $1,691.00
+September 15, 2025 ACH DEBIT - CALLABLE MORTGAGE PAYMENT PPD ID:333444556 $1,671.00",87,1,0,10-7
+10,consistency,boolean,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?,Yes,88,1,1,10-8
+10,transaction_consistency,id_list,Do the rental income deposits shown on the bank statements align with the gross rental income reported for the property(ies) listed on the loan application (both subject and REO)? ,"Are there any deposits that match the properties monthly gross rental income?
+","August 13, 2025 ZELLE PAYMENT FROM JANE DOE $3,000.00
+August 16, 2025 CHECK DEPOSIT #653 $5,000.00 
+September 13, 2025 ZELLE PAYMENT FROM JANE DOE $3,000.00
+September 16, 2025 CHECK DEPOSIT #653 $5,000.00",89,1,1,10-9
