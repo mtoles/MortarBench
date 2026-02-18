@@ -110,6 +110,18 @@ answer_type_map = {
 
 def load_plaid_bank_statement(test_case_number):
     """Load the plaid_with_ids file for a given test case number."""
+    # Check for generated data first
+    generated_dir = "generated_data"
+    if os.path.exists(generated_dir):
+        files = sorted([f for f in os.listdir(generated_dir) if f.startswith("dataset_") and f.endswith(".json")])
+        if files:
+            # Cycle through generated files if fewer than test cases
+            file_index = (int(test_case_number) - 1) % len(files)
+            file_path = os.path.join(generated_dir, files[file_index])
+            print(f"Loading generated dataset for TC {test_case_number}: {file_path}")
+            with open(file_path, "r") as f:
+                return json.load(f)
+
     base_dir = f"data/Test Case {test_case_number} Docs"
     plaid_with_ids_path = os.path.join(base_dir, "plaid_with_ids.json")
     if os.path.exists(plaid_with_ids_path):
@@ -121,25 +133,26 @@ def load_plaid_bank_statement(test_case_number):
         with open(primary_plaid_path, "r") as f:
             return json.load(f)
 
-    fallback_files = sorted(
-        [
-            f
-            for f in os.listdir(base_dir)
-            if f.lower().startswith("plaid") and f.lower().endswith(".json")
-        ]
-    )
-    if fallback_files:
-        payloads = []
-        for fname in fallback_files:
-            path = os.path.join(base_dir, fname)
-            with open(path, "r") as f:
-                payloads.append(json.load(f))
-        if len(payloads) == 1:
-            return payloads[0]
-        return {"plaid_files": payloads}
+    if os.path.exists(base_dir):
+        fallback_files = sorted(
+            [
+                f
+                for f in os.listdir(base_dir)
+                if f.lower().startswith("plaid") and f.lower().endswith(".json")
+            ]
+        )
+        if fallback_files:
+            payloads = []
+            for fname in fallback_files:
+                path = os.path.join(base_dir, fname)
+                with open(path, "r") as f:
+                    payloads.append(json.load(f))
+            if len(payloads) == 1:
+                return payloads[0]
+            return {"plaid_files": payloads}
 
     raise FileNotFoundError(
-        f"No plaid JSON found for Test Case {test_case_number} in {base_dir}"
+        f"No plaid JSON found for Test Case {test_case_number} in {base_dir} and no generated data found"
     )
 
 
