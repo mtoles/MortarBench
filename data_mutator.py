@@ -166,6 +166,15 @@ TRANSACTION_CONFIGS = {
         "default_count_range": (2, 4),
         "date_spacing": "monthly",
     },
+    "savings_club": {
+        "tag": "general transaction",
+        "keywords": ["COMMUNITY SAVINGS CLUB FUNDS", "SAVINGS CLUB DEPOSIT", "INFORMAL SAVINGS GROUP"],
+        "description_template": "ACH CREDIT - {keyword}",
+        "amount_range": (1000, 5000),
+        "amount_sign": "positive",
+        "default_count_range": (1, 3),
+        "date_spacing": "monthly",
+    },
 }
 
 # ==================== ACCOUNT CONFIGS ====================
@@ -344,16 +353,28 @@ class DataMutator:
                 account["transactions"].sort(key=lambda x: x["date_transacted"], reverse=True)
                 return
 
-    def _format_transaction_list(self, transactions: List[Dict]) -> str:
+    def _format_transaction_list(self, transactions: List[Dict], answer_type: str = "id_list") -> str:
         if not transactions:
-            return "None noted."
-        result = f"{len(transactions)} transaction{'s' if len(transactions) > 1 else ''}:\n"
-        for i, txn in enumerate(transactions, 1):
-            date = txn.get("date_transacted", "")
-            desc = txn.get("description", "")
-            amount = txn.get("amount", 0)
-            result += f"{i}) {date} - {desc} - ${abs(amount):,.2f}\n"
-        return result.strip()
+            if answer_type == "boolean":
+                return "No"
+            elif answer_type in ["id_list", "id_list_account"]:
+                return "[]"  # Empty list for no transactions/accounts
+            return "None"
+        
+        if answer_type == "boolean":
+            return "Yes"
+        elif answer_type in ["id_list", "id_list_account"]:
+            # Return list of transaction IDs as strings
+            return str([txn.get("transaction_id", "") for txn in transactions])
+        else:
+            # Default format for backward compatibility
+            result = f"{len(transactions)} transaction{'s' if len(transactions) > 1 else ''}:\n"
+            for i, txn in enumerate(transactions, 1):
+                date = txn.get("date_transacted", "")
+                desc = txn.get("description", "")
+                amount = txn.get("amount", 0)
+                result += f"{i}) {date} - {desc} - ${abs(amount):,.2f}\n"
+            return result.strip()
 
     # ==================== ULAD HELPERS ====================
 
@@ -451,9 +472,14 @@ class DataMutator:
 
     # ==================== BANK STATEMENT-ONLY MUTATION FUNCTIONS ====================
 
-    def mutate_transaction(self, transaction_type: str, num_transactions: int = None) -> Tuple[Dict, str]:
+    def mutate_transaction(self, transaction_type: str, num_transactions: int = None, answer_type: str = "id_list") -> Tuple[Dict, str]:
         """
         Transaction mutation to remove existing tag and insert fresh transactions.
+
+        Args:
+            transaction_type: Type of transaction to mutate (from TRANSACTION_CONFIGS)
+            num_transactions: Number of transactions to add (None for random)
+            answer_type: Format of answer - "boolean", "id_list", or "default"
 
         Returns:
             (mutated_bank_statement, answer_string)
@@ -508,11 +534,16 @@ class DataMutator:
             self._add_transaction_to_checking(bank, txn)
             added.append(txn)
 
-        return bank, self._format_transaction_list(added)
+        return bank, self._format_transaction_list(added, answer_type)
 
-    def mutate_account(self, account_type: str, has_account: bool = None) -> Tuple[Dict, str]:
+    def mutate_account(self, account_type: str, has_account: bool = None, answer_type: str = "id_list") -> Tuple[Dict, str]:
         """
         Account mutation to remove existing account of that type and optionally add one.
+
+        Args:
+            account_type: Type of account to mutate (from ACCOUNT_CONFIGS)
+            has_account: Whether to add account (None for random)
+            answer_type: Format of answer - "boolean", "id_list", or "default"
 
         Returns:
             (mutated_bank_statement, answer_string)
@@ -544,7 +575,11 @@ class DataMutator:
             has_account = random.random() < 0.5
 
         if not has_account:
-            return bank, "None noted."
+            if answer_type == "boolean":
+                return bank, "No"
+            elif answer_type in ["id_list", "id_list_account"]:
+                return bank, "[]"  # Empty list for no accounts
+            return bank, "None"
 
         dataset_id = bank["seed"].split("-")[-1]
         account_num = f"{random.randint(10000000, 99999999)}"
@@ -583,17 +618,24 @@ class DataMutator:
 
         bank["override_accounts"].append(account)
 
-        answer = config["answer_format"].format(
-            account_num=account_num,
-            balance=balance,
-            official_name=config.get("official_name", ""),
-        )
+        if answer_type == "boolean":
+            answer = "Yes"
+        elif answer_type in ["id_list", "id_list_account"]:
+            # For accounts, return the account number as a list
+            answer = str([account_num])
+        else:
+            # Default format
+            answer = config["answer_format"].format(
+                account_num=account_num,
+                balance=balance,
+                official_name=config.get("official_name", ""),
+            )
         return bank, answer
 
     # ==================== ULAD MUTATION FUNCTIONS ====================
     # All return (mutated_bank, mutated_ulad, answer_string)
 
-    def mutate_employer_payroll_consistency(self, match: bool = None) -> Tuple[Dict, Dict, str]:
+    def mutate_employer_payroll_consistency(self, match: bool = None, answer_type: str = "boolean") -> Tuple[Dict, Dict, str]:
         """
         Set payroll deposits in bank from a specific employer; set ULAD employer to
         match (consistent) or differ (mismatch).
@@ -637,16 +679,19 @@ class DataMutator:
             }
             self._add_transaction_to_checking(bank, txn)
 
-        if match:
-            answer = (f"Yes - payroll deposits from \"{bank_employer}\" match the employer "
-                      f"stated on the loan application.")
+        if answer_type == "boolean":
+            answer = "Yes" if match else "No"
         else:
-            answer = (f"Mismatch: Payroll deposits are from \"{bank_employer}\" but the loan "
-                      f"application states employer is \"{ulad_employer}\".")
+            if match:
+                answer = (f"Yes - payroll deposits from \"{bank_employer}\" match the employer "
+                          f"stated on the loan application.")
+            else:
+                answer = (f"Mismatch: Payroll deposits are from \"{bank_employer}\" but the loan "
+                          f"application states employer is \"{ulad_employer}\".")
 
         return bank, ulad, answer
 
-    def mutate_address_match(self, match: bool = None) -> Tuple[Dict, Dict, str]:
+    def mutate_address_match(self, match: bool = None, answer_type: str = "boolean") -> Tuple[Dict, Dict, str]:
         """
         Set bank statement identity address and ULAD residence address to match
         (consistent) or differ (mismatch).
@@ -680,7 +725,10 @@ class DataMutator:
                 postal_code=ulad_addr.get("PostalCode", ""),
                 country=ulad_addr.get("CountryCode", "US"),
             )
-            answer = "Yes - the bank statement address matches the current address on the loan application."
+            if answer_type == "boolean":
+                answer = "Yes"
+            else:
+                answer = "Yes - the bank statement address matches the current address on the loan application."
         else:
             mismatch = random.choice(config["mismatch_addresses"])
             bank_addr_str = (
@@ -697,13 +745,16 @@ class DataMutator:
                 postal_code=mismatch["PostalCode"],
                 country=mismatch.get("CountryCode", "US"),
             )
-            answer = (f"No - mismatch.\n"
-                      f"Bank statement address: {bank_addr_str}\n"
-                      f"Loan application current address: {ulad_addr_str}")
+            if answer_type == "boolean":
+                answer = "No"
+            else:
+                answer = (f"No - mismatch.\n"
+                          f"Bank statement address: {bank_addr_str}\n"
+                          f"Loan application current address: {ulad_addr_str}")
 
         return bank, ulad, answer
 
-    def mutate_gift_deposit(self, match: bool = None) -> Tuple[Dict, Dict, str]:
+    def mutate_gift_deposit(self, match: bool = None, answer_type: str = "id_list") -> Tuple[Dict, Dict, str]:
         """
         Set a gift amount in ULAD PURCHASE_CREDITS and add a corresponding deposit
         in the bank statement that matches (or does not match) that amount.
@@ -739,8 +790,12 @@ class DataMutator:
                 "date_posted": date_posted,
             }
             self._add_transaction_to_checking(bank, txn)
-            answer = (f"Matching deposit:\n"
-                      f"{date_transacted} {desc} ${gift_amount:,.2f}")
+            
+            if answer_type == "id_list":
+                answer = str([txn.get("transaction_id", "")])
+            else:
+                answer = (f"Matching deposit:\n"
+                          f"{date_transacted} {desc} ${gift_amount:,.2f}")
         else:
             # Deposit with a different amount
             diff = random.choice([500, 1000, 2000, 5000, -500, -1000])
@@ -759,12 +814,16 @@ class DataMutator:
                 "date_posted": date_posted,
             }
             self._add_transaction_to_checking(bank, txn)
-            answer = (f"No deposit matching the gift amount of ${gift_amount:,.2f} stated on the application.\n"
-                      f"Deposit found: {date_transacted} {desc} ${deposit_amount:,.2f}")
+            
+            if answer_type == "id_list":
+                answer = "[]"  # No matching deposit
+            else:
+                answer = (f"No deposit matching the gift amount of ${gift_amount:,.2f} stated on the application.\n"
+                          f"Deposit found: {date_transacted} {desc} ${deposit_amount:,.2f}")
 
         return bank, ulad, answer
 
-    def mutate_child_support_disclosure(self) -> Tuple[Dict, Dict, str]:
+    def mutate_child_support_disclosure(self, answer_type: str = "id_list") -> Tuple[Dict, Dict, str]:
         """
         Add recurring child support / alimony payments to the bank statement that
         are NOT reflected as disclosed liabilities in the ULAD.
@@ -798,15 +857,18 @@ class DataMutator:
             self._add_transaction_to_checking(bank, txn)
             added.append(txn)
 
-        lines = "\n".join(
-            f"{t['date_transacted']}: ${abs(t['amount']):,.2f} - {t['description']}"
-            for t in added
-        )
-        answer = f"Recurring payment identified - not disclosed on loan application:\n{lines}"
+        if answer_type == "id_list":
+            answer = str([t.get("transaction_id", "") for t in added])
+        else:
+            lines = "\n".join(
+                f"{t['date_transacted']}: ${abs(t['amount']):,.2f} - {t['description']}"
+                for t in added
+            )
+            answer = f"Recurring payment identified - not disclosed on loan application:\n{lines}"
 
         return bank, ulad, answer
 
-    def mutate_undisclosed_liabilities(self, num_undisclosed: int = None) -> Tuple[Dict, Dict, str]:
+    def mutate_undisclosed_liabilities(self, num_undisclosed: int = None, answer_type: str = "id_list") -> Tuple[Dict, Dict, str]:
         """
         Add recurring payments to creditors in the bank statement that do NOT appear
         in ULAD liabilities, simulating undisclosed debt obligations.
@@ -853,10 +915,10 @@ class DataMutator:
             self._add_transaction_to_checking(bank, txn)
             added.append(txn)
 
-        answer = self._format_transaction_list(added)
+        answer = self._format_transaction_list(added, answer_type)
         return bank, ulad, answer
 
-    def mutate_rental_income_consistency(self, match: bool = None) -> Tuple[Dict, Dict, str]:
+    def mutate_rental_income_consistency(self, match: bool = None, answer_type: str = "boolean") -> Tuple[Dict, Dict, str]:
         """
         Add a REO property to ULAD with a set gross rental income amount, then add
         rental income deposits to the bank statement that match (or differ).
@@ -937,16 +999,19 @@ class DataMutator:
             self._add_transaction_to_checking(bank, txn)
             added.append(txn)
 
-        if match:
-            answer = (f"Yes - rental income deposits of ${deposit_amount:,.2f}/month align with "
-                      f"gross rental income of ${rental_amount:,.2f} reported on the application.")
+        if answer_type == "boolean":
+            answer = "Yes" if match else "No"
         else:
-            answer = (f"Mismatch: Bank shows rental deposits of ${deposit_amount:,.2f}/month "
-                      f"but application reports gross rental income of ${rental_amount:,.2f}/month.")
+            if match:
+                answer = (f"Yes - rental income deposits of ${deposit_amount:,.2f}/month align with "
+                          f"gross rental income of ${rental_amount:,.2f} reported on the application.")
+            else:
+                answer = (f"Mismatch: Bank shows rental deposits of ${deposit_amount:,.2f}/month "
+                          f"but application reports gross rental income of ${rental_amount:,.2f}/month.")
 
         return bank, ulad, answer
 
-    def mutate_joint_account_holder(self, joint_name: str = None) -> Tuple[Dict, Dict, str]:
+    def mutate_joint_account_holder(self, joint_name: str = None, answer_type: str = "default") -> Tuple[Dict, Dict, str]:
         """
         Add a joint checking account with a non-borrower co-holder to the bank
         statement. The ULAD retains only the primary borrower.
@@ -996,13 +1061,16 @@ class DataMutator:
         }
         bank["override_accounts"].append(joint_account)
 
-        answer = (f"Account #{account_num}:\n"
-                  f"  - Account holders: {primary_name} and {joint_name}\n"
-                  f"  - {joint_name} is not listed as a borrower on the loan application")
+        if answer_type == "id_list_account":
+            answer = str([account_num])
+        else:
+            answer = (f"Account #{account_num}:\n"
+                      f"  - Account holders: {primary_name} and {joint_name}\n"
+                      f"  - {joint_name} is not listed as a borrower on the loan application")
 
         return bank, ulad, answer
 
-    def mutate_payroll_paystub_consistency(self, match: bool = None) -> Tuple[Dict, Dict, str]:
+    def mutate_payroll_paystub_consistency(self, match: bool = None, answer_type: str = "boolean") -> Tuple[Dict, Dict, str]:
         """
         Inject payroll deposits into the bank statement and generate an answer
         comparing them to a hypothetical paystub net-pay amount (match or mismatch).
@@ -1037,20 +1105,23 @@ class DataMutator:
             self._add_transaction_to_checking(bank, txn)
             added.append(txn)
 
-        if match:
-            answer = (f"Yes - payroll deposits of ${bank_deposit:,.2f} match the net pay amounts "
-                      f"shown on {employer} paystubs.")
+        if answer_type == "boolean":
+            answer = "Yes" if match else "No"
         else:
-            diff = random.choice(config["mismatch_diffs"])
-            paystub_amount = round(bank_deposit + diff, 2)
-            answer = (f"Mismatch:\n"
-                      f"Paystub from {employer} shows net pay of ${paystub_amount:,.2f} but the "
-                      f"corresponding bank deposit shows ${bank_deposit:,.2f}. "
-                      f"This represents a ${abs(diff):,.2f} difference.")
+            if match:
+                answer = (f"Yes - payroll deposits of ${bank_deposit:,.2f} match the net pay amounts "
+                          f"shown on {employer} paystubs.")
+            else:
+                diff = random.choice(config["mismatch_diffs"])
+                paystub_amount = round(bank_deposit + diff, 2)
+                answer = (f"Mismatch:\n"
+                          f"Paystub from {employer} shows net pay of ${paystub_amount:,.2f} but the "
+                          f"corresponding bank deposit shows ${bank_deposit:,.2f}. "
+                          f"This represents a ${abs(diff):,.2f} difference.")
 
         return bank, ulad, answer
 
-    def mutate_payroll_undisclosed_employer(self) -> Tuple[Dict, Dict, str]:
+    def mutate_payroll_undisclosed_employer(self, answer_type: str = "id_list") -> Tuple[Dict, Dict, str]:
         """
         Set ULAD employer to Company A, but inject bank payroll from Company B,
         simulating employment not disclosed on the loan application.
@@ -1086,12 +1157,15 @@ class DataMutator:
             self._add_transaction_to_checking(bank, txn)
             added.append(txn)
 
-        answer = (f"Borrower employment stated as \"{ulad_employer}\" but payroll deposits "
-                  f"are from \"{bank_employer} DIR DEP\".")
+        if answer_type == "id_list":
+            answer = str([txn.get("transaction_id", "") for txn in added])
+        else:
+            answer = (f"Borrower employment stated as \"{ulad_employer}\" but payroll deposits "
+                      f"are from \"{bank_employer} DIR DEP\".")
 
         return bank, ulad, answer
 
-    def mutate_undisclosed_income_source(self) -> Tuple[Dict, Dict, str]:
+    def mutate_undisclosed_income_source(self, answer_type: str = "id_list") -> Tuple[Dict, Dict, str]:
         """
         Inject recurring deposits from an income source not disclosed in ULAD
         (e.g. SSA, side gig, consulting).
@@ -1126,7 +1200,7 @@ class DataMutator:
             self._add_transaction_to_checking(bank, txn)
             added.append(txn)
 
-        answer = self._format_transaction_list(added)
+        answer = self._format_transaction_list(added, answer_type)
         return bank, ulad, answer
 
 
@@ -1143,16 +1217,20 @@ def main():
 
     mutator = DataMutator(bank_statement_path, ulad_path)
 
-    print("=== Mutate BNPL Transactions ===")
-    bank, answer = mutator.mutate_transaction("bnpl", num_transactions=3)
+    print("=== Mutate BNPL Transactions (id_list) ===")
+    bank, answer = mutator.mutate_transaction("bnpl", num_transactions=3, answer_type="id_list")
     print(answer)
 
-    print("\n=== Mutate Employer Payroll Consistency ===")
-    bank, ulad, answer = mutator.mutate_employer_payroll_consistency()
+    print("\n=== Mutate BNPL Transactions (boolean) ===")
+    bank, answer = mutator.mutate_transaction("bnpl", num_transactions=3, answer_type="boolean")
     print(answer)
 
-    print("\n=== Mutate Address Match ===")
-    bank, ulad, answer = mutator.mutate_address_match()
+    print("\n=== Mutate Employer Payroll Consistency (boolean) ===")
+    bank, ulad, answer = mutator.mutate_employer_payroll_consistency(answer_type="boolean")
+    print(answer)
+
+    print("\n=== Mutate Address Match (boolean) ===")
+    bank, ulad, answer = mutator.mutate_address_match(answer_type="boolean")
     print(answer)
 
     print("\nDone!")

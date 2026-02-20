@@ -5,6 +5,8 @@ import datetime
 import argparse
 import os
 
+from ulad_generator import UladGenerator
+
 # --- Configuration & Constants ---
 
 KEYWORDS = {
@@ -26,7 +28,30 @@ KEYWORDS = {
     "Payday_Loan": ["Speedy Cash", "Check 'n Go", "Ace Cash Express"],
     "Custodial": ["UTMA", "UGMA", "Custodial Account"],
     "Foreign": ["International Wire", "Swift Transfer", "Deutsche Bank"],
-    "Retirement": ["401k", "IRA", "Roth IRA", "Fidelity NetBenefits"]
+    "Retirement": ["401k", "IRA", "Roth IRA", "Fidelity NetBenefits"],
+    "Mortgage": ["Mortgage Payment", "Home Loan", "Flagstar Bank", "Mr. Cooper"]
+}
+
+TAG_OPTIONS = {
+    "large_deposit": "large deposits",
+    "rental": "rental payments",
+    "bnpl": "BNPL transactions",
+    "secured_loan": "secured loan",
+    "crypto_deposit": "deposit from cryptocurrency source",
+    "overdraft": "overdraft or NSF",
+    "withdrawal": "withdrawal",
+    "payday": "payday loan or high-interest lending source",
+    "custodial": "custodial account",
+    "foreign": "foreign origin",
+    "retirement": "retirement accounts",
+    "retirement_assets": "retirement assets",
+    "additional_holder": "additional account holder",
+    "undisclosed_housing": "undisclosed housing payments",
+    "undisclosed_income": "undisclosed income source",
+    "undisclosed_income": "undisclosed income source",
+    "unexplained_deposit": "unexplained deposits",
+    "excessive_cash": "excessive cash deposits",
+    "default": "general transaction"
 }
 
 EMPLOYERS = ["Acme Corp", "Global Tech", "State University", "City Hospital"]
@@ -158,7 +183,7 @@ class PlaidGenerator:
         # 1. Main Checking Account (Depository)
         checking_txns = []
         
-        # Generate basic payroll
+        # Generate basic payroll (Credit/Deposit -> Positive)
         payroll_range = profile["payroll"]
         payroll_base = round(random.uniform(payroll_range[0], payroll_range[1]), 2)
         for i in range(1, 4): # 3 months
@@ -166,102 +191,115 @@ class PlaidGenerator:
             checking_txns.append({
                 "date_transacted": self._get_date(date_offset),
                 "date_posted": self._get_date(date_offset + 1),
-                "amount": -payroll_base, 
+                "amount": payroll_base,  # Positive for deposit
                 "description": f"ACH CREDIT PAYROLL - {employer}",
                 "currency": "USD",
+                "tag": TAG_OPTIONS["default"], # Using default as 'income' tag was removed
                 "transaction_id": self._generate_txn_id()
             })
 
         # Inject Scenarios (Probabilistic or Forced)
         # We ensure coverage but use profile-specific ranges.
         
-        # BNPL (Debit)
+        # BNPL (Debit/Withdrawal -> Negative)
         r = profile["bnpl"]
-        checking_txns.append(self._create_txn(random.choice(KEYWORDS["BNPL"]), round(random.uniform(r[0], r[1]), 2)))
+        checking_txns.append(self._create_txn(random.choice(KEYWORDS["BNPL"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["bnpl"]))
         
-        # Rental (Debit)
+        # Rental (Debit/Withdrawal -> Negative) or Mortgage
         r = profile["rental"]
-        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Rental"]), round(random.uniform(r[0], r[1]), 2)))
+        rand_val = random.random()
+        if rand_val < 0.33:
+             checking_txns.append(self._create_txn(random.choice(KEYWORDS["Rental"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["rental"]))
+        elif rand_val < 0.66:
+             checking_txns.append(self._create_txn(random.choice(KEYWORDS["Mortgage"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["default"]))
+        else:
+             checking_txns.append(self._create_txn("Housing Payment", -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["undisclosed_housing"]))
         
-        # Child Support (Liability) (Debit)
+        # Child Support (Liability) (Debit/Withdrawal -> Negative)
         r = profile["child_support"]
-        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Child_Support"]), round(random.uniform(r[0], r[1]), 2)))
+        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Child_Support"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["default"]))
         
-        # Crypto (Debit)
+        # Crypto (Debit - Purchase -> Negative)
         r = profile["crypto"]
-        checking_txns.append(self._create_txn("Purchase at " + random.choice(KEYWORDS["Crypto"]), round(random.uniform(r[0], r[1]), 2)))
+        checking_txns.append(self._create_txn("Purchase at " + random.choice(KEYWORDS["Crypto"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["withdrawal"]))
         
-        # Overdraft (Debit)
+        # Crypto (Credit - Deposit -> Positive)
+        r = profile["crypto"]
+        checking_txns.append(self._create_txn("Deposit from " + random.choice(KEYWORDS["Crypto"]), round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["crypto_deposit"]))
+        
+        # Overdraft (Debit/Withdrawal -> Negative)
         r = profile["overdraft"]
-        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Overdraft"]), random.choice(r)))
+        # Overdraft fees are expenses, so negative
+        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Overdraft"]), -float(random.choice(r)), tag=TAG_OPTIONS["overdraft"]))
         
-        # Undisclosed Debt (Debit)
+        # Undisclosed Debt (Debit/Withdrawal -> Negative)
         r = profile["undisclosed_debt"]
-        checking_txns.append(self._create_txn("Payment to " + random.choice(KEYWORDS["Undisclosed_Debt"]), round(random.uniform(r[0], r[1]), 2)))
+        checking_txns.append(self._create_txn("Payment to " + random.choice(KEYWORDS["Undisclosed_Debt"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["default"]))
         
-        # Payday Loan (Income/Deposit typically, or repayment?) "Deposits originating from..." -> Credit
+        # Payday Loan (Income/Deposit -> Positive)
         r = profile["payday"]
-        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Payday_Loan"]), -round(random.uniform(r[0], r[1]), 2)))
+        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Payday_Loan"]), round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["payday"]))
         
-        # Foreign Deposit (Credit)
+        # Foreign Deposit (Credit/Deposit -> Positive)
         r = profile["foreign"]
-        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Foreign"]), -round(random.uniform(r[0], r[1]), 2)))
+        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Foreign"]), round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["foreign"]))
         
-        # Large Deposit (Unusual) (Credit)
-        # Using multiplier of actual payroll base to ensure it exceeds 50%
+        # Large Deposit (Unusual) (Credit/Deposit -> Positive)
         r = profile["large_deposit"]
         large_deposit_amount = round(payroll_base * random.uniform(r[0], r[1]), 2)
-        checking_txns.append(self._create_txn("Wire Transfer", -large_deposit_amount)) 
+        checking_txns.append(self._create_txn("Wire Transfer", large_deposit_amount, tag=TAG_OPTIONS["large_deposit"])) 
         
-        # Cash Deposit (Credit)
-        r = profile["cash_deposit"]
-        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Cash_Deposit"]), -round(random.uniform(r[0], r[1]), 2)))
+        # Cash Deposit (Credit/Deposit -> Positive)
+        # Excessive relative to usual income
+        cash_deposit_amount = round(payroll_base * random.uniform(0.5, 0.9), 2)
+        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Cash_Deposit"]), cash_deposit_amount, tag=TAG_OPTIONS["excessive_cash"]))
         
-        # Earnest Money (Withdrawal) (Debit)
+        # Earnest Money (Withdrawal) (Debit -> Negative)
         r = profile["earnest"]
-        checking_txns.append(self._create_txn("Earnest Money Deposit", round(random.uniform(r[0], r[1]), 2)))
+        checking_txns.append(self._create_txn("Earnest Money Deposit", -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["withdrawal"]))
 
         # --- Missing Coverage Injections ---
 
-        # Unsecured Loan (Credit)
+        # Unsecured Loan (Credit/Deposit -> Positive)
         r = profile["unsecured"]
-        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Unsecured_Loan"]), -round(random.uniform(r[0], r[1]), 2)))
+        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Unsecured_Loan"]), round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["unexplained_deposit"]))
 
-        # Undisclosed Income (Question: consistent pattern of deposits ... undisclosed other income)
-        # Add a few transactions to form a pattern
+        # Undisclosed Income (Credit/Deposit -> Positive)
         r = profile["undisclosed_income"]
         side_gig_keyword = random.choice(KEYWORDS["Undisclosed_Income"])
         side_gig_amount = round(random.uniform(r[0], r[1]), 2)
         for _ in range(3):
             # Minor variance in amount
             amt = side_gig_amount + round(random.uniform(- (side_gig_amount * 0.1), (side_gig_amount * 0.1)), 2)
-            checking_txns.append(self._create_txn(side_gig_keyword, -amt))
+            checking_txns.append(self._create_txn(side_gig_keyword, amt, tag=TAG_OPTIONS["undisclosed_income"]))
 
-        # Gift (Credit)
+        # Gift (Credit/Deposit -> Positive)
         r = profile["gift"]
-        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Gift"]), -round(random.uniform(r[0], r[1]), 2)))
+        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Gift"]), round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["large_deposit"]))
 
-        # Undisclosed Employment (Credit)
+        # Undisclosed Employment (Credit/Deposit -> Positive)
         r = profile["undisclosed_employment"]
         other_employer = random.choice([e for e in EMPLOYERS if e != employer])
-        checking_txns.append(self._create_txn(f"ACH CREDIT PAYROLL - {other_employer}", -round(random.uniform(r[0], r[1]), 2)))
+        checking_txns.append(self._create_txn(f"ACH CREDIT PAYROLL - {other_employer}", round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["undisclosed_income"]))
+
+        # Additional Account Holder (Credit/Deposit -> Positive)
+        checking_txns.append(self._create_txn("Transfer from Alice Homeowner", 500, tag=TAG_OPTIONS["additional_holder"]))
+
+        # Missing Info (Fake transaction that would trigger this observation)
+        # Treat as deposit
+        checking_txns.append(self._create_txn("Check Deposit (No Image)", 1200, tag=TAG_OPTIONS["default"]))
 
         # 2. Savings Account (Probabilistic)
-        # Some users might not have a separate savings account. 
-        # If they don't, we might see these transactions in Checking, or not at all.
-        # But to "answer all questions" (ensure coverage of transaction types like Secured Loan),
-        # we will move the transactions to checking if savings doesn't exist.
-        
         has_savings = random.random() < 0.8
         savings_txns_to_move = []
         
         # Prepare Savings Transactions
-        # Savings Club (Credit)
+        # Savings Club (Credit/Deposit -> Positive)
         r = profile["savings_club"]
-        savings_txns_to_move.append(self._create_txn(random.choice(KEYWORDS["Savings_Club"]), -round(random.uniform(r[0], r[1]), 2)))
-        # Secured Loan Deposit (Credit)
+        savings_txns_to_move.append(self._create_txn(random.choice(KEYWORDS["Savings_Club"]), round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["default"]))
+        # Secured Loan Deposit (Credit/Deposit -> Positive)
         r = profile["secured_loan"]
-        savings_txns_to_move.append(self._create_txn(random.choice(KEYWORDS["Secured_Loan"]), -round(random.uniform(r[0], r[1]), 2)))
+        savings_txns_to_move.append(self._create_txn(random.choice(KEYWORDS["Secured_Loan"]), round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["secured_loan"]))
 
         if has_savings:
             r = profile["balances"]["savings"]
@@ -307,7 +345,7 @@ class PlaidGenerator:
         accounts.append(checking_account)
         
         # 3. Retirement Account (Investment) - Probabilistic
-        if random.random() < 0.6:
+        if random.random() < 0.8:
             r = profile["balances"]["retirement"]
             retirement_account = {
                 "type": "investment",
@@ -316,12 +354,23 @@ class PlaidGenerator:
                 "currency": "USD",
                 "numbers": {"account": self._generate_account_id()},
                 "transactions": [],
-                "identity": self._create_identity(user_name)
+                "identity": self._create_identity(user_name),
+                "tags": [TAG_OPTIONS["retirement"]]
             }
+            # Add a transaction for tagging purposes (Contribution = Withdrawal from income, but here it's INSIDE the 401k)
+            # Inside 401k, a contribution is a Deposit/Credit -> Positive
+            retirement_account["transactions"].append(
+                 self._create_txn("Contribution", 500, tag=TAG_OPTIONS["retirement_assets"])
+            )
+            # Fix dates
+            for t in retirement_account["transactions"]:
+                 days = random.randint(-90, 0)
+                 t['date_transacted'] = self._get_date(days)
+                 t['date_posted'] = self._get_date(days + 1)
             accounts.append(retirement_account)
 
         # 4. Joint Account logic (Question 18) - Probabilistic
-        if random.random() < 0.4:
+        if random.random() < 0.6:
             r = profile["balances"]["joint"]
             joint_account = {
                 "type": "depository",
@@ -332,14 +381,22 @@ class PlaidGenerator:
                 "transactions": [],
                 "identity": self._create_identity(user_name, joint_user="Alice Homeowner")
             }
+            # Add transaction (Transfer In -> Positive)
+            joint_account["transactions"].append(
+                self._create_txn("Transfer", 100, tag=TAG_OPTIONS["default"])
+            )
+            for t in joint_account["transactions"]:
+                 days = random.randint(-90, 0)
+                 t['date_transacted'] = self._get_date(days)
+                 t['date_posted'] = self._get_date(days + 1)
             accounts.append(joint_account)
 
         # 5. Custodial Account (Question 25) - Probabilistic
-        if random.random() < 0.4:
+        if random.random() < 0.6:
             r = profile["balances"]["custodial"]
             custodial_account = {
                 "type": "depository",
-                "subtype": "cd", # random choice will be overridden or kept
+                "subtype": "money market",
                 "official_name": "Custodial Account for Jr",
                 "starting_balance": round(random.uniform(r[0], r[1]), 2),
                 "currency": "USD",
@@ -347,11 +404,18 @@ class PlaidGenerator:
                 "transactions": [],
                 "identity": self._create_identity(user_name)
             }
-            custodial_account["subtype"] = "money market" 
+            # Transfer In -> Positive
+            custodial_account["transactions"].append(
+                 self._create_txn("Transfer In", 50, tag=TAG_OPTIONS["custodial"])
+            )
+            for t in custodial_account["transactions"]:
+                 days = random.randint(-90, 0)
+                 t['date_transacted'] = self._get_date(days)
+                 t['date_posted'] = self._get_date(days + 1)
             accounts.append(custodial_account)
 
         # 6. Business Account (Question 22) - Probabilistic
-        if random.random() < 0.3:
+        if random.random() < 0.4:
             r = profile["balances"]["business"]
             business_account = {
                 "type": "depository",
@@ -370,20 +434,34 @@ class PlaidGenerator:
             }
             accounts.append(business_account)
 
+        # Calculate End Balance for each account
+        for account in accounts:
+            starting = account.get("starting_balance", 0.0)
+            txns = account.get("transactions", [])
+            net_flow = sum(t.get("amount", 0.0) for t in txns)
+            account["end_balance"] = round(starting + net_flow, 2)
+
         return {
             "seed": f"generated-test-{self.dataset_id}",
             "override_accounts": accounts
         }
 
-    def _create_txn(self, desc, amount):
-        # amount > 0 debit, < 0 credit
-        return {
+    def _create_txn(self, desc, amount, tag=None):
+        # User Request: Deposits/Credits cannot be negative.
+        # Implied Convention: 
+        #   - Credits/Deposits: Positive (+)
+        #   - Debits/Withdrawals: Negative (-)
+        
+        final_tag = tag if tag else TAG_OPTIONS["default"]
+        
+        txn = {
             "description": desc,
             "amount": amount,
             "currency": "USD",
-            "transaction_id": self._generate_txn_id()
-            # Date will be filled later
+            "transaction_id": self._generate_txn_id(),
+            "tag": final_tag
         }
+        return txn
 
     def _create_identity(self, name, joint_user=None):
         names = [name]
@@ -406,6 +484,7 @@ class PlaidGenerator:
 
 def main():
     parser = argparse.ArgumentParser(description="Generate Plaid-like datasets for Mortgage Benchmark.")
+    parser.add_argument("--ulad-template", type=str, default="data/ulad_template.json", help="Input template file")
     parser.add_argument("-n", "--number", type=int, default=1, help="Number of datasets to generate")
     parser.add_argument("-o", "--output", type=str, default="generated_data", help="Output directory")
     
@@ -431,15 +510,21 @@ def main():
         os.makedirs(args_output)
         
     for i in range(args_number):
-        gen = PlaidGenerator()
-        data = gen.generate_single_dataset()
-        filename = f"dataset_{data['seed']}.json"
-        filepath = os.path.join(args_output, filename)
+        plaid_generator = PlaidGenerator()
+        plaid_data = plaid_generator.generate_single_dataset()
+        ulad_generator = UladGenerator(args.ulad_template, plaid_data, args_output)
+        ulad_data = ulad_generator.generate_ulad()
+
+        plaid_filename = f"plaid_{plaid_data['seed']}.json"
+        plaid_filepath = os.path.join(args_output, plaid_filename)
+        ulad_filename = f"ulad_{plaid_data['seed']}.json"
+        ulad_filepath = os.path.join(args_output, ulad_filename)
         
-        with open(filepath, 'w') as f:
-            json.dump(data, f, indent=2)
-            
-        print(f"Generated {filepath}")
+        with open(plaid_filepath, 'w') as f:
+            json.dump(plaid_data, f, indent=2)
+        with open(ulad_filepath, 'w') as f:
+            json.dump(ulad_data, f, indent=2)
+        print(f"Generated {plaid_filepath} and {ulad_filepath}")
 
 if __name__ == "__main__":
     main()
