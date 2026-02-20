@@ -157,24 +157,24 @@ TRANSACTION_CONFIGS = {
         "default_count_range": (1, 2),
         "date_spacing": None,
     },
-    "mortgage_payments": {
-        "tag": "general transaction",
-        "keywords": ["CALLABLE MORTGAGE PAYMENT", "BEST EVER MORTGAGE PAYMENT", "MORTGAGE PAYMENT"],
-        "description_template": "ACH DEBIT - {keyword}",
-        "amount_range": (800, 3000),
-        "amount_sign": "negative",
-        "default_count_range": (2, 4),
-        "date_spacing": "monthly",
-    },
-    "savings_club": {
-        "tag": "general transaction",
-        "keywords": ["COMMUNITY SAVINGS CLUB FUNDS", "SAVINGS CLUB DEPOSIT", "INFORMAL SAVINGS GROUP"],
-        "description_template": "ACH CREDIT - {keyword}",
-        "amount_range": (1000, 5000),
-        "amount_sign": "positive",
-        "default_count_range": (1, 3),
-        "date_spacing": "monthly",
-    },
+    # "mortgage_payments": {
+    #     "tag": "missing",
+    #     "keywords": ["CALLABLE MORTGAGE PAYMENT", "BEST EVER MORTGAGE PAYMENT", "MORTGAGE PAYMENT"],
+    #     "description_template": "ACH DEBIT - {keyword}",
+    #     "amount_range": (800, 3000),
+    #     "amount_sign": "negative",
+    #     "default_count_range": (2, 4),
+    #     "date_spacing": "monthly",
+    # },
+    # "savings_club": {
+    #     "tag": "missing",
+    #     "keywords": ["COMMUNITY SAVINGS CLUB FUNDS", "SAVINGS CLUB DEPOSIT", "INFORMAL SAVINGS GROUP"],
+    #     "description_template": "ACH CREDIT - {keyword}",
+    #     "amount_range": (1000, 5000),
+    #     "amount_sign": "positive",
+    #     "default_count_range": (1, 3),
+    #     "date_spacing": "monthly",
+    # },
 }
 
 # ==================== ACCOUNT CONFIGS ====================
@@ -202,18 +202,18 @@ ACCOUNT_CONFIGS = {
         "official_name": "Custodial Account for Jr",
         "answer_format": "Custodial Account #{account_num}",
     },
-    "business": {
-        "tag": "general transaction",
-        "type": "depository",
-        "subtype": "checking",
-        "class": "business",
-        "balance_range": (1000, 100000),
-        "transaction_tag": "general transaction",
-        "transaction_description": "Business Transfer",
-        "transaction_amount": 100,
-        "official_name": "John's Business LLC",
-        "answer_format": "Business account #{account_num} - {official_name}",
-    },
+    # "business": {
+    #     "tag": "missing",
+    #     "type": "depository",
+    #     "subtype": "checking",
+    #     "class": "business",
+    #     "balance_range": (1000, 100000),
+    #     "transaction_tag": "general transaction",
+    #     "transaction_description": "Business Transfer",
+    #     "transaction_amount": 100,
+    #     "official_name": "John's Business LLC",
+    #     "answer_format": "Business account #{account_num} - {official_name}",
+    # },
 }
 
 # ==================== ULAD MUTATION CONFIGS ====================
