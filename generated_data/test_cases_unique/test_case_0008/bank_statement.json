@@ -183,12 +183,12 @@
         },
         {
           "description": "ACH DEPOSIT AAA INC PAYROLL",
-          "amount": 3061.33,
+          "amount": 4797.37,
           "currency": "USD",
           "transaction_id": "plaid-5e399dfb-01011",
           "tag": "general transaction",
-          "date_transacted": "2025-12-27",
-          "date_posted": "2025-12-28"
+          "date_transacted": "2025-12-26",
+          "date_posted": "2025-12-27"
         },
         {
           "description": "Earnest Money Deposit",
@@ -198,6 +198,15 @@
           "tag": "withdrawal",
           "date_transacted": "2025-12-23",
           "date_posted": "2025-12-24"
+        },
+        {
+          "description": "ACH DEPOSIT AAA INC PAYROLL",
+          "amount": 4797.37,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01010",
+          "tag": "general transaction",
+          "date_transacted": "2025-12-17",
+          "date_posted": "2025-12-18"
         },
         {
           "description": "PayPal in 4",
@@ -216,15 +225,6 @@
           "tag": "foreign origin",
           "date_transacted": "2025-12-09",
           "date_posted": "2025-12-10"
-        },
-        {
-          "description": "ACH DEPOSIT AAA INC PAYROLL",
-          "amount": 3061.33,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01010",
-          "tag": "general transaction",
-          "date_transacted": "2025-12-02",
-          "date_posted": "2025-12-03"
         },
         {
           "description": "Venmo Cash Out",

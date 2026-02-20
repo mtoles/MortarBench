@@ -200,15 +200,6 @@
           "transaction_id": "plaid-5e399dfb-00002"
         },
         {
-          "description": "Wire Out",
-          "amount": -3868.59,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01018",
-          "tag": "withdrawal",
-          "date_transacted": "2025-12-17",
-          "date_posted": "2025-12-18"
-        },
-        {
           "description": "PayPal in 4",
           "amount": -47.51,
           "currency": "USD",
@@ -234,15 +225,6 @@
           "tag": "undisclosed income source",
           "date_transacted": "2025-11-28",
           "date_posted": "2025-11-29"
-        },
-        {
-          "description": "ATM Withdrawal",
-          "amount": -2455.82,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01019",
-          "tag": "withdrawal",
-          "date_transacted": "2025-11-27",
-          "date_posted": "2025-11-28"
         },
         {
           "description": "Wire Transfer",

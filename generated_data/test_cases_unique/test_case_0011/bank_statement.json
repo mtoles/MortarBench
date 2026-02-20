@@ -137,6 +137,15 @@
           "date_posted": "2026-01-30"
         },
         {
+          "description": "ATM CASH DEPOSIT",
+          "amount": 5686.3,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01014",
+          "tag": "excessive cash deposits",
+          "date_transacted": "2026-01-28",
+          "date_posted": "2026-01-29"
+        },
+        {
           "date_transacted": "2026-01-18",
           "date_posted": "2026-01-19",
           "amount": 2875.51,
@@ -191,6 +200,15 @@
           "date_posted": "2025-12-28"
         },
         {
+          "description": "ATM Cash Deposit",
+          "amount": 4308.04,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01015",
+          "tag": "excessive cash deposits",
+          "date_transacted": "2025-12-25",
+          "date_posted": "2025-12-26"
+        },
+        {
           "description": "Earnest Money Deposit",
           "amount": -4851.39,
           "currency": "USD",
@@ -234,6 +252,15 @@
           "tag": "undisclosed income source",
           "date_transacted": "2025-11-28",
           "date_posted": "2025-11-29"
+        },
+        {
+          "description": "Branch Deposit",
+          "amount": 3001.8,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01016",
+          "tag": "excessive cash deposits",
+          "date_transacted": "2025-11-24",
+          "date_posted": "2025-11-25"
         },
         {
           "description": "Wire Transfer",

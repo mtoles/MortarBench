@@ -44,10 +44,10 @@
           {
             "primary": true,
             "data": {
-              "street": "456 Oak Ave",
-              "city": "Boston",
-              "region": "MA",
-              "postal_code": "02101",
+              "street": "73 Dwight Drive",
+              "city": "Ocean",
+              "region": "NJ",
+              "postal_code": "07712",
               "country": "US"
             }
           }
@@ -287,10 +287,10 @@
           {
             "primary": true,
             "data": {
-              "street": "456 Oak Ave",
-              "city": "Boston",
-              "region": "MA",
-              "postal_code": "02101",
+              "street": "73 Dwight Drive",
+              "city": "Ocean",
+              "region": "NJ",
+              "postal_code": "07712",
               "country": "US"
             }
           }
@@ -332,10 +332,10 @@
           {
             "primary": true,
             "data": {
-              "street": "456 Oak Ave",
-              "city": "Boston",
-              "region": "MA",
-              "postal_code": "02101",
+              "street": "73 Dwight Drive",
+              "city": "Ocean",
+              "region": "NJ",
+              "postal_code": "07712",
               "country": "US"
             }
           }
@@ -381,10 +381,10 @@
           {
             "primary": true,
             "data": {
-              "street": "456 Oak Ave",
-              "city": "Boston",
-              "region": "MA",
-              "postal_code": "02101",
+              "street": "73 Dwight Drive",
+              "city": "Ocean",
+              "region": "NJ",
+              "postal_code": "07712",
               "country": "US"
             }
           }
@@ -417,10 +417,10 @@
         "addresses": [
           {
             "data": {
-              "street": "456 Oak Ave",
-              "city": "Boston",
-              "region": "MA",
-              "postal_code": "02101",
+              "street": "73 Dwight Drive",
+              "city": "Ocean",
+              "region": "NJ",
+              "postal_code": "07712",
               "country": "US"
             },
             "primary": true

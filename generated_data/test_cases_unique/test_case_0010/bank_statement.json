@@ -137,15 +137,6 @@
           "transaction_id": "plaid-5e399dfb-00001"
         },
         {
-          "description": "Consulting Income",
-          "amount": 1208.01,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01016",
-          "tag": "undisclosed income source",
-          "date_transacted": "2026-01-11",
-          "date_posted": "2026-01-12"
-        },
-        {
           "description": "Personal Loan",
           "amount": 9988.15,
           "currency": "USD",
@@ -191,6 +182,15 @@
           "date_posted": "2025-12-24"
         },
         {
+          "description": "Side Gig",
+          "amount": 910.06,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01013",
+          "tag": "undisclosed income source",
+          "date_transacted": "2025-12-22",
+          "date_posted": "2025-12-23"
+        },
+        {
           "date_transacted": "2025-12-19",
           "date_posted": "2025-12-20",
           "amount": 2875.51,
@@ -218,13 +218,13 @@
           "date_posted": "2025-12-10"
         },
         {
-          "description": "Consulting Income",
-          "amount": 1197.79,
+          "description": "Side Gig",
+          "amount": 909.56,
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01015",
+          "transaction_id": "plaid-5e399dfb-01012",
           "tag": "undisclosed income source",
-          "date_transacted": "2025-12-01",
-          "date_posted": "2025-12-02"
+          "date_transacted": "2025-12-09",
+          "date_posted": "2025-12-10"
         },
         {
           "description": "Wire Transfer",

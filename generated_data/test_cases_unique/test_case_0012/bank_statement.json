@@ -119,6 +119,15 @@
           "date_posted": "2026-02-01"
         },
         {
+          "description": "NSF FEE",
+          "amount": -35.0,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01017",
+          "tag": "overdraft or NSF",
+          "date_transacted": "2026-01-31",
+          "date_posted": "2026-02-01"
+        },
+        {
           "description": "ACH CREDIT PAYROLL - City Hospital",
           "amount": 919.45,
           "currency": "USD",
@@ -144,6 +153,15 @@
           "currency": "USD",
           "tag": "general transaction",
           "transaction_id": "plaid-5e399dfb-00001"
+        },
+        {
+          "description": "Overdraft Fee",
+          "amount": -25.0,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01018",
+          "tag": "overdraft or NSF",
+          "date_transacted": "2026-01-15",
+          "date_posted": "2026-01-16"
         },
         {
           "description": "Venmo Cash Out",
@@ -234,15 +252,6 @@
           "tag": "undisclosed income source",
           "date_transacted": "2025-11-28",
           "date_posted": "2025-11-29"
-        },
-        {
-          "description": "NSF Fee",
-          "amount": -25.0,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01017",
-          "tag": "overdraft or NSF",
-          "date_transacted": "2025-11-25",
-          "date_posted": "2025-11-26"
         },
         {
           "description": "Wire Transfer",

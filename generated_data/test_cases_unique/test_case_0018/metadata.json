@@ -1,19 +1,15 @@
 {
   "test_case_id": 18,
-  "test_case_number": "18",
+  "test_case_number": 4,
   "question": "Review the account statements for any accounts designated as a custodial account. ",
   "rephrased_question": "Which list of accounts, if any, are designated as a custodial account?",
   "answer_type": "id_list_account",
   "label": "has_any",
-  "mutation_spec": {
-    "type": "account",
-    "mutation_type": "custodial"
-  },
-  "ground_truth_answer": "[]",
+  "mutation_type": "account",
+  "mutation_key": "custodial",
+  "ground_truth_answer": "['48267576']",
   "need_bank_statement": true,
   "need_ulad": false,
   "bank_statement_path": "bank_statement.json",
-  "ulad_path": null,
-  "gid": 37,
-  "old_id": "4-9"
+  "ulad_path": null
 }

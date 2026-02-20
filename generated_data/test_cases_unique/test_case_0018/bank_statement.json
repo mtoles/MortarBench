@@ -382,6 +382,51 @@
         ]
       },
       "end_balance": 6261.4
+    },
+    {
+      "type": "depository",
+      "subtype": "money market",
+      "starting_balance": 6457.73,
+      "currency": "USD",
+      "numbers": {
+        "account": "48267576"
+      },
+      "transactions": [
+        {
+          "description": "Transfer In",
+          "amount": 50,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01028",
+          "tag": "custodial account",
+          "date_transacted": "2026-02-10",
+          "date_posted": "2026-02-12"
+        }
+      ],
+      "identity": {
+        "names": [
+          "John Homeowner"
+        ],
+        "emails": [
+          {
+            "data": "john.homeowner@testmail.com",
+            "primary": true,
+            "type": "primary"
+          }
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "country": "US",
+              "city": "Washington",
+              "street": "175 13th St",
+              "postal_code": "20013",
+              "region": "DC"
+            }
+          }
+        ]
+      },
+      "official_name": "Custodial Account for Jr"
     }
   ]
 }

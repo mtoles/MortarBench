@@ -191,6 +191,15 @@
           "date_posted": "2026-01-02"
         },
         {
+          "description": "ACH DEBIT NJFSPC",
+          "amount": -1815.26,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01007",
+          "tag": "general transaction",
+          "date_transacted": "2026-01-01",
+          "date_posted": "2026-01-02"
+        },
+        {
           "description": "Earnest Money Deposit",
           "amount": -4851.39,
           "currency": "USD",
@@ -198,24 +207,6 @@
           "tag": "withdrawal",
           "date_transacted": "2025-12-23",
           "date_posted": "2025-12-24"
-        },
-        {
-          "description": "ACH DEBIT NJFSPC",
-          "amount": -825.06,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01008",
-          "tag": "general transaction",
-          "date_transacted": "2025-12-23",
-          "date_posted": "2025-12-24"
-        },
-        {
-          "description": "ACH DEBIT NJFSPC",
-          "amount": -825.06,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01007",
-          "tag": "general transaction",
-          "date_transacted": "2025-12-20",
-          "date_posted": "2025-12-21"
         },
         {
           "date_transacted": "2025-12-19",
@@ -232,6 +223,15 @@
           "currency": "USD",
           "transaction_id": "plaid-5e399dfb-00004",
           "tag": "BNPL transactions",
+          "date_transacted": "2025-12-13",
+          "date_posted": "2025-12-14"
+        },
+        {
+          "description": "ACH DEBIT NJFSPC",
+          "amount": -1815.26,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01006",
+          "tag": "general transaction",
           "date_transacted": "2025-12-13",
           "date_posted": "2025-12-14"
         },

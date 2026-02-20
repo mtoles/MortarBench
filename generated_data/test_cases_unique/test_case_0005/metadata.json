@@ -1,19 +1,15 @@
 {
   "test_case_id": 5,
-  "test_case_number": "5",
+  "test_case_number": 1,
   "question": "Scan the provided bank statements for any recurring payments that indicate a liability for child support, alimony, or wage garnishment. If found, confirm whether the payments were specifically disclosed on the loan application.\n",
   "rephrased_question": "Which list of transactions, if any, correspond to recurring payments for child support, alimony, or wage garnishment that were not disclosed on the loan application?",
   "answer_type": "id_list",
   "label": "has_any",
-  "mutation_spec": {
-    "type": "ulad",
-    "fn": "mutate_child_support_disclosure"
-  },
-  "ground_truth_answer": "['plaid-5e399dfb-01007', 'plaid-5e399dfb-01008']",
+  "mutation_type": "ulad",
+  "mutation_key": "mutate_child_support_disclosure",
+  "ground_truth_answer": "['plaid-5e399dfb-01006', 'plaid-5e399dfb-01007']",
   "need_bank_statement": true,
   "need_ulad": true,
   "bank_statement_path": "bank_statement.json",
-  "ulad_path": "ulad.json",
-  "gid": 5,
-  "old_id": "1-6"
+  "ulad_path": "ulad.json"
 }

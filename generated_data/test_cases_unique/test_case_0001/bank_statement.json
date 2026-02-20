@@ -65,15 +65,6 @@
       },
       "transactions": [
         {
-          "description": "ACH DEBIT - Sezzle PMT",
-          "amount": -94.26,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01001",
-          "tag": "BNPL transactions",
-          "date_transacted": "2026-02-09",
-          "date_posted": "2026-02-10"
-        },
-        {
           "description": "Non-Sufficient Funds",
           "amount": -25.0,
           "currency": "USD",
@@ -153,15 +144,6 @@
           "tag": "excessive cash deposits",
           "date_transacted": "2026-01-28",
           "date_posted": "2026-01-29"
-        },
-        {
-          "description": "ACH DEBIT - Klarna PMT",
-          "amount": -73.6,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01002",
-          "tag": "BNPL transactions",
-          "date_transacted": "2026-01-26",
-          "date_posted": "2026-01-27"
         },
         {
           "date_transacted": "2026-01-18",

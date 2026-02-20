@@ -380,53 +380,6 @@
         ]
       },
       "end_balance": 6261.4
-    },
-    {
-      "type": "investment",
-      "subtype": "401k",
-      "starting_balance": 42050.24,
-      "currency": "USD",
-      "numbers": {
-        "account": "81930397"
-      },
-      "transactions": [
-        {
-          "description": "Contribution",
-          "amount": 500,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01033",
-          "tag": "retirement assets",
-          "date_transacted": "2026-01-20",
-          "date_posted": "2025-12-22"
-        }
-      ],
-      "identity": {
-        "names": [
-          "John Homeowner"
-        ],
-        "emails": [
-          {
-            "data": "john.homeowner@testmail.com",
-            "primary": true,
-            "type": "primary"
-          }
-        ],
-        "addresses": [
-          {
-            "primary": true,
-            "data": {
-              "country": "US",
-              "city": "Washington",
-              "street": "175 13th St",
-              "postal_code": "20013",
-              "region": "DC"
-            }
-          }
-        ]
-      },
-      "tags": [
-        "retirement accounts"
-      ]
     }
   ]
 }

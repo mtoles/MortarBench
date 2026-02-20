@@ -200,6 +200,15 @@
           "date_posted": "2025-12-28"
         },
         {
+          "description": "Rent Payment",
+          "amount": -1572.18,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01005",
+          "tag": "rental payments",
+          "date_transacted": "2025-12-24",
+          "date_posted": "2025-12-25"
+        },
+        {
           "description": "Earnest Money Deposit",
           "amount": -4851.39,
           "currency": "USD",
@@ -237,12 +246,12 @@
         },
         {
           "description": "ZELLE PAYMENT - LANDLORD",
-          "amount": -1533.88,
+          "amount": -2066.09,
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01006",
+          "transaction_id": "plaid-5e399dfb-01004",
           "tag": "rental payments",
-          "date_transacted": "2025-12-05",
-          "date_posted": "2025-12-06"
+          "date_transacted": "2025-12-06",
+          "date_posted": "2025-12-07"
         },
         {
           "description": "Venmo Cash Out",

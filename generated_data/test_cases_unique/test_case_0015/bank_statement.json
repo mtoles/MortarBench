@@ -65,6 +65,15 @@
       },
       "transactions": [
         {
+          "description": "ACH DEBIT Chase Credit Card PMT",
+          "amount": -256.29,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01025",
+          "tag": "general transaction",
+          "date_transacted": "2026-02-13",
+          "date_posted": "2026-02-14"
+        },
+        {
           "description": "Non-Sufficient Funds",
           "amount": -25.0,
           "currency": "USD",
@@ -81,6 +90,15 @@
           "tag": "general transaction",
           "date_transacted": "2026-02-08",
           "date_posted": "2026-02-09"
+        },
+        {
+          "description": "ACH DEBIT No Nonsense Credit Card PMT",
+          "amount": -93.37,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01024",
+          "tag": "general transaction",
+          "date_transacted": "2026-02-04",
+          "date_posted": "2026-02-05"
         },
         {
           "description": "Venmo Cash Out",
@@ -110,10 +128,10 @@
           "date_posted": "2026-02-03"
         },
         {
-          "description": "ACH DEBIT Chase Credit Card PMT",
-          "amount": -299.38,
+          "description": "ACH DEBIT American Express PMT",
+          "amount": -441.03,
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01025",
+          "transaction_id": "plaid-5e399dfb-01026",
           "tag": "general transaction",
           "date_transacted": "2026-02-02",
           "date_posted": "2026-02-03"
@@ -135,15 +153,6 @@
           "tag": "general transaction",
           "date_transacted": "2026-01-31",
           "date_posted": "2026-02-01"
-        },
-        {
-          "description": "ACH DEBIT Ally Bank PMT",
-          "amount": -205.04,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01024",
-          "tag": "general transaction",
-          "date_transacted": "2026-01-30",
-          "date_posted": "2026-01-31"
         },
         {
           "description": "ACH CREDIT PAYROLL - City Hospital",
@@ -171,6 +180,15 @@
           "currency": "USD",
           "tag": "general transaction",
           "transaction_id": "plaid-5e399dfb-00001"
+        },
+        {
+          "description": "ACH DEBIT Visa Credit Card PMT",
+          "amount": -463.92,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01022",
+          "tag": "general transaction",
+          "date_transacted": "2026-01-18",
+          "date_posted": "2026-01-19"
         },
         {
           "description": "Venmo Cash Out",
@@ -218,24 +236,6 @@
           "date_posted": "2025-12-28"
         },
         {
-          "description": "ACH DEBIT Discover PMT",
-          "amount": -263.76,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01026",
-          "tag": "general transaction",
-          "date_transacted": "2025-12-27",
-          "date_posted": "2025-12-28"
-        },
-        {
-          "description": "ACH DEBIT Visa Credit Card PMT",
-          "amount": -461.34,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01023",
-          "tag": "general transaction",
-          "date_transacted": "2025-12-24",
-          "date_posted": "2025-12-25"
-        },
-        {
           "description": "Earnest Money Deposit",
           "amount": -4851.39,
           "currency": "USD",
@@ -254,6 +254,15 @@
           "transaction_id": "plaid-5e399dfb-00002"
         },
         {
+          "description": "ACH DEBIT Ally Bank PMT",
+          "amount": -361.43,
+          "currency": "USD",
+          "transaction_id": "plaid-5e399dfb-01023",
+          "tag": "general transaction",
+          "date_transacted": "2025-12-18",
+          "date_posted": "2025-12-19"
+        },
+        {
           "description": "PayPal in 4",
           "amount": -47.51,
           "currency": "USD",
@@ -270,15 +279,6 @@
           "tag": "foreign origin",
           "date_transacted": "2025-12-09",
           "date_posted": "2025-12-10"
-        },
-        {
-          "description": "ACH DEBIT AMEX PMT",
-          "amount": -325.48,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01027",
-          "tag": "general transaction",
-          "date_transacted": "2025-12-01",
-          "date_posted": "2025-12-02"
         },
         {
           "description": "Venmo Cash Out",
