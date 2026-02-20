@@ -2,7 +2,7 @@
 
 ## Overview
 
-A data mutation system that generates test cases from `questions.csv`.  
+A data mutation system that generates test cases from a list of questions CSV.  
 The system mutates both bank statements and ULAD files, then records a ground truth answer for each question.
 
 ---
@@ -14,13 +14,19 @@ Core mutation library with three public interfaces:
 
 | Method | Returns | Use when |
 |--------|---------|----------|
-| `mutate_transaction(type, num=None)` | `(bank, answer)` | Adding/removing tagged transactions |
-| `mutate_account(type, has=None)` | `(bank, answer)` | Adding/removing whole accounts |
-| `mutate_*(...)` | `(bank, ulad, answer)` | Cross-document ULAD consistency checks |
+| `mutate_transaction(type, num=None, answer_type="id_list")` | `(bank, answer)` | Adding/removing tagged transactions |
+| `mutate_account(type, has=None, answer_type="id_list")` | `(bank, answer)` | Adding/removing whole accounts |
+| `mutate_*(answer_type="boolean")` | `(bank, ulad, answer)` | Cross-document ULAD consistency checks |
+
+**Answer Format Types:**
+- `"boolean"`: Returns `"Yes"` or `"No"`
+- `"id_list"`: Returns `["transaction_id1", "transaction_id2", ...]` or `[]`
+- `"id_list_account"`: Returns `["account_num1", "account_num2", ...]` or `[]`
 
 ### `generate_test_cases.py`
-Batch processor that reads `questions.csv`, detects the right mutation via
+Batch processor that reads any questions CSV file, detects the right mutation via
 `MUTATION_RULES`, runs it, and writes each test case to its own directory.
+Automatically handles answer formatting based on `answer_type` column when present.
 
 ---
 
@@ -44,7 +50,8 @@ Batch processor that reads `questions.csv`, detects the right mutation via
 | `undisclosed_housing_payments` | `undisclosed housing payments` | Monthly housing |
 | `withdrawals` | `withdrawal` | Earnest money, wire out |
 | `additional_account_holder` | `additional account holder` | Transfer from joint holder |
-| `mortgage_payments` | `general transaction` | ACH DEBIT mortgage payment |
+| `mortgage_payments` | (missing) | ACH DEBIT mortgage payment |
+| `savings_club` | (missing) | Community savings club funds |
 
 ### Bank Account Mutations (`mutate_account`)
 
@@ -52,22 +59,24 @@ Batch processor that reads `questions.csv`, detects the right mutation via
 |-----|------|-------------|
 | `retirement` | `investment / 401k` | Add/remove 401k with contributions |
 | `custodial` | `depository / money market` | Add/remove UTMA custodial account |
-| `business` | `depository / checking (class=business)` | Add/remove business checking |
+| `business`(missing)| `depository / checking (class=business)` | Add/remove business checking |
 
 ### ULAD Cross-Document Mutations (return `bank, ulad, answer`)
 
-| Method | What it mutates | Answer type |
+| Method | What it mutates | Default answer_type |
 |--------|----------------|-------------|
-| `mutate_employer_payroll_consistency` | ULAD employer + bank payroll deposits | Yes/Mismatch |
-| `mutate_address_match` | Bank identity address vs ULAD residence address | Yes/Mismatch |
-| `mutate_gift_deposit` | ULAD PURCHASE_CREDITS gift amount + matching bank deposit | Match/No match |
-| `mutate_child_support_disclosure` | Bank: recurring child-support payments not in ULAD | Transaction list |
-| `mutate_undisclosed_liabilities` | Bank: creditor payments absent from ULAD LIABILITIES | Transaction list |
-| `mutate_rental_income_consistency` | ULAD REO rental income + bank deposits | Yes/Mismatch |
-| `mutate_joint_account_holder` | Bank: joint account with non-borrower; ULAD: single borrower | Account info |
-| `mutate_payroll_paystub_consistency` | Bank payroll deposits vs hypothetical paystub amount | Yes/Mismatch |
-| `mutate_payroll_undisclosed_employer` | ULAD employer A, bank payroll from employer B | Mismatch description |
-| `mutate_undisclosed_income_source` | Bank: recurring SSA/side-gig deposits absent from ULAD | Transaction list |
+| `mutate_employer_payroll_consistency` | ULAD employer + bank payroll deposits | `boolean` |
+| `mutate_address_match` | Bank identity address vs ULAD residence address | `boolean` |
+| `mutate_gift_deposit` | ULAD PURCHASE_CREDITS gift amount + matching bank deposit | `id_list` |
+| `mutate_child_support_disclosure` | Bank: recurring child-support payments not in ULAD | `id_list` |
+| `mutate_undisclosed_liabilities` | Bank: creditor payments absent from ULAD LIABILITIES | `id_list` |
+| `mutate_rental_income_consistency` | ULAD REO rental income + bank deposits | `boolean` |
+| `mutate_joint_account_holder` | Bank: joint account with non-borrower; ULAD: single borrower | `id_list_account` |
+| `mutate_payroll_paystub_consistency` | Bank payroll deposits vs hypothetical paystub amount | `boolean` |
+| `mutate_payroll_undisclosed_employer` | ULAD employer A, bank payroll from employer B | `id_list` |
+| `mutate_undisclosed_income_source` | Bank: recurring SSA/side-gig deposits absent from ULAD | `id_list` |
+
+**Note:** All ULAD functions now accept an `answer_type` parameter to control output format.
 
 ---
 
@@ -88,8 +97,8 @@ python generate_test_cases.py --tags "BNPL" "large deposit" "payday loan"
 
 # Custom file paths
 python generate_test_cases.py \
-  --bank-statement generated_data/plaid_generated-test-5e399dfb.json \
-  --ulad generated_data/ulad_generated-test-5e399dfb.json \
+  --bank-statement generated_data/bank_statement_template.json \
+  --ulad generated_data/ulad_template.json \
   --output my_test_cases
 ```
 
