@@ -1,0 +1,19 @@
+{
+  "test_case_id": 23,
+  "test_case_number": "23",
+  "question": "Does the statement reflect the mortgage payment needed to confirm current payment history?",
+  "rephrased_question": "Does the statement reflect the mortgage payment needed to confirm current payment history? Answer yes or no.",
+  "answer_type": "boolean",
+  "label": "transaction_consistency",
+  "mutation_spec": {
+    "type": "transaction",
+    "mutation_type": "rental_payments"
+  },
+  "ground_truth_answer": "Yes",
+  "need_bank_statement": true,
+  "need_ulad": false,
+  "bank_statement_path": "bank_statement.json",
+  "ulad_path": null,
+  "gid": 47,
+  "old_id": "5-9"
+}
