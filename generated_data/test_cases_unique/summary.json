@@ -1,0 +1,13 @@
+{
+  "total_questions": 25,
+  "successful": 25,
+  "failed": 0,
+  "success_rate": "100.0%",
+  "failed_cases": [],
+  "generation_info": {
+    "questions_file": "data/unique_questions.csv",
+    "bank_statement_file": "generated_data/plaid_generated-test-5e399dfb.json",
+    "ulad_file": "generated_data/ulad_generated-test-5e399dfb.json",
+    "output_directory": "generated_data/test_cases_unique"
+  }
+}
