@@ -2,322 +2,127 @@
 
 ## Overview
 
-A data mutation system that generates test cases from `questions.csv` file. 
-The system automatically mutates bank statements and ULAD data, and generates ground truth answers in your expected format  
+A data mutation system that generates test cases from `questions.csv`.  
+The system mutates both bank statements and ULAD files, then records a ground truth answer for each question.
 
+---
 
 ## Components
 
-### 1. `data_mutator.py`
-Core mutation library with unified mutation functions and configuration dictionaries.
+### `data_mutator.py`
+Core mutation library with three public interfaces:
 
-**Key Features:**
-- Removes existing transactions by tag
-- Adds new randomized transactions
-- Generates formatted ground truth answers
-- Maintains transaction consistency (dates, IDs, amounts)
+| Method | Returns | Use when |
+|--------|---------|----------|
+| `mutate_transaction(type, num=None)` | `(bank, answer)` | Adding/removing tagged transactions |
+| `mutate_account(type, has=None)` | `(bank, answer)` | Adding/removing whole accounts |
+| `mutate_*(...)` | `(bank, ulad, answer)` | Cross-document ULAD consistency checks |
 
-**Functions:**
-- `mutate_transaction(transaction_type, num_transactions)` - Handles all transaction mutations
-- `mutate_account(account_type, has_account)` - Handles all account mutations
+### `generate_test_cases.py`
+Batch processor that reads `questions.csv`, detects the right mutation via
+`MUTATION_RULES`, runs it, and writes each test case to its own directory.
 
-**Available Mutation Types:**
+---
 
-**Transaction Types (14):**
-- `bnpl` - BNPL payments (Klarna, Afterpay, etc.)
-- `large_deposits` - Large deposits (wires, gifts)
-- `rental_payments` - Rental/housing payments
-- `crypto_deposits` - Cryptocurrency deposits
-- `overdraft_fees` - Overdraft and NSF fees
-- `payday_loans` - Payday loan deposits
-- `foreign_deposits` - International wire transfers
-- `secured_loan_deposits` - Secured loan proceeds (401k loans)
-- `cash_deposits` - Excessive cash deposits
-- `unexplained_deposits` - Unsecured loan deposits
-- `undisclosed_income` - Side income, consulting, SSA
-- `undisclosed_housing_payments` - Undisclosed mortgage/housing
-- `withdrawals` - General withdrawals, earnest money
-- `additional_account_holder` - Transactions from joint holders
+## Mutation Types
 
-**Account Types (2):**
-- `retirement` - Add/remove retirement accounts
-- `custodial` - Add/remove custodial accounts
+### Bank Transaction Mutations (`mutate_transaction`)
 
-### 2. `generate_test_cases.py`
-Batch processor that reads questions.csv and generates complete test cases.
+| Key | Tag | Description |
+|-----|-----|-------------|
+| `bnpl` | `BNPL transactions` | Klarna, Afterpay, Affirm, etc. |
+| `large_deposits` | `large deposits` | Wire gifts, ACH credit |
+| `rental_payments` | `rental payments` | Monthly rent (spaced 30 days) |
+| `crypto_deposits` | `deposit from cryptocurrency source` | Coinbase, Gemini, etc. |
+| `overdraft_fees` | `overdraft or NSF` | $25/$35/$50 discrete fees |
+| `payday_loans` | `payday loan or high-interest lending source` | Speedy Cash, BEFOREPAY, etc. |
+| `foreign_deposits` | `foreign origin` | INTL WIRE IN CREDIT |
+| `secured_loan_deposits` | `secured loan` | 401K LOAN, Fidelity |
+| `cash_deposits` | `excessive cash deposits` | ATM Cash Deposit |
+| `unexplained_deposits` | `unexplained deposits` | LendingClub, LIGHTSTREAM, etc. |
+| `undisclosed_income` | `undisclosed income source` | SSA, side gig (recurring) |
+| `undisclosed_housing_payments` | `undisclosed housing payments` | Monthly housing |
+| `withdrawals` | `withdrawal` | Earnest money, wire out |
+| `additional_account_holder` | `additional account holder` | Transfer from joint holder |
+| `mortgage_payments` | `general transaction` | ACH DEBIT mortgage payment |
 
-**Features:**
-- Automatically detects which mutation to apply based on question text
-- Generates separate directories for each test case
-- Creates metadata files with ground truth answers
-- Supports filtering by tag keywords
-- Generates summary report
+### Bank Account Mutations (`mutate_account`)
 
-## Quick Start
+| Key | Type | Description |
+|-----|------|-------------|
+| `retirement` | `investment / 401k` | Add/remove 401k with contributions |
+| `custodial` | `depository / money market` | Add/remove UTMA custodial account |
+| `business` | `depository / checking (class=business)` | Add/remove business checking |
 
-### Generate All Test Cases
+### ULAD Cross-Document Mutations (return `bank, ulad, answer`)
+
+| Method | What it mutates | Answer type |
+|--------|----------------|-------------|
+| `mutate_employer_payroll_consistency` | ULAD employer + bank payroll deposits | Yes/Mismatch |
+| `mutate_address_match` | Bank identity address vs ULAD residence address | Yes/Mismatch |
+| `mutate_gift_deposit` | ULAD PURCHASE_CREDITS gift amount + matching bank deposit | Match/No match |
+| `mutate_child_support_disclosure` | Bank: recurring child-support payments not in ULAD | Transaction list |
+| `mutate_undisclosed_liabilities` | Bank: creditor payments absent from ULAD LIABILITIES | Transaction list |
+| `mutate_rental_income_consistency` | ULAD REO rental income + bank deposits | Yes/Mismatch |
+| `mutate_joint_account_holder` | Bank: joint account with non-borrower; ULAD: single borrower | Account info |
+| `mutate_payroll_paystub_consistency` | Bank payroll deposits vs hypothetical paystub amount | Yes/Mismatch |
+| `mutate_payroll_undisclosed_employer` | ULAD employer A, bank payroll from employer B | Mismatch description |
+| `mutate_undisclosed_income_source` | Bank: recurring SSA/side-gig deposits absent from ULAD | Transaction list |
+
+---
+
+## Examples
 
 ```bash
+# Generate ALL test cases (88/90 covered)
 python generate_test_cases.py
-```
 
-This will:
-1. Read all questions from `data/questions.csv`
-2. Generate test cases in `test_cases/` directory
-3. Each test case gets its own folder: `test_case_0001/`, `test_case_0002/`, etc.
-
-### Generate Limited Test Cases
-
-```bash
+# Generate first 10 for a quick look
 python generate_test_cases.py --limit 10
-```
 
-### Generate Only Specific Tags
-
-```bash
 # Only BNPL-related questions
 python generate_test_cases.py --tags "BNPL"
 
 # Multiple tags
-python generate_test_cases.py --tags "BNPL" "large deposits" "cryptocurrency"
-```
+python generate_test_cases.py --tags "BNPL" "large deposit" "payday loan"
 
-### Custom Paths
-
-```bash
+# Custom file paths
 python generate_test_cases.py \
-  --questions data/questions.csv \
-  --bank-statement generated_data/dataset_generated-test-7a8d6178.json \
-  --ulad data/ulad.json \
+  --bank-statement generated_data/plaid_generated-test-5e399dfb.json \
+  --ulad generated_data/ulad_generated-test-5e399dfb.json \
   --output my_test_cases
 ```
 
-## Output Structure
+---
 
-After running the generator, you'll have:
+## Output Structure
 
 ```
 test_cases/
-├── summary.json                    # Overall summary of generation
+├── summary.json               ← aggregate stats + all metadata
 ├── test_case_0001/
-│   ├── metadata.json              # Test case info and ground truth
-│   ├── bank_statement.json        # Mutated bank statement
-│   └── ulad.json                  # ULAD data (if needed)
+│   ├── metadata.json          ← question, answer, mutation info
+│   ├── bank_statement.json    ← mutated Plaid JSON (if need_bank_statement=1)
+│   └── ulad.json              ← mutated ULAD JSON   (if need_ulad=1)
 ├── test_case_0002/
-│   ├── metadata.json
-│   ├── bank_statement.json
-│   └── ulad.json
+│   └── ...
 └── ...
 ```
 
-### metadata.json Structure
 
-```json
-{
-  "test_case_id": 1,
-  "test_case_number": "1",
-  "question": "Original question text",
-  "rephrased_question": "Rephrased question text",
-  "answer_type": "id_list",
-  "label": "has_any",
-  "mutation_function": "mutate_bnpl_transactions",
-  "ground_truth_answer": "3 transactions:\n1) 2026-01-15 - ACH DEBIT - Klarna PMT - $62.00\n...",
-  "need_bank_statement": true,
-  "need_ulad": false,
-  "bank_statement_path": "bank_statement.json",
-  "ulad_path": null
-}
-```
+---
 
-## Usage
+### TRANSACTION_CONFIGS fields
 
-```python
-from data_mutator import DataMutator
+| Field | Type | Description |
+|-------|------|-------------|
+| `tag` | str | Transaction tag for remove/insert |
+| `keywords` | list[str] | Provider / description keywords |
+| `description_template` | str | `"{keyword}"` or `"ACH DEBIT - {keyword} PMT"` |
+| `amount_range` | tuple | `(min, max)` uniform random |
+| `amount_discrete` | list | Use instead of range (e.g. NSF fees) |
+| `amount_sign` | str | `"positive"` or `"negative"` |
+| `default_count_range` | tuple | `(min, max)` transaction count |
+| `date_spacing` | str/None | `"monthly"`, `"bi-weekly"`, `"weekly"`, or `None` |
+| `recurring` | bool | All transactions share the same keyword + base amount |
 
-# Initialize mutator
-mutator = DataMutator(
-    "generated_data/dataset_generated-test-7a8d6178.json",
-    "data/ulad.json"
-)
-
-# Transaction mutations using unified function
-bank, answer = mutator.mutate_transaction("bnpl", num_transactions=3)
-bank, answer = mutator.mutate_transaction("large_deposits", num_deposits=5)
-bank, answer = mutator.mutate_transaction("crypto_deposits")  # Random count
-
-# Account mutations using unified function
-bank, answer = mutator.mutate_account("retirement", has_account=True)
-bank, answer = mutator.mutate_account("custodial")  # Random decision
-```
-
-### Mutation Function Parameters
-
-Most mutation functions accept an optional parameter to control randomness:
-
-```python
-# Random number of transactions (uses default_count_range from config)
-bank, answer = mutator.mutate_transaction("bnpl")
-
-# Exactly 3 transactions
-bank, answer = mutator.mutate_transaction("bnpl", num_transactions=3)
-
-# No transactions (negative test case)
-bank, answer = mutator.mutate_transaction("bnpl", num_transactions=0)
-```
-
-For account-based mutations:
-
-```python
-# Random decision
-bank, answer = mutator.mutate_account("retirement")
-
-# Force presence
-bank, answer = mutator.mutate_account("retirement", has_account=True)
-
-# Force absence
-bank, answer = mutator.mutate_account("retirement", has_account=False)
-```
-
-## Configuration System
-
-### TRANSACTION_CONFIGS
-
-All transaction mutations are defined in the `TRANSACTION_CONFIGS` dictionary in `data_mutator.py`:
-
-```python
-TRANSACTION_CONFIGS = {
-    "bnpl": {
-        "tag": "BNPL transactions",
-        "keywords": ["Klarna", "Afterpay", "Affirm", ...],
-        "description_template": "ACH DEBIT - {keyword} PMT",
-        "amount_range": (25, 150),
-        "amount_sign": "negative",
-        "default_count_range": (0, 4),
-        "date_spacing": None,
-    },
-    # ... 13 more transaction types
-}
-```
-
-**Configuration Fields:**
-
-| Field | Type | Description | Example |
-|-------|------|-------------|---------|
-| `tag` | str | Transaction tag for filtering | `"BNPL transactions"` |
-| `keywords` | list[str] | Provider/description keywords | `["Klarna", "Afterpay"]` |
-| `description_template` | str | Template for transaction description | `"ACH DEBIT - {keyword} PMT"` |
-| `amount_range` | tuple | (min, max) amount range | `(25, 150)` |
-| `amount_discrete` | list[float] | Discrete amounts (alternative to range) | `[25, 35, 50]` |
-| `amount_sign` | str | `"positive"` or `"negative"` | `"negative"` |
-| `default_count_range` | tuple | (min, max) default transaction count | `(0, 4)` |
-| `date_spacing` | str/None | Date spacing pattern | `"monthly"`, `"bi-weekly"`, `None` |
-| `recurring` | bool | Use same keyword for all transactions | `True` |
-
-### ACCOUNT_CONFIGS
-
-All account mutations are defined in the `ACCOUNT_CONFIGS` dictionary:
-
-```python
-ACCOUNT_CONFIGS = {
-    "retirement": {
-        "tag": "retirement accounts",
-        "type": "investment",
-        "subtype": "401k",
-        "balance_range": (20000, 150000),
-        "transaction_tag": "retirement assets",
-        "transaction_description": "Contribution",
-        "transaction_amount": 500,
-        "official_name": None,
-        "answer_format": "Retirement account #{account_num} - ${balance:,.2f}",
-    },
-    # ... more account types
-}
-```
-
-
-## Advanced Configuration Features
-
-### Date Spacing
-
-Control how transactions are spaced in time:
-
-```python
-# Random dates (default)
-"date_spacing": None
-
-# Monthly spacing (30 days apart)
-"date_spacing": "monthly"
-
-# Bi-weekly spacing (15 days apart)
-"date_spacing": "bi-weekly"
-
-# Weekly spacing (7 days apart)
-"date_spacing": "weekly"
-```
-
-### Recurring Transactions
-
-For recurring income/payments that should use the same provider:
-
-```python
-{
-    "tag": "undisclosed income source",
-    "keywords": ["Consulting Income", "Side Gig", "Freelance Payment"],
-    "recurring": True,  # All transactions will use same keyword
-    "amount_range": (200, 2500),
-    # Each transaction gets amount with slight variance
-}
-```
-
-### Discrete Amounts
-
-For fees with specific amounts:
-
-```python
-{
-    "tag": "overdraft or NSF",
-    "keywords": ["Overdraft Fee", "NSF Fee"],
-    "amount_discrete": [25, 35, 50],  # Instead of range
-    "amount_sign": "negative",
-}
-```
-
-### Description Templates
-
-Flexible templates for transaction descriptions:
-
-```python
-# Use keyword as-is
-"description_template": "{keyword}"
-# Result: "WIRE IN CREDIT - GIFT FROM RELATIVE"
-
-# Add prefix/suffix
-"description_template": "ACH DEBIT - {keyword} PMT"
-# Result: "ACH DEBIT - Klarna PMT"
-
-# Complex formatting
-"description_template": "Transfer from {keyword}"
-# Result: "Transfer from Alice Homeowner"
-```
-
-## Tag Mapping
-
-The system automatically detects which mutation to use based on keywords in questions:
-
-| Question Keywords | Mutation Type |
-|------------------|---------------|
-| "BNPL", "buy now pay later", "Klarna" | `bnpl` |
-| "large deposits", "irregular deposits" | `large_deposits` |
-| "rental payments", "rent" | `rental_payments` |
-| "cryptocurrency", "crypto" | `crypto_deposits` |
-| "overdraft", "NSF" | `overdraft_fees` |
-| "payday loan" | `payday_loans` |
-| "foreign", "international wire" | `foreign_deposits` |
-| "secured loan", "401k loan" | `secured_loan_deposits` |
-| "cash deposits" | `cash_deposits` |
-| "unexplained deposits", "unsecured" | `unexplained_deposits` |
-| "undisclosed income" | `undisclosed_income` |
-| "undisclosed housing" | `undisclosed_housing_payments` |
-| "withdrawal", "earnest money" | `withdrawals` |
-| "retirement" | `retirement` |
-| "custodial" | `custodial` |
