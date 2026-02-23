@@ -33,6 +33,8 @@ See --help for full list of command-line options.
 import ast
 import datetime
 import os
+from dotenv import load_dotenv
+load_dotenv(override=True)
 import json
 import argparse
 import random
@@ -587,57 +589,57 @@ def preprocess_data(
 
 
 def load_dataset(
-    metadata_path="data/benchmark_dataset_metadata.json",
-    test_cases_path="data/benchmark_dataset_test_cases.jsonl",
+    csv_path="data/questions_unique_generated.csv",
+    test_cases_dir="generated_data/test_cases_unique",
+    question_col="question",
 ):
-    """Load the benchmark dataset by combining metadata and test case contexts."""
-    if not os.path.exists(metadata_path):
-        raise FileNotFoundError(f"Metadata file not found: {metadata_path}")
-    if not os.path.exists(test_cases_path):
-        raise FileNotFoundError(f"Test cases file not found: {test_cases_path}")
-
-    with open(metadata_path, "r") as metadata_file:
-        metadata_entries = json.load(metadata_file)
-
-    test_case_map_ctx = {}
-    with open(test_cases_path, "r") as test_cases_file:
-        for line in test_cases_file:
-            if not line.strip():
-                continue
-            entry = json.loads(line)
-            test_case_number = entry.get("test_case_number")
-            if test_case_number is None:
-                continue
-            test_case_map_ctx[int(test_case_number)] = entry
-
+    """Load the benchmark dataset using generated test cases and unique questions."""
+    df = pd.read_csv(csv_path)
     dataset = []
-    for item in metadata_entries:
-        test_case_number = int(item["test_case_number"])
-        test_case_entry = test_case_map_ctx.get(test_case_number)
-        if not test_case_entry:
-            raise ValueError(
-                f"Missing test case data for Test Case {test_case_number}."
-            )
-        bank_statement = test_case_entry.get("bank_statement")
-        if not bank_statement:
-            try:
-                bank_statement = load_plaid_bank_statement(test_case_number)
-            except FileNotFoundError as exc:
-                print(f"Warning: {exc}")
-                bank_statement = None
-        ulad_du = test_case_entry.get("ulad_du")
-        if ulad_du is None:
-            try:
-                ulad_du = load_ulad_xml(test_case_number)
-            except FileNotFoundError:
-                ulad_du = None
-        dataset.append(
-            {
-                **item,
-                "bank_statement": bank_statement,
-                "ulad_du": ulad_du,
-            }
-        )
+
+    for idx, row in df.iterrows():
+        tc_id = idx + 1
+        tc_dir = os.path.join(test_cases_dir, f"test_case_{tc_id:04d}")
+        
+        bank_path = os.path.join(tc_dir, "bank_statement.json")
+        ulad_path = os.path.join(tc_dir, "ulad.json")
+        
+        bank_statement = {}
+        if os.path.exists(bank_path):
+            with open(bank_path, "r") as f:
+                bank_statement = json.load(f)
+                
+        ulad_du = None
+        if os.path.exists(ulad_path):
+            with open(ulad_path, "r") as f:
+                ulad_du_obj = json.load(f)
+                # Keep it as formatted JSON string for the prompt
+                ulad_du = json.dumps(ulad_du_obj, indent=2)
+
+        gt_answer = row["revised_answer"]
+        answer_type = row["answer_type"]
+        
+        if answer_type == "id_list":
+            answer_type = "txn_id_list"
+        elif answer_type == "id_list_account":
+            answer_type = "account_id_list"
+
+        try:
+            question = str(row[question_col]) if question_col in row else str(row["question"])
+        except KeyError:
+            question = str(row.get("question", ""))
+
+        dataset.append({
+            "question_id": f"{tc_id}",
+            "loan_id": f"test_{tc_id}",
+            "test_case_number": int(row.get("test_case_number", tc_id)),
+            "question": question,
+            "answer": gt_answer,
+            "answer_type": answer_type,
+            "pii": False,
+            "bank_statement": bank_statement,
+            "ulad_du": ulad_du
+        })
 
     return pd.DataFrame(dataset)
 
@@ -996,11 +998,27 @@ def is_correct(predicted_answer, answer_type, gt_answer):
             )
             return {"exact_match": False, "f1_score": 0.0}
 
-        gt_tokens = [str(token).strip().lower() for token in gt_answer.split(",")]
-        if len(gt_tokens) == 1 and gt_tokens[0] == "none":
+        gt_str = str(gt_answer).strip()
+        gt_list_raw = []
+        if gt_str.startswith("[") and gt_str.endswith("]"):
+            try:
+                parsed_gt = ast.literal_eval(gt_str)
+                if isinstance(parsed_gt, list):
+                    gt_list_raw = parsed_gt
+                else:
+                    gt_list_raw = gt_str.split(",")
+            except (ValueError, SyntaxError):
+                gt_list_raw = gt_str.split(",")
+        else:
+            gt_list_raw = gt_str.split(",")
+
+        gt_tokens = [str(token).strip().lower() for token in gt_list_raw]
+        if len(gt_tokens) == 1 and (gt_tokens[0] == "none" or gt_tokens[0] == "[]" or gt_tokens[0] == ""):
             gt_answer = []
         else:
             gt_answer = [token for token in gt_tokens if token]
+            if answer_type == "account_id_list":
+                gt_answer = [token[-4:] if len(token) >= 4 else token for token in gt_answer]
 
         normalized_pred = []
         for token in pred_as_list:
@@ -1008,6 +1026,8 @@ def is_correct(predicted_answer, answer_type, gt_answer):
                 token = str(token)
             token = token.strip().lower()
             if token:
+                if answer_type == "account_id_list" and len(token) >= 4:
+                    token = token[-4:]
                 normalized_pred.append(token)
 
         pred_set = set(normalized_pred)
@@ -1321,35 +1341,12 @@ def main():
     output_dir = f"results/{args.results_dir}/{args.question_col.replace(' ', '_')}/{now}"
     os.makedirs(output_dir, exist_ok=True)
 
-    metadata_exists = os.path.exists(args.metadata_path)
-    test_cases_exists = os.path.exists(args.test_cases_path)
-
-    if not metadata_exists or not test_cases_exists:
-        if args.skip_preprocessing:
-            raise FileNotFoundError(
-                "Benchmark dataset files are missing but --skip_preprocessing was set."
-            )
-        print("Preprocessing data...")
-        if not preprocess_data(
-            args.question_col,
-            args.excel_path,
-            args.metadata_path,
-            args.test_cases_path,
-        ):
-            print("Preprocessing failed. Exiting.")
-            return
-    else:
-        print(
-            f"Found existing benchmark files at {args.metadata_path} and {args.test_cases_path}. "
-            "Skipping preprocessing."
-        )
-
     print(f"\n{'='*50}")
     print(f"Running evaluation")
     print(f"{'='*50}")
 
     print(f"Loading dataset...")
-    dataset = load_dataset(args.metadata_path, args.test_cases_path)
+    dataset = load_dataset(question_col=args.question_col)
     print(f"Loaded {len(dataset)} samples")
 
     if len(dataset) == 0:

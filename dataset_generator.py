@@ -51,7 +51,10 @@ TAG_OPTIONS = {
     "undisclosed_income": "undisclosed income source",
     "unexplained_deposit": "unexplained deposits",
     "excessive_cash": "excessive cash deposits",
-    "default": "general transaction"
+    "default": "general transaction",
+    "mortgage_payments": "mortgage payments",
+    "savings_club": "private savings club",
+    "business_account": "business account"
 }
 
 EMPLOYERS = ["Acme Corp", "Global Tech", "State University", "City Hospital"]
@@ -211,7 +214,7 @@ class PlaidGenerator:
         if rand_val < 0.33:
              checking_txns.append(self._create_txn(random.choice(KEYWORDS["Rental"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["rental"]))
         elif rand_val < 0.66:
-             checking_txns.append(self._create_txn(random.choice(KEYWORDS["Mortgage"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["default"]))
+             checking_txns.append(self._create_txn(random.choice(KEYWORDS["Mortgage"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["mortgage_payments"]))
         else:
              checking_txns.append(self._create_txn("Housing Payment", -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["undisclosed_housing"]))
         
@@ -296,7 +299,7 @@ class PlaidGenerator:
         # Prepare Savings Transactions
         # Savings Club (Credit/Deposit -> Positive)
         r = profile["savings_club"]
-        savings_txns_to_move.append(self._create_txn(random.choice(KEYWORDS["Savings_Club"]), round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["default"]))
+        savings_txns_to_move.append(self._create_txn(random.choice(KEYWORDS["Savings_Club"]), round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["savings_club"]))
         # Secured Loan Deposit (Credit/Deposit -> Positive)
         r = profile["secured_loan"]
         savings_txns_to_move.append(self._create_txn(random.choice(KEYWORDS["Secured_Loan"]), round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["secured_loan"]))
@@ -430,7 +433,8 @@ class PlaidGenerator:
                      "names": ["John's Business LLC"],
                      "emails": [{"data": "john@business.com", "primary": True, "type": "work"}],
                      "addresses": [{"data": {"city": "Washington", "country": "US", "postal_code": "20013", "region": "DC", "street": "123 Biz St"}, "primary": True}]
-                }
+                },
+                "tags": [TAG_OPTIONS["business_account"]]
             }
             accounts.append(business_account)
 
