@@ -200,10 +200,10 @@
           "date_posted": "2026-01-01"
         },
         {
-          "description": "Side Gig",
-          "amount": 611.05,
+          "description": "Consulting Income",
+          "amount": 1165.05,
           "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01018",
+          "transaction_id": "plaid-a5024c80-01014",
           "tag": "undisclosed income source",
           "date_transacted": "2025-12-30",
           "date_posted": "2025-12-31"
@@ -227,15 +227,6 @@
           "date_posted": "2025-12-27"
         },
         {
-          "description": "Side Gig",
-          "amount": 626.64,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01017",
-          "tag": "undisclosed income source",
-          "date_transacted": "2025-12-14",
-          "date_posted": "2025-12-15"
-        },
-        {
           "description": "Check Deposit (No Image)",
           "amount": 1200,
           "currency": "USD",
@@ -243,6 +234,15 @@
           "tag": "general transaction",
           "date_transacted": "2025-12-04",
           "date_posted": "2025-12-05"
+        },
+        {
+          "description": "Consulting Income",
+          "amount": 1145.89,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01013",
+          "tag": "undisclosed income source",
+          "date_transacted": "2025-11-27",
+          "date_posted": "2025-11-28"
         },
         {
           "date_transacted": "2025-11-26",

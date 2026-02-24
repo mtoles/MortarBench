@@ -395,20 +395,20 @@
     {
       "type": "depository",
       "subtype": "checking",
-      "starting_balance": 78757.7,
+      "starting_balance": 69749.73,
       "currency": "USD",
       "numbers": {
-        "account": "96904902"
+        "account": "66188826"
       },
       "transactions": [
         {
           "description": "Business Transfer",
           "amount": 100,
           "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01033",
+          "transaction_id": "plaid-a5024c80-01026",
           "tag": "business account",
-          "date_transacted": "2026-02-03",
-          "date_posted": "2025-12-20"
+          "date_transacted": "2026-01-17",
+          "date_posted": "2026-02-07"
         }
       ],
       "identity": {

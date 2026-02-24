@@ -74,6 +74,15 @@
           "date_posted": "2026-02-25"
         },
         {
+          "description": "ACH DEBIT No Nonsense Credit Card PMT",
+          "amount": -180.78,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01020",
+          "tag": "general transaction",
+          "date_transacted": "2026-02-20",
+          "date_posted": "2026-02-21"
+        },
+        {
           "description": "Venmo Cash Out",
           "amount": 347.3,
           "currency": "USD",
@@ -101,24 +110,6 @@
           "date_posted": "2026-02-13"
         },
         {
-          "description": "ACH DEBIT American Express PMT",
-          "amount": -102.44,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01025",
-          "tag": "general transaction",
-          "date_transacted": "2026-02-09",
-          "date_posted": "2026-02-10"
-        },
-        {
-          "description": "ACH DEBIT No Nonsense Credit Card PMT",
-          "amount": -466.83,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01024",
-          "tag": "general transaction",
-          "date_transacted": "2026-02-08",
-          "date_posted": "2026-02-09"
-        },
-        {
           "description": "Earnest Money Deposit",
           "amount": -2231.1,
           "currency": "USD",
@@ -144,6 +135,15 @@
           "tag": "unexplained deposits",
           "date_transacted": "2026-02-03",
           "date_posted": "2026-02-04"
+        },
+        {
+          "description": "ACH DEBIT AMEX PMT",
+          "amount": -197.09,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01022",
+          "tag": "general transaction",
+          "date_transacted": "2026-02-02",
+          "date_posted": "2026-02-03"
         },
         {
           "description": "Ace Cash Express",
@@ -200,20 +200,20 @@
           "date_posted": "2026-01-15"
         },
         {
-          "description": "ACH DEBIT Visa Credit Card PMT",
-          "amount": -135.01,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01023",
-          "tag": "general transaction",
-          "date_transacted": "2026-01-11",
-          "date_posted": "2026-01-12"
-        },
-        {
           "description": "Purchase at Crypto.com",
           "amount": -487.29,
           "currency": "USD",
           "transaction_id": "plaid-a5024c80-00007",
           "tag": "withdrawal",
+          "date_transacted": "2026-01-10",
+          "date_posted": "2026-01-11"
+        },
+        {
+          "description": "ACH DEBIT Ally Bank PMT",
+          "amount": -388.92,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01019",
+          "tag": "general transaction",
           "date_transacted": "2026-01-10",
           "date_posted": "2026-01-11"
         },
@@ -232,6 +232,15 @@
           "currency": "USD",
           "transaction_id": "plaid-a5024c80-00014",
           "tag": "excessive cash deposits",
+          "date_transacted": "2026-01-06",
+          "date_posted": "2026-01-07"
+        },
+        {
+          "description": "ACH DEBIT American Express PMT",
+          "amount": -478.72,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01021",
+          "tag": "general transaction",
           "date_transacted": "2026-01-06",
           "date_posted": "2026-01-07"
         },
@@ -281,15 +290,6 @@
           "date_posted": "2025-12-18"
         },
         {
-          "description": "ACH DEBIT Ally Bank PMT",
-          "amount": -90.5,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01027",
-          "tag": "general transaction",
-          "date_transacted": "2025-12-09",
-          "date_posted": "2025-12-10"
-        },
-        {
           "description": "Check Deposit (No Image)",
           "amount": 1200,
           "currency": "USD",
@@ -297,15 +297,6 @@
           "tag": "general transaction",
           "date_transacted": "2025-12-04",
           "date_posted": "2025-12-05"
-        },
-        {
-          "description": "ACH DEBIT Discover PMT",
-          "amount": -218.9,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01026",
-          "tag": "general transaction",
-          "date_transacted": "2025-11-28",
-          "date_posted": "2025-11-29"
         },
         {
           "date_transacted": "2025-11-26",

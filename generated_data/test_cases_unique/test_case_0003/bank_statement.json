@@ -92,15 +92,6 @@
           "date_posted": "2026-02-14"
         },
         {
-          "description": "WIRE IN CREDIT - GIFT FROM RELATIVE",
-          "amount": 57777.99,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01004",
-          "tag": "large deposits",
-          "date_transacted": "2026-02-08",
-          "date_posted": "2026-02-09"
-        },
-        {
           "description": "Earnest Money Deposit",
           "amount": -2231.1,
           "currency": "USD",
@@ -153,15 +144,6 @@
           "tag": "foreign origin",
           "date_transacted": "2026-01-28",
           "date_posted": "2026-01-29"
-        },
-        {
-          "description": "WIRE IN CREDIT - MARY HOMEOWNER GIFT",
-          "amount": 9266.73,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01005",
-          "tag": "large deposits",
-          "date_transacted": "2026-01-26",
-          "date_posted": "2026-01-27"
         },
         {
           "date_transacted": "2026-01-25",
@@ -261,15 +243,6 @@
           "tag": "general transaction",
           "date_transacted": "2025-12-04",
           "date_posted": "2025-12-05"
-        },
-        {
-          "description": "ACH CREDIT - GIFT",
-          "amount": 17087.01,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01006",
-          "tag": "large deposits",
-          "date_transacted": "2025-11-28",
-          "date_posted": "2025-11-29"
         },
         {
           "date_transacted": "2025-11-26",

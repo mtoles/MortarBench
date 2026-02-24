@@ -191,15 +191,6 @@
           "date_posted": "2026-01-10"
         },
         {
-          "description": "INTL WIRE IN CREDIT - FOREIGN FUNDS TRANSFER",
-          "amount": 10089.05,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01029",
-          "tag": "foreign origin",
-          "date_transacted": "2026-01-09",
-          "date_posted": "2026-01-10"
-        },
-        {
           "description": "Cash Deposit",
           "amount": 3484.71,
           "currency": "USD",

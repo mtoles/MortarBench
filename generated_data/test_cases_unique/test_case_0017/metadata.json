@@ -7,9 +7,11 @@
   "label": "has_any",
   "mutation_type": "transaction",
   "mutation_key": "foreign_deposits",
-  "ground_truth_answer": "['plaid-a5024c80-01029']",
+  "ground_truth_answer": "[]",
   "need_bank_statement": true,
   "need_ulad": false,
   "bank_statement_path": "bank_statement.json",
-  "ulad_path": null
+  "ulad_path": null,
+  "gid": 38,
+  "old_id": "4-10"
 }

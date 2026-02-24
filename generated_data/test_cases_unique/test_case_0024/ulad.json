@@ -57,7 +57,7 @@
                 {
                   "ASSET_DETAIL": {
                     "AssetType": "RealEstateOwned",
-                    "AssetCashOrMarketValueAmount": "490358.00"
+                    "AssetCashOrMarketValueAmount": "783718.00"
                   },
                   "OWNED_PROPERTY": {
                     "ADDRESS": {
@@ -69,7 +69,7 @@
                     },
                     "OWNED_PROPERTY_DETAIL": {
                       "OwnedPropertyDispositionStatusType": "Retain",
-                      "OwnedPropertyRentalIncomeGrossAmount": "2400.00"
+                      "OwnedPropertyRentalIncomeGrossAmount": "3500.00"
                     }
                   },
                   "_SequenceNumber": "4",

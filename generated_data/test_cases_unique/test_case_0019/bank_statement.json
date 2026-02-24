@@ -200,15 +200,6 @@
           "date_posted": "2026-01-07"
         },
         {
-          "description": "ACH CREDIT - MoneyLion",
-          "amount": 1981.13,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01030",
-          "tag": "payday loan or high-interest lending source",
-          "date_transacted": "2026-01-06",
-          "date_posted": "2026-01-07"
-        },
-        {
           "description": "Child Support",
           "amount": -740.57,
           "currency": "USD",

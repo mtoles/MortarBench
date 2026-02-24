@@ -155,15 +155,6 @@
           "date_posted": "2026-01-29"
         },
         {
-          "description": "Landlord Payment",
-          "amount": -1244.85,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01009",
-          "tag": "rental payments",
-          "date_transacted": "2026-01-28",
-          "date_posted": "2026-01-29"
-        },
-        {
           "date_transacted": "2026-01-25",
           "date_posted": "2026-01-26",
           "amount": 4617.93,
@@ -218,15 +209,6 @@
           "date_posted": "2026-01-07"
         },
         {
-          "description": "Apt Rent",
-          "amount": -1718.11,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01008",
-          "tag": "rental payments",
-          "date_transacted": "2026-01-03",
-          "date_posted": "2026-01-04"
-        },
-        {
           "description": "Child Support",
           "amount": -740.57,
           "currency": "USD",
@@ -270,15 +252,6 @@
           "tag": "undisclosed income source",
           "date_transacted": "2025-12-17",
           "date_posted": "2025-12-18"
-        },
-        {
-          "description": "Apt Rent",
-          "amount": -1920.06,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01007",
-          "tag": "rental payments",
-          "date_transacted": "2025-12-08",
-          "date_posted": "2025-12-09"
         },
         {
           "description": "Check Deposit (No Image)",

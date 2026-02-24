@@ -7,9 +7,11 @@
   "label": "has_any",
   "mutation_type": "transaction",
   "mutation_key": "overdraft_fees",
-  "ground_truth_answer": "[]",
+  "ground_truth_answer": "['plaid-a5024c80-01015']",
   "need_bank_statement": true,
   "need_ulad": false,
   "bank_statement_path": "bank_statement.json",
-  "ulad_path": null
+  "ulad_path": null,
+  "gid": 15,
+  "old_id": "2-6"
 }

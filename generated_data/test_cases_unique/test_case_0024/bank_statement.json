@@ -182,6 +182,15 @@
           "date_posted": "2026-01-15"
         },
         {
+          "description": "ZELLE PAYMENT FROM JOHN SMITH",
+          "amount": 3500,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01033",
+          "tag": "general transaction",
+          "date_transacted": "2026-01-13",
+          "date_posted": "2026-01-14"
+        },
+        {
           "description": "Purchase at Crypto.com",
           "amount": -487.29,
           "currency": "USD",
@@ -236,15 +245,6 @@
           "date_posted": "2025-12-27"
         },
         {
-          "description": "ZELLE PAYMENT FROM JANE DOE",
-          "amount": 2400,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01038",
-          "tag": "general transaction",
-          "date_transacted": "2025-12-26",
-          "date_posted": "2025-12-27"
-        },
-        {
           "description": "Venmo Cash Out",
           "amount": 337.34000000000003,
           "currency": "USD",
@@ -263,15 +263,6 @@
           "date_posted": "2025-12-18"
         },
         {
-          "description": "ZELLE PAYMENT FROM JANE DOE",
-          "amount": 2400,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01037",
-          "tag": "general transaction",
-          "date_transacted": "2025-12-07",
-          "date_posted": "2025-12-08"
-        },
-        {
           "description": "Check Deposit (No Image)",
           "amount": 1200,
           "currency": "USD",
@@ -288,6 +279,15 @@
           "currency": "USD",
           "tag": "general transaction",
           "transaction_id": "plaid-a5024c80-00003"
+        },
+        {
+          "description": "ZELLE PAYMENT FROM JOHN SMITH",
+          "amount": 3500,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01032",
+          "tag": "general transaction",
+          "date_transacted": "2025-11-26",
+          "date_posted": "2025-11-27"
         }
       ],
       "identity": {

@@ -7,9 +7,11 @@
   "label": "has_any",
   "mutation_type": "transaction",
   "mutation_key": "savings_club",
-  "ground_truth_answer": "['plaid-a5024c80-01031', 'plaid-a5024c80-01032']",
+  "ground_truth_answer": "['plaid-a5024c80-01024', 'plaid-a5024c80-01025']",
   "need_bank_statement": true,
   "need_ulad": false,
   "bank_statement_path": "bank_statement.json",
-  "ulad_path": null
+  "ulad_path": null,
+  "gid": 35,
+  "old_id": "4-7"
 }

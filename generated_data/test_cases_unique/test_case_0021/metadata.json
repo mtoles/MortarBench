@@ -7,9 +7,11 @@
   "label": "metadata_consistency",
   "mutation_type": "account",
   "mutation_key": "business",
-  "ground_truth_answer": "['96904902']",
+  "ground_truth_answer": "['66188826']",
   "need_bank_statement": true,
   "need_ulad": false,
   "bank_statement_path": "bank_statement.json",
-  "ulad_path": null
+  "ulad_path": null,
+  "gid": 34,
+  "old_id": "4-6"
 }

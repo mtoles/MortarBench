@@ -16,7 +16,9 @@
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 0,
+      "old_id": "1-1"
     },
     {
       "test_case_id": 2,
@@ -31,7 +33,9 @@
       "need_bank_statement": true,
       "need_ulad": true,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": "ulad.json"
+      "ulad_path": "ulad.json",
+      "gid": 1,
+      "old_id": "1-2"
     },
     {
       "test_case_id": 3,
@@ -42,11 +46,13 @@
       "label": "has_any",
       "mutation_type": "transaction",
       "mutation_key": "large_deposits",
-      "ground_truth_answer": "['plaid-a5024c80-01004', 'plaid-a5024c80-01005', 'plaid-a5024c80-01006']",
+      "ground_truth_answer": "[]",
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 2,
+      "old_id": "1-3"
     },
     {
       "test_case_id": 4,
@@ -57,11 +63,13 @@
       "label": "has_any",
       "mutation_type": "transaction",
       "mutation_key": "rental_payments",
-      "ground_truth_answer": "['plaid-a5024c80-01007', 'plaid-a5024c80-01008', 'plaid-a5024c80-01009']",
+      "ground_truth_answer": "[]",
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 3,
+      "old_id": "1-4"
     },
     {
       "test_case_id": 5,
@@ -72,11 +80,13 @@
       "label": "has_any",
       "mutation_type": "ulad",
       "mutation_key": "mutate_child_support_disclosure",
-      "ground_truth_answer": "['plaid-a5024c80-01010', 'plaid-a5024c80-01011']",
+      "ground_truth_answer": "['plaid-a5024c80-01004', 'plaid-a5024c80-01005']",
       "need_bank_statement": true,
       "need_ulad": true,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": "ulad.json"
+      "ulad_path": "ulad.json",
+      "gid": 5,
+      "old_id": "1-6"
     },
     {
       "test_case_id": 6,
@@ -87,11 +97,13 @@
       "label": "has_any, transaction_consistency",
       "mutation_type": "ulad",
       "mutation_key": "mutate_gift_deposit",
-      "ground_truth_answer": "[]",
+      "ground_truth_answer": "['plaid-a5024c80-01006']",
       "need_bank_statement": true,
       "need_ulad": true,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": "ulad.json"
+      "ulad_path": "ulad.json",
+      "gid": 6,
+      "old_id": "1-7"
     },
     {
       "test_case_id": 7,
@@ -102,11 +114,13 @@
       "label": "has_any",
       "mutation_type": "transaction",
       "mutation_key": "secured_loan_deposits",
-      "ground_truth_answer": "['plaid-a5024c80-01013']",
+      "ground_truth_answer": "['plaid-a5024c80-01007', 'plaid-a5024c80-01008']",
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 7,
+      "old_id": "1-8"
     },
     {
       "test_case_id": 8,
@@ -121,7 +135,9 @@
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 8,
+      "old_id": "1-9"
     },
     {
       "test_case_id": 9,
@@ -132,11 +148,13 @@
       "label": "has_any",
       "mutation_type": "transaction",
       "mutation_key": "crypto_deposits",
-      "ground_truth_answer": "['plaid-a5024c80-01016']",
+      "ground_truth_answer": "['plaid-a5024c80-01011', 'plaid-a5024c80-01012']",
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 9,
+      "old_id": "1-10"
     },
     {
       "test_case_id": 10,
@@ -147,11 +165,13 @@
       "label": "has_any, transaction_consistency",
       "mutation_type": "ulad",
       "mutation_key": "mutate_undisclosed_income_source",
-      "ground_truth_answer": "['plaid-a5024c80-01017', 'plaid-a5024c80-01018']",
+      "ground_truth_answer": "['plaid-a5024c80-01013', 'plaid-a5024c80-01014']",
       "need_bank_statement": true,
       "need_ulad": true,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": "ulad.json"
+      "ulad_path": "ulad.json",
+      "gid": 19,
+      "old_id": "2-10"
     },
     {
       "test_case_id": 11,
@@ -166,7 +186,9 @@
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 18,
+      "old_id": "2-9"
     },
     {
       "test_case_id": 12,
@@ -177,11 +199,13 @@
       "label": "has_any",
       "mutation_type": "transaction",
       "mutation_key": "overdraft_fees",
-      "ground_truth_answer": "[]",
+      "ground_truth_answer": "['plaid-a5024c80-01015']",
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 15,
+      "old_id": "2-6"
     },
     {
       "test_case_id": 13,
@@ -192,11 +216,13 @@
       "label": "pooling, transaction_consistency",
       "mutation_type": "transaction",
       "mutation_key": "withdrawals",
-      "ground_truth_answer": "['plaid-a5024c80-01019']",
+      "ground_truth_answer": "[]",
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 26,
+      "old_id": "3-7"
     },
     {
       "test_case_id": 14,
@@ -207,11 +233,13 @@
       "label": "has_any, transaction_consistency",
       "mutation_type": "ulad",
       "mutation_key": "mutate_payroll_undisclosed_employer",
-      "ground_truth_answer": "['plaid-a5024c80-01020', 'plaid-a5024c80-01021', 'plaid-a5024c80-01022']",
+      "ground_truth_answer": "['plaid-a5024c80-01016', 'plaid-a5024c80-01017', 'plaid-a5024c80-01018']",
       "need_bank_statement": true,
       "need_ulad": true,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": "ulad.json"
+      "ulad_path": "ulad.json",
+      "gid": 28,
+      "old_id": "3-9"
     },
     {
       "test_case_id": 15,
@@ -222,11 +250,13 @@
       "label": "has_any, transaction_consistency",
       "mutation_type": "ulad",
       "mutation_key": "mutate_undisclosed_liabilities",
-      "ground_truth_answer": "['plaid-a5024c80-01023', 'plaid-a5024c80-01024', 'plaid-a5024c80-01025', 'plaid-a5024c80-01026', 'plaid-a5024c80-01027']",
+      "ground_truth_answer": "['plaid-a5024c80-01019', 'plaid-a5024c80-01020', 'plaid-a5024c80-01021', 'plaid-a5024c80-01022']",
       "need_bank_statement": true,
       "need_ulad": true,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": "ulad.json"
+      "ulad_path": "ulad.json",
+      "gid": 27,
+      "old_id": "3-8"
     },
     {
       "test_case_id": 16,
@@ -237,11 +267,13 @@
       "label": "metadata_consistency",
       "mutation_type": "ulad",
       "mutation_key": "mutate_joint_account_holder",
-      "ground_truth_answer": "['69718477']",
+      "ground_truth_answer": "['55024904']",
       "need_bank_statement": true,
       "need_ulad": true,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": "ulad.json"
+      "ulad_path": "ulad.json",
+      "gid": 25,
+      "old_id": "3-6"
     },
     {
       "test_case_id": 17,
@@ -252,11 +284,13 @@
       "label": "has_any",
       "mutation_type": "transaction",
       "mutation_key": "foreign_deposits",
-      "ground_truth_answer": "['plaid-a5024c80-01029']",
+      "ground_truth_answer": "[]",
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 38,
+      "old_id": "4-10"
     },
     {
       "test_case_id": 18,
@@ -271,7 +305,9 @@
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 37,
+      "old_id": "4-9"
     },
     {
       "test_case_id": 19,
@@ -282,11 +318,13 @@
       "label": "has_any",
       "mutation_type": "transaction",
       "mutation_key": "payday_loans",
-      "ground_truth_answer": "['plaid-a5024c80-01030']",
+      "ground_truth_answer": "[]",
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 36,
+      "old_id": "4-8"
     },
     {
       "test_case_id": 20,
@@ -297,11 +335,13 @@
       "label": "has_any",
       "mutation_type": "transaction",
       "mutation_key": "savings_club",
-      "ground_truth_answer": "['plaid-a5024c80-01031', 'plaid-a5024c80-01032']",
+      "ground_truth_answer": "['plaid-a5024c80-01024', 'plaid-a5024c80-01025']",
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 35,
+      "old_id": "4-7"
     },
     {
       "test_case_id": 21,
@@ -312,11 +352,13 @@
       "label": "metadata_consistency",
       "mutation_type": "account",
       "mutation_key": "business",
-      "ground_truth_answer": "['96904902']",
+      "ground_truth_answer": "['66188826']",
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 34,
+      "old_id": "4-6"
     },
     {
       "test_case_id": 22,
@@ -327,11 +369,13 @@
       "label": "metadata_consistency",
       "mutation_type": "account",
       "mutation_key": "retirement",
-      "ground_truth_answer": "[]",
+      "ground_truth_answer": "['24347583']",
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 45,
+      "old_id": "5-7"
     },
     {
       "test_case_id": 23,
@@ -346,7 +390,9 @@
       "need_bank_statement": true,
       "need_ulad": false,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": null
+      "ulad_path": null,
+      "gid": 47,
+      "old_id": "5-9"
     },
     {
       "test_case_id": 24,
@@ -361,7 +407,9 @@
       "need_bank_statement": true,
       "need_ulad": true,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": "ulad.json"
+      "ulad_path": "ulad.json",
+      "gid": 46,
+      "old_id": "5-8"
     },
     {
       "test_case_id": 25,
@@ -372,11 +420,13 @@
       "label": "statement_integrity",
       "mutation_type": "ulad",
       "mutation_key": "mutate_address_match",
-      "ground_truth_answer": "Yes",
+      "ground_truth_answer": "No",
       "need_bank_statement": true,
       "need_ulad": true,
       "bank_statement_path": "bank_statement.json",
-      "ulad_path": "ulad.json"
+      "ulad_path": "ulad.json",
+      "gid": 43,
+      "old_id": "5-5"
     }
   ]
 }

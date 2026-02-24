@@ -301,6 +301,9 @@ def generate_test_case(
     need_ulad = int(row["need_ulad"])
     tc_number = row["test_case_number"]
     label = row["label"]
+    gid = row["gid"]
+    old_id = row["old_id"]
+    
 
     spec = detect_mutation(question, rephrased)
     if spec is None:
@@ -350,6 +353,8 @@ def generate_test_case(
         "need_ulad": bool(need_ulad),
         "bank_statement_path": bank_rel_path,
         "ulad_path": ulad_rel_path,
+        "gid": gid,
+        "old_id": old_id,
     }
 
     with open(os.path.join(tc_dir, "metadata.json"), "w") as f:
@@ -363,11 +368,11 @@ def main():
     parser.add_argument("--questions", default="data/questions.csv")
     parser.add_argument(
         "--bank-statement",
-        default="generated_data/plaid_generated-test-5e399dfb.json",
+        default="generated_data/bank_statement.json",
     )
     parser.add_argument(
         "--ulad",
-        default="generated_data/ulad_generated-test-5e399dfb.json",
+        default="generated_data/ulad.json",
     )
     parser.add_argument("--output", default="test_cases")
     parser.add_argument("--limit", type=int, default=None,

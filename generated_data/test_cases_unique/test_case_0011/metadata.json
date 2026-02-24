@@ -11,5 +11,7 @@
   "need_bank_statement": true,
   "need_ulad": false,
   "bank_statement_path": "bank_statement.json",
-  "ulad_path": null
+  "ulad_path": null,
+  "gid": 18,
+  "old_id": "2-9"
 }

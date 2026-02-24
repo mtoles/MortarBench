@@ -156,12 +156,12 @@
         },
         {
           "description": "ACH CREDIT - 401K LOAN",
-          "amount": 26174.38,
+          "amount": 9064.66,
           "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01013",
+          "transaction_id": "plaid-a5024c80-01007",
           "tag": "secured loan",
-          "date_transacted": "2026-01-20",
-          "date_posted": "2026-01-21"
+          "date_transacted": "2026-01-25",
+          "date_posted": "2026-01-26"
         },
         {
           "description": "Deposit from Binance",
@@ -252,6 +252,15 @@
           "tag": "undisclosed income source",
           "date_transacted": "2025-12-17",
           "date_posted": "2025-12-18"
+        },
+        {
+          "description": "ACH CREDIT - Secured Loan Deposit",
+          "amount": 42854.9,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01008",
+          "tag": "secured loan",
+          "date_transacted": "2025-12-12",
+          "date_posted": "2025-12-13"
         },
         {
           "description": "Check Deposit (No Image)",

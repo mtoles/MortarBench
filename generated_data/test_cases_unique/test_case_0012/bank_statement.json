@@ -245,6 +245,15 @@
           "date_posted": "2025-12-18"
         },
         {
+          "description": "Overdraft Fee",
+          "amount": -50.0,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01015",
+          "tag": "overdraft or NSF",
+          "date_transacted": "2025-12-15",
+          "date_posted": "2025-12-16"
+        },
+        {
           "description": "Check Deposit (No Image)",
           "amount": 1200,
           "currency": "USD",

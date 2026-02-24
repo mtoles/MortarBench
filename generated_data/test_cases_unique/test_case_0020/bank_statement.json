@@ -173,15 +173,6 @@
           "date_posted": "2026-01-15"
         },
         {
-          "description": "ACH CREDIT - SAVINGS CLUB DEPOSIT",
-          "amount": 4456.64,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01032",
-          "tag": "private savings club",
-          "date_transacted": "2026-01-14",
-          "date_posted": "2026-01-15"
-        },
-        {
           "description": "Purchase at Crypto.com",
           "amount": -487.29,
           "currency": "USD",
@@ -207,6 +198,15 @@
           "tag": "excessive cash deposits",
           "date_transacted": "2026-01-06",
           "date_posted": "2026-01-07"
+        },
+        {
+          "description": "ACH CREDIT - INFORMAL SAVINGS GROUP",
+          "amount": 1094.05,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01025",
+          "tag": "private savings club",
+          "date_transacted": "2026-01-04",
+          "date_posted": "2026-01-05"
         },
         {
           "description": "Child Support",
@@ -254,6 +254,15 @@
           "date_posted": "2025-12-18"
         },
         {
+          "description": "ACH CREDIT - INFORMAL SAVINGS GROUP",
+          "amount": 4499.07,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01024",
+          "tag": "private savings club",
+          "date_transacted": "2025-12-14",
+          "date_posted": "2025-12-15"
+        },
+        {
           "description": "Check Deposit (No Image)",
           "amount": 1200,
           "currency": "USD",
@@ -261,15 +270,6 @@
           "tag": "general transaction",
           "date_transacted": "2025-12-04",
           "date_posted": "2025-12-05"
-        },
-        {
-          "description": "ACH CREDIT - SAVINGS CLUB DEPOSIT",
-          "amount": 2889.58,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01031",
-          "tag": "private savings club",
-          "date_transacted": "2025-11-27",
-          "date_posted": "2025-11-28"
         },
         {
           "date_transacted": "2025-11-26",

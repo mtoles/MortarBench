@@ -182,15 +182,6 @@
           "date_posted": "2026-01-10"
         },
         {
-          "description": "ATM Withdrawal",
-          "amount": -425.05,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01019",
-          "tag": "withdrawal",
-          "date_transacted": "2026-01-08",
-          "date_posted": "2026-01-09"
-        },
-        {
           "description": "Cash Deposit",
           "amount": 3484.71,
           "currency": "USD",

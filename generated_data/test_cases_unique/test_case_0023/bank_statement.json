@@ -74,6 +74,15 @@
           "date_posted": "2026-02-25"
         },
         {
+          "description": "ACH DEBIT - CALLABLE MORTGAGE PAYMENT",
+          "amount": -1899.8,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01031",
+          "tag": "mortgage payments",
+          "date_transacted": "2026-02-24",
+          "date_posted": "2026-02-25"
+        },
+        {
           "description": "Venmo Cash Out",
           "amount": 347.3,
           "currency": "USD",
@@ -88,6 +97,15 @@
           "currency": "USD",
           "transaction_id": "plaid-a5024c80-00010",
           "tag": "general transaction",
+          "date_transacted": "2026-02-13",
+          "date_posted": "2026-02-14"
+        },
+        {
+          "description": "ACH DEBIT - CALLABLE MORTGAGE PAYMENT",
+          "amount": -1102.97,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01030",
+          "tag": "mortgage payments",
           "date_transacted": "2026-02-13",
           "date_posted": "2026-02-14"
         },
@@ -126,15 +144,6 @@
           "tag": "unexplained deposits",
           "date_transacted": "2026-02-03",
           "date_posted": "2026-02-04"
-        },
-        {
-          "description": "ACH DEBIT - CALLABLE MORTGAGE PAYMENT",
-          "amount": -1677.98,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01036",
-          "tag": "mortgage payments",
-          "date_transacted": "2026-01-31",
-          "date_posted": "2026-02-01"
         },
         {
           "description": "Ace Cash Express",
@@ -200,15 +209,6 @@
           "date_posted": "2026-01-11"
         },
         {
-          "description": "ACH DEBIT - BEST EVER MORTGAGE PAYMENT",
-          "amount": -2554.67,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01035",
-          "tag": "mortgage payments",
-          "date_transacted": "2026-01-10",
-          "date_posted": "2026-01-11"
-        },
-        {
           "description": "Non-Sufficient Funds",
           "amount": -50.0,
           "currency": "USD",
@@ -254,6 +254,15 @@
           "date_posted": "2025-12-27"
         },
         {
+          "description": "ACH DEBIT - BEST EVER MORTGAGE PAYMENT",
+          "amount": -1947.1,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01029",
+          "tag": "mortgage payments",
+          "date_transacted": "2025-12-26",
+          "date_posted": "2025-12-27"
+        },
+        {
           "description": "Venmo Cash Out",
           "amount": 337.34000000000003,
           "currency": "USD",
@@ -272,15 +281,6 @@
           "date_posted": "2025-12-18"
         },
         {
-          "description": "ACH DEBIT - MORTGAGE PAYMENT",
-          "amount": -1311.26,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01034",
-          "tag": "mortgage payments",
-          "date_transacted": "2025-12-06",
-          "date_posted": "2025-12-07"
-        },
-        {
           "description": "Check Deposit (No Image)",
           "amount": 1200,
           "currency": "USD",
@@ -288,6 +288,15 @@
           "tag": "general transaction",
           "date_transacted": "2025-12-04",
           "date_posted": "2025-12-05"
+        },
+        {
+          "description": "ACH DEBIT - CALLABLE MORTGAGE PAYMENT",
+          "amount": -2440.82,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01028",
+          "tag": "mortgage payments",
+          "date_transacted": "2025-11-28",
+          "date_posted": "2025-11-29"
         },
         {
           "date_transacted": "2025-11-26",

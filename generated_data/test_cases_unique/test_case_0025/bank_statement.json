@@ -44,10 +44,10 @@
           {
             "primary": true,
             "data": {
-              "street": "175 13th St",
-              "city": "Washington",
-              "region": "DC",
-              "postal_code": "20013",
+              "street": "4321 Cul de Sac St",
+              "city": "Someplace",
+              "region": "NY",
+              "postal_code": "10001",
               "country": "US"
             }
           }
@@ -287,10 +287,10 @@
           {
             "primary": true,
             "data": {
-              "street": "175 13th St",
-              "city": "Washington",
-              "region": "DC",
-              "postal_code": "20013",
+              "street": "4321 Cul de Sac St",
+              "city": "Someplace",
+              "region": "NY",
+              "postal_code": "10001",
               "country": "US"
             }
           }
@@ -332,10 +332,10 @@
           {
             "primary": true,
             "data": {
-              "street": "175 13th St",
-              "city": "Washington",
-              "region": "DC",
-              "postal_code": "20013",
+              "street": "4321 Cul de Sac St",
+              "city": "Someplace",
+              "region": "NY",
+              "postal_code": "10001",
               "country": "US"
             }
           }
@@ -381,10 +381,10 @@
           {
             "primary": true,
             "data": {
-              "street": "175 13th St",
-              "city": "Washington",
-              "region": "DC",
-              "postal_code": "20013",
+              "street": "4321 Cul de Sac St",
+              "city": "Someplace",
+              "region": "NY",
+              "postal_code": "10001",
               "country": "US"
             }
           }

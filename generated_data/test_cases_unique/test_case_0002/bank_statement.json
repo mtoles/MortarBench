@@ -74,6 +74,15 @@
           "date_posted": "2026-02-25"
         },
         {
+          "description": "ACH CREDIT PAYROLL - Wawa",
+          "amount": 4599.0,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01003",
+          "tag": "general transaction",
+          "date_transacted": "2026-02-20",
+          "date_posted": "2026-02-21"
+        },
+        {
           "description": "Venmo Cash Out",
           "amount": 347.3,
           "currency": "USD",
@@ -137,15 +146,6 @@
           "date_posted": "2026-01-30"
         },
         {
-          "description": "ACH CREDIT PAYROLL - AAA",
-          "amount": 2646.46,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01003",
-          "tag": "general transaction",
-          "date_transacted": "2026-01-29",
-          "date_posted": "2026-01-30"
-        },
-        {
           "description": "International Wire",
           "amount": 1044.55,
           "currency": "USD",
@@ -169,6 +169,15 @@
           "currency": "USD",
           "transaction_id": "plaid-a5024c80-00005",
           "tag": "undisclosed housing payments",
+          "date_transacted": "2026-01-14",
+          "date_posted": "2026-01-15"
+        },
+        {
+          "description": "ACH CREDIT PAYROLL - Wawa",
+          "amount": 4599.0,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01002",
+          "tag": "general transaction",
           "date_transacted": "2026-01-14",
           "date_posted": "2026-01-15"
         },
@@ -209,15 +218,6 @@
           "date_posted": "2026-01-01"
         },
         {
-          "description": "ACH CREDIT PAYROLL - AAA",
-          "amount": 2646.46,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01002",
-          "tag": "general transaction",
-          "date_transacted": "2025-12-30",
-          "date_posted": "2025-12-31"
-        },
-        {
           "description": "Gift from Relative",
           "amount": 2547.04,
           "currency": "USD",
@@ -225,15 +225,6 @@
           "tag": "large deposits",
           "date_transacted": "2025-12-26",
           "date_posted": "2025-12-27"
-        },
-        {
-          "description": "ACH CREDIT PAYROLL - AAA",
-          "amount": 2646.46,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01001",
-          "tag": "general transaction",
-          "date_transacted": "2025-12-20",
-          "date_posted": "2025-12-21"
         },
         {
           "description": "Venmo Cash Out",
@@ -261,6 +252,15 @@
           "tag": "general transaction",
           "date_transacted": "2025-12-04",
           "date_posted": "2025-12-05"
+        },
+        {
+          "description": "ACH CREDIT PAYROLL - Wawa",
+          "amount": 4599.0,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01001",
+          "tag": "general transaction",
+          "date_transacted": "2025-12-03",
+          "date_posted": "2025-12-04"
         }
       ],
       "identity": {
