@@ -200,10 +200,13 @@ MUTATION_RULES = [
      {"type": "transaction", "mutation_type": "unexplained_deposits"}),
 
     ("private savings club",
-     {"type": "transaction", "mutation_type": "undisclosed_income"}),
+     {"type": "transaction", "mutation_type": "savings_club"}),
 
     ("savings club",
-     {"type": "transaction", "mutation_type": "undisclosed_income"}),
+     {"type": "transaction", "mutation_type": "savings_club"}),
+
+    ("informal arrangement",
+     {"type": "transaction", "mutation_type": "savings_club"}),
 
     ("sou-sou",
      {"type": "transaction", "mutation_type": "undisclosed_income"}),

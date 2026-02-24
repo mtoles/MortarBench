@@ -7,7 +7,7 @@
   "label": "has_any",
   "mutation_type": "transaction",
   "mutation_key": "cash_deposits",
-  "ground_truth_answer": "['plaid-5e399dfb-01014', 'plaid-5e399dfb-01015', 'plaid-5e399dfb-01016']",
+  "ground_truth_answer": "[]",
   "need_bank_statement": true,
   "need_ulad": false,
   "bank_statement_path": "bank_statement.json",

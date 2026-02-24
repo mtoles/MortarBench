@@ -7,7 +7,7 @@
   "label": "has_any",
   "mutation_type": "ulad",
   "mutation_key": "mutate_child_support_disclosure",
-  "ground_truth_answer": "['plaid-5e399dfb-01006', 'plaid-5e399dfb-01007']",
+  "ground_truth_answer": "['plaid-a5024c80-01010', 'plaid-a5024c80-01011']",
   "need_bank_statement": true,
   "need_ulad": true,
   "bank_statement_path": "bank_statement.json",

@@ -7,7 +7,7 @@
   "label": "has_any, transaction_consistency",
   "mutation_type": "ulad",
   "mutation_key": "mutate_gift_deposit",
-  "ground_truth_answer": "['plaid-5e399dfb-01008']",
+  "ground_truth_answer": "[]",
   "need_bank_statement": true,
   "need_ulad": true,
   "bank_statement_path": "bank_statement.json",

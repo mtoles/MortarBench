@@ -7,7 +7,7 @@
   "label": "has_any",
   "mutation_type": "transaction",
   "mutation_key": "secured_loan_deposits",
-  "ground_truth_answer": "['plaid-5e399dfb-01009']",
+  "ground_truth_answer": "['plaid-a5024c80-01013']",
   "need_bank_statement": true,
   "need_ulad": false,
   "bank_statement_path": "bank_statement.json",

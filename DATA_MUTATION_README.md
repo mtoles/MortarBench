@@ -50,8 +50,8 @@ Automatically handles answer formatting based on `answer_type` column when prese
 | `undisclosed_housing_payments` | `undisclosed housing payments` | Monthly housing |
 | `withdrawals` | `withdrawal` | Earnest money, wire out |
 | `additional_account_holder` | `additional account holder` | Transfer from joint holder |
-| `mortgage_payments` | (missing) | ACH DEBIT mortgage payment |
-| `savings_club` | (missing) | Community savings club funds |
+| `mortgage_payments` | `mortgage payments` | ACH DEBIT mortgage payment |
+| `savings_club` | `private savings club` | Community savings club funds |
 
 ### Bank Account Mutations (`mutate_account`)
 
@@ -59,7 +59,7 @@ Automatically handles answer formatting based on `answer_type` column when prese
 |-----|------|-------------|
 | `retirement` | `investment / 401k` | Add/remove 401k with contributions |
 | `custodial` | `depository / money market` | Add/remove UTMA custodial account |
-| `business`(missing)| `depository / checking (class=business)` | Add/remove business checking |
+| `business` | `depository / checking (class=business)` | Add/remove business checking |
 
 ### ULAD Cross-Document Mutations (return `bank, ulad, answer`)
 
@@ -97,6 +97,7 @@ python generate_test_cases.py --tags "BNPL" "large deposit" "payday loan"
 
 # Custom file paths
 python generate_test_cases.py \
+  --questions data/questions.csv \
   --bank-statement generated_data/bank_statement_template.json \
   --ulad generated_data/ulad_template.json \
   --output my_test_cases

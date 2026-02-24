@@ -128,6 +128,15 @@
           "date_posted": "2026-02-04"
         },
         {
+          "description": "Ace Cash Express",
+          "amount": 895.82,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-00011",
+          "tag": "payday loan or high-interest lending source",
+          "date_transacted": "2026-01-30",
+          "date_posted": "2026-01-31"
+        },
+        {
           "description": "Klarna",
           "amount": -121.14,
           "currency": "USD",
@@ -196,15 +205,6 @@
           "currency": "USD",
           "transaction_id": "plaid-a5024c80-00014",
           "tag": "excessive cash deposits",
-          "date_transacted": "2026-01-06",
-          "date_posted": "2026-01-07"
-        },
-        {
-          "description": "ACH CREDIT - MoneyLion",
-          "amount": 1981.13,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01030",
-          "tag": "payday loan or high-interest lending source",
           "date_transacted": "2026-01-06",
           "date_posted": "2026-01-07"
         },
@@ -391,6 +391,52 @@
         ]
       },
       "end_balance": 7038.87
+    },
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 78757.7,
+      "currency": "USD",
+      "numbers": {
+        "account": "96904902"
+      },
+      "transactions": [
+        {
+          "description": "Business Transfer",
+          "amount": 100,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01033",
+          "tag": "business account",
+          "date_transacted": "2026-02-03",
+          "date_posted": "2025-12-20"
+        }
+      ],
+      "identity": {
+        "names": [
+          "John's Business LLC"
+        ],
+        "emails": [
+          {
+            "data": "business@testmail.com",
+            "primary": true,
+            "type": "work"
+          }
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "country": "US",
+              "city": "Washington",
+              "street": "175 13th St",
+              "postal_code": "20013",
+              "region": "DC"
+            }
+          }
+        ]
+      },
+      "official_name": "John's Business LLC",
+      "class": "business"
     }
   ]
 }

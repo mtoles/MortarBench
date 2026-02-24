@@ -7,7 +7,7 @@
   "label": "has_any",
   "mutation_type": "account",
   "mutation_key": "custodial",
-  "ground_truth_answer": "['48267576']",
+  "ground_truth_answer": "[]",
   "need_bank_statement": true,
   "need_ulad": false,
   "bank_statement_path": "bank_statement.json",
