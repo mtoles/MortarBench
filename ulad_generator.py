@@ -5,7 +5,7 @@ import argparse
 from pathlib import Path
 from typing import Any
 import logging
-
+import random
 from pydantic import BaseModel
 from pydantic import Field
 
@@ -128,6 +128,16 @@ class Liability(BaseModel):
     remaining_term_months_count: str = Field(
         "5", description="Remaining term in months"
     )
+
+    def _liability_types(self) -> list[str]:
+        liability_types = [
+            "BNPL transactions",
+            "child support",
+            "undisclosed debt",
+            "unexplained deposits",
+            "secured loan",
+        ]
+        return liability_types
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -563,33 +573,83 @@ class UladGenerator:
     def generate_liabilities(self) -> list[Liability]:
         # static for now
         # TODO: randomly generate a liability
-        return [
-            Liability(
-                sequence_number=1,
-                account_identifier="3563A019732",
-                monthly_payment_amount="123.00",
-                liability_type="Installment",
-                unpaid_balance_amount="2600.00",
-                holder_full_name="Mountain Bank",
-                remaining_term_months_count="5",
-            )
-        ]
+        if not self.plaid_data:
+            # print a warning
+            logger.warning("No Plaid data provided, using static liabilities.")
+            return [
+                Liability(
+                    sequence_number=1,
+                    account_identifier="3563A019732",
+                    monthly_payment_amount="123.00",
+                    liability_type="Installment",
+                    unpaid_balance_amount="2600.00",
+                    holder_full_name="Mountain Bank",
+                    remaining_term_months_count="5",
+                )
+            ]
+        else:
+            liabilities = []
+            liability_types = Liability._liability_types()
+            for idx, account in enumerate(self.plaid_data["override_accounts"]):
+                transactions = account["transactions"]
+                for transaction in transactions:
+                    tag = transaction["tag"]
+                    if tag in liability_types:
+                        liability_type = tag
+                        monthly_payment_amount = abs(transaction["amount"])
+                        unpaid_months_count = random.randint(1, 12)
+                    else:
+                        continue
+                    liabilities.append(
+                        Liability(
+                            sequence_number=idx + 1,
+                            account_identifier=str(account["numbers"]["account"]),
+                            monthly_payment_amount=str(monthly_payment_amount),
+                            liability_type=liability_type,
+                            unpaid_balance_amount=str(monthly_payment_amount * unpaid_months_count),
+                            holder_full_name="Mountain Bank",
+                            remaining_term_months_count=unpaid_months_count,
+                        )
+                    )
+            return liabilities
+
 
     def generate_loans(self) -> list[Loan]:
         # static for now
         # TODO: randomly generate a loan
-        return [
-            Loan(
-                sequence_number=1,
-                loan_identifier="84192307554",
-                purchase_credit_amount="5000.00",
-                base_loan_amount="800000.00",
-                lien_priority_type="FirstLien",
-                loan_purpose_type="Purchase",
-                mortgage_type="Conventional",
-                note_rate_percent="0.000",
-            )
-        ]
+        if not self.plaid_data:
+            # print a warning
+            logger.warning("No Plaid data provided, using static assets.")
+            return [
+                Loan(
+                    sequence_number=1,
+                    loan_identifier="84192307554",
+                    purchase_credit_amount="5000.00",
+                    base_loan_amount="800000.00",
+                    lien_priority_type="FirstLien",
+                    loan_purpose_type="Purchase",
+                    mortgage_type="Conventional",
+                    note_rate_percent="0.000",
+                )
+            ]
+        else:
+            loans = []
+            for idx, account in enumerate(self.plaid_data["override_accounts"]):
+                transactions = account["transactions"]
+                for transaction in transactions:
+                    if "Earnest Money Deposit" in transaction["description"]:
+                        purchase_credit_amount = abs(transaction["amount"])
+                        # randomly generate a base loan amount above purchase_credit_amount
+                        base_loan_amount = random.uniform(purchase_credit_amount * 1.1, purchase_credit_amount * 1.5)
+                    loans.append(
+                        Loan(
+                            sequence_number=idx + 1,
+                            loan_identifier=str(account["numbers"]["account"]),
+                            purchase_credit_amount=str(purchase_credit_amount),
+                            base_loan_amount=str(base_loan_amount),
+                        )
+                    )
+            return loans
 
     def generate_parties(self) -> tuple[BorrowerParty, PropertyOwnerParty]:
         borrower_party = self.generate_borrower_party()

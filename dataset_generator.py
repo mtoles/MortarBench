@@ -48,10 +48,11 @@ TAG_OPTIONS = {
     "additional_holder": "additional account holder",
     "undisclosed_housing": "undisclosed housing payments",
     "undisclosed_income": "undisclosed income source",
-    "undisclosed_income": "undisclosed income source",
     "unexplained_deposit": "unexplained deposits",
     "excessive_cash": "excessive cash deposits",
-    "default": "general transaction"
+    "default": "general transaction",
+    "child_support": "child support",
+    "undisclosed_debt": "undisclosed debt",
 }
 
 EMPLOYERS = ["Acme Corp", "Global Tech", "State University", "City Hospital"]
@@ -217,7 +218,7 @@ class PlaidGenerator:
         
         # Child Support (Liability) (Debit/Withdrawal -> Negative)
         r = profile["child_support"]
-        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Child_Support"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["default"]))
+        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Child_Support"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["child_support"]))
         
         # Crypto (Debit - Purchase -> Negative)
         r = profile["crypto"]
@@ -234,7 +235,7 @@ class PlaidGenerator:
         
         # Undisclosed Debt (Debit/Withdrawal -> Negative)
         r = profile["undisclosed_debt"]
-        checking_txns.append(self._create_txn("Payment to " + random.choice(KEYWORDS["Undisclosed_Debt"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["default"]))
+        checking_txns.append(self._create_txn("Payment to " + random.choice(KEYWORDS["Undisclosed_Debt"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["undisclosed_debt"]))
         
         # Payday Loan (Income/Deposit -> Positive)
         r = profile["payday"]
