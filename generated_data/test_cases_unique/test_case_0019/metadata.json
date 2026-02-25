@@ -1,14 +1,12 @@
 {
   "test_case_id": 19,
-  "test_case_number": "19",
+  "test_case_number": 4,
   "question": "Scan the provided account activity for any deposits originating from a payday loan or similar high-interest lending source.",
   "rephrased_question": "Which list of deposits, if any, originate from a payday loan or similar high-interest lending source?",
   "answer_type": "id_list",
   "label": "has_any",
-  "mutation_spec": {
-    "type": "transaction",
-    "mutation_type": "payday_loans"
-  },
+  "mutation_type": "transaction",
+  "mutation_key": "payday_loans",
   "ground_truth_answer": "[]",
   "need_bank_statement": true,
   "need_ulad": false,

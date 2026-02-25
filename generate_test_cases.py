@@ -200,10 +200,13 @@ MUTATION_RULES = [
      {"type": "transaction", "mutation_type": "unexplained_deposits"}),
 
     ("private savings club",
-     {"type": "transaction", "mutation_type": "undisclosed_income"}),
+     {"type": "transaction", "mutation_type": "savings_club"}),
 
     ("savings club",
-     {"type": "transaction", "mutation_type": "undisclosed_income"}),
+     {"type": "transaction", "mutation_type": "savings_club"}),
+
+    ("informal arrangement",
+     {"type": "transaction", "mutation_type": "savings_club"}),
 
     ("sou-sou",
      {"type": "transaction", "mutation_type": "undisclosed_income"}),
@@ -253,7 +256,7 @@ def detect_mutation(question: str, rephrased: str) -> Optional[Dict]:
     return None
 
 
-def execute_mutation(mutator: DataMutator, spec: Dict):
+def execute_mutation(mutator: DataMutator, spec: Dict, answer_type: str):
     """
     Execute a mutation and return a normalised 3-tuple (bank, ulad, answer).
     Bank-only mutations pad ulad with a deep copy of the base.
@@ -261,18 +264,23 @@ def execute_mutation(mutator: DataMutator, spec: Dict):
     mtype = spec["type"]
 
     if mtype == "transaction":
-        bank, answer = mutator.mutate_transaction(spec["mutation_type"])
+        bank, answer = mutator.mutate_transaction(spec["mutation_type"], answer_type=answer_type)
         ulad = copy.deepcopy(mutator.base_ulad)
         return bank, ulad, answer
 
     if mtype == "account":
-        bank, answer = mutator.mutate_account(spec["mutation_type"])
+        bank, answer = mutator.mutate_account(spec["mutation_type"], answer_type=answer_type)
         ulad = copy.deepcopy(mutator.base_ulad)
         return bank, ulad, answer
 
     if mtype == "ulad":
         fn = getattr(mutator, spec["fn"])
-        result = fn()
+        # Try to call with answer_type parameter
+        try:
+            result = fn(answer_type=answer_type)
+        except TypeError:
+            # Function doesn't support answer_type parameter
+            result = fn()
         # All ULAD mutation functions return (bank, ulad, answer)
         return result
 
@@ -293,6 +301,9 @@ def generate_test_case(
     need_ulad = int(row["need_ulad"])
     tc_number = row["test_case_number"]
     label = row["label"]
+    gid = row["gid"]
+    old_id = row["old_id"]
+    
 
     spec = detect_mutation(question, rephrased)
     if spec is None:
@@ -303,7 +314,9 @@ def generate_test_case(
           f"key={spec.get('mutation_type') or spec.get('fn')}")
 
     try:
-        mutated_bank, mutated_ulad, answer = execute_mutation(mutator, spec)
+        # Use answer_type from CSV (both questions.csv and unique_questions.csv have this column)
+        answer_type_param = row['answer_type']
+        mutated_bank, mutated_ulad, answer = execute_mutation(mutator, spec, answer_type_param)
     except Exception as exc:
         print(f"  ✗ Mutation error: {exc}")
         return None
@@ -340,6 +353,8 @@ def generate_test_case(
         "need_ulad": bool(need_ulad),
         "bank_statement_path": bank_rel_path,
         "ulad_path": ulad_rel_path,
+        "gid": gid,
+        "old_id": old_id,
     }
 
     with open(os.path.join(tc_dir, "metadata.json"), "w") as f:
@@ -353,11 +368,11 @@ def main():
     parser.add_argument("--questions", default="data/questions.csv")
     parser.add_argument(
         "--bank-statement",
-        default="generated_data/plaid_generated-test-5e399dfb.json",
+        default="generated_data/bank_statement.json",
     )
     parser.add_argument(
         "--ulad",
-        default="generated_data/ulad_generated-test-5e399dfb.json",
+        default="generated_data/ulad.json",
     )
     parser.add_argument("--output", default="test_cases")
     parser.add_argument("--limit", type=int, default=None,

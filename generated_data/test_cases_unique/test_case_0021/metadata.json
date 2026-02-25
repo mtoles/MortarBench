@@ -1,15 +1,13 @@
 {
   "test_case_id": 21,
-  "test_case_number": "21",
+  "test_case_number": 4,
   "question": "What accounts are business accounts instead of personal accounts? ",
   "rephrased_question": "which list of accounts are classified as a business account instead of a personal account?",
   "answer_type": "id_list_account",
   "label": "metadata_consistency",
-  "mutation_spec": {
-    "type": "account",
-    "mutation_type": "business"
-  },
-  "ground_truth_answer": "[]",
+  "mutation_type": "account",
+  "mutation_key": "business",
+  "ground_truth_answer": "['66188826']",
   "need_bank_statement": true,
   "need_ulad": false,
   "bank_statement_path": "bank_statement.json",
