@@ -498,14 +498,18 @@ def main():
             args_number = int(num_input) if num_input else 1
             output_input = input("Enter output directory (default 'generated_data'): ").strip()
             args_output = output_input if output_input else "generated_data"
+            ulad_template_input = input("Enter the path to the ULAD template file (default 'data/ulad_template.json'): ").strip()
+            args_ulad_template = ulad_template_input if ulad_template_input else "data/ulad_template.json"
         except ValueError:
             print("Invalid number entered. Using default 1.")
             args_number = 1
             args_output = "generated_data"
+            args_ulad_template = "data/ulad_template.json"
     else:
         args = parser.parse_args()
         args_number = args.number
         args_output = args.output
+        args_ulad_template = args.ulad_template
     
     if not os.path.exists(args_output):
         os.makedirs(args_output)
@@ -513,7 +517,7 @@ def main():
     for i in range(args_number):
         plaid_generator = PlaidGenerator()
         plaid_data = plaid_generator.generate_single_dataset()
-        ulad_generator = UladGenerator(args.ulad_template, plaid_data, args_output)
+        ulad_generator = UladGenerator(args_ulad_template, plaid_data, args_output)
         ulad_data = ulad_generator.generate_ulad()
 
         plaid_filename = f"plaid_{plaid_data['seed']}.json"

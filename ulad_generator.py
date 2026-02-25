@@ -129,7 +129,8 @@ class Liability(BaseModel):
         "5", description="Remaining term in months"
     )
 
-    def _liability_types(self) -> list[str]:
+    @staticmethod
+    def _liability_types() -> list[str]:
         liability_types = [
             "BNPL transactions",
             "child support",
@@ -608,7 +609,7 @@ class UladGenerator:
                             liability_type=liability_type,
                             unpaid_balance_amount=str(monthly_payment_amount * unpaid_months_count),
                             holder_full_name="Mountain Bank",
-                            remaining_term_months_count=unpaid_months_count,
+                            remaining_term_months_count=str(unpaid_months_count),
                         )
                     )
             return liabilities
@@ -641,14 +642,14 @@ class UladGenerator:
                         purchase_credit_amount = abs(transaction["amount"])
                         # randomly generate a base loan amount above purchase_credit_amount
                         base_loan_amount = random.uniform(purchase_credit_amount * 1.1, purchase_credit_amount * 1.5)
-                    loans.append(
-                        Loan(
-                            sequence_number=idx + 1,
-                            loan_identifier=str(account["numbers"]["account"]),
-                            purchase_credit_amount=str(purchase_credit_amount),
-                            base_loan_amount=str(base_loan_amount),
+                        loans.append(
+                            Loan(
+                                sequence_number=idx + 1,
+                                loan_identifier=str(account["numbers"]["account"]),
+                                purchase_credit_amount=str(purchase_credit_amount),
+                                base_loan_amount=str(base_loan_amount),
+                            )
                         )
-                    )
             return loans
 
     def generate_parties(self) -> tuple[BorrowerParty, PropertyOwnerParty]:
