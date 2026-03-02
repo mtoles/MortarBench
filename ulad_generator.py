@@ -132,10 +132,6 @@ class Liability(BaseModel):
     @staticmethod
     def _liability_types() -> list[str]:
         liability_types = [
-            "BNPL transactions",
-            "child support",
-            "undisclosed debt",
-            "unexplained deposits",
             "secured loan",
         ]
         return liability_types
