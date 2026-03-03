@@ -158,7 +158,7 @@ TRANSACTION_CONFIGS = {
         "date_spacing": None,
     },
     "mortgage_payments": {
-        "tag": "general transaction",
+        "tag": "mortgage payments",
         "keywords": ["CALLABLE MORTGAGE PAYMENT", "BEST EVER MORTGAGE PAYMENT", "MORTGAGE PAYMENT"],
         "description_template": "ACH DEBIT - {keyword}",
         "amount_range": (800, 3000),
@@ -167,7 +167,7 @@ TRANSACTION_CONFIGS = {
         "date_spacing": "monthly",
     },
     "savings_club": {
-        "tag": "general transaction",
+        "tag": "private savings club",
         "keywords": ["COMMUNITY SAVINGS CLUB FUNDS", "SAVINGS CLUB DEPOSIT", "INFORMAL SAVINGS GROUP"],
         "description_template": "ACH CREDIT - {keyword}",
         "amount_range": (1000, 5000),
@@ -203,12 +203,12 @@ ACCOUNT_CONFIGS = {
         "answer_format": "Custodial Account #{account_num}",
     },
     "business": {
-        "tag": "general transaction",
+        "tag": "business account",
         "type": "depository",
         "subtype": "checking",
         "class": "business",
         "balance_range": (1000, 100000),
-        "transaction_tag": "general transaction",
+        "transaction_tag": "business account",
         "transaction_description": "Business Transfer",
         "transaction_amount": 100,
         "official_name": "John's Business LLC",
