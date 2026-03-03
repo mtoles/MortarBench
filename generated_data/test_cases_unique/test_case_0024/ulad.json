@@ -14,8 +14,8 @@
               "ASSET": [
                 {
                   "ASSET_DETAIL": {
-                    "AssetAccountIdentifier": "47703367",
-                    "AssetCashOrMarketValueAmount": "24432.68",
+                    "AssetAccountIdentifier": "80910109",
+                    "AssetCashOrMarketValueAmount": "26590.23",
                     "AssetType": "SavingsAccount"
                   },
                   "ASSET_HOLDER": {
@@ -28,8 +28,8 @@
                 },
                 {
                   "ASSET_DETAIL": {
-                    "AssetAccountIdentifier": "98328990",
-                    "AssetCashOrMarketValueAmount": "35283.26",
+                    "AssetAccountIdentifier": "15512266",
+                    "AssetCashOrMarketValueAmount": "34438.97",
                     "AssetType": "CheckingAccount"
                   },
                   "ASSET_HOLDER": {
@@ -42,9 +42,9 @@
                 },
                 {
                   "ASSET_DETAIL": {
-                    "AssetAccountIdentifier": "22985689",
-                    "AssetCashOrMarketValueAmount": "2239.55",
-                    "AssetType": "SavingsAccount"
+                    "AssetAccountIdentifier": "69769950",
+                    "AssetCashOrMarketValueAmount": "7038.87",
+                    "AssetType": "CheckingAccount"
                   },
                   "ASSET_HOLDER": {
                     "NAME": {
@@ -56,22 +56,8 @@
                 },
                 {
                   "ASSET_DETAIL": {
-                    "AssetAccountIdentifier": "35846349",
-                    "AssetCashOrMarketValueAmount": "6261.4",
-                    "AssetType": "CheckingAccount"
-                  },
-                  "ASSET_HOLDER": {
-                    "NAME": {
-                      "FullName": "Capital One"
-                    }
-                  },
-                  "_SequenceNumber": "5",
-                  "_xlink:label": "ASSET_5"
-                },
-                {
-                  "ASSET_DETAIL": {
                     "AssetType": "RealEstateOwned",
-                    "AssetCashOrMarketValueAmount": "696365.00"
+                    "AssetCashOrMarketValueAmount": "783718.00"
                   },
                   "OWNED_PROPERTY": {
                     "ADDRESS": {
@@ -83,11 +69,11 @@
                     },
                     "OWNED_PROPERTY_DETAIL": {
                       "OwnedPropertyDispositionStatusType": "Retain",
-                      "OwnedPropertyRentalIncomeGrossAmount": "3000.00"
+                      "OwnedPropertyRentalIncomeGrossAmount": "3500.00"
                     }
                   },
-                  "_SequenceNumber": "5",
-                  "_xlink:label": "ASSET_5"
+                  "_SequenceNumber": "4",
+                  "_xlink:label": "ASSET_4"
                 }
               ]
             },
@@ -429,12 +415,6 @@
                 },
                 {
                   "_SequenceNumber": "4",
-                  "_xlink:arcrole": "urn:fdc:mismo.org:2009:residential/ASSET_IsAssociatedWith_ROLE",
-                  "_xlink:from": "ASSET_5",
-                  "_xlink:to": "BORROWER_1"
-                },
-                {
-                  "_SequenceNumber": "5",
                   "_xlink:arcrole": "urn:fdc:mismo.org:2009:residential/LIABILITY_IsAssociatedWith_ROLE",
                   "_xlink:from": "LIABILITY_1",
                   "_xlink:to": "BORROWER_1"

@@ -48,13 +48,14 @@ TAG_OPTIONS = {
     "additional_holder": "additional account holder",
     "undisclosed_housing": "undisclosed housing payments",
     "undisclosed_income": "undisclosed income source",
-    "undisclosed_income": "undisclosed income source",
     "unexplained_deposit": "unexplained deposits",
     "excessive_cash": "excessive cash deposits",
     "default": "general transaction",
     "mortgage_payments": "mortgage payments",
     "savings_club": "private savings club",
     "business_account": "business account"
+    "child_support": "child support",
+    "undisclosed_debt": "undisclosed debt",
 }
 
 EMPLOYERS = ["Acme Corp", "Global Tech", "State University", "City Hospital"]
@@ -220,7 +221,7 @@ class PlaidGenerator:
         
         # Child Support (Liability) (Debit/Withdrawal -> Negative)
         r = profile["child_support"]
-        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Child_Support"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["default"]))
+        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Child_Support"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["child_support"]))
         
         # Crypto (Debit - Purchase -> Negative)
         r = profile["crypto"]
@@ -237,7 +238,7 @@ class PlaidGenerator:
         
         # Undisclosed Debt (Debit/Withdrawal -> Negative)
         r = profile["undisclosed_debt"]
-        checking_txns.append(self._create_txn("Payment to " + random.choice(KEYWORDS["Undisclosed_Debt"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["default"]))
+        checking_txns.append(self._create_txn("Payment to " + random.choice(KEYWORDS["Undisclosed_Debt"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["undisclosed_debt"]))
         
         # Payday Loan (Income/Deposit -> Positive)
         r = profile["payday"]
@@ -501,14 +502,18 @@ def main():
             args_number = int(num_input) if num_input else 1
             output_input = input("Enter output directory (default 'generated_data'): ").strip()
             args_output = output_input if output_input else "generated_data"
+            ulad_template_input = input("Enter the path to the ULAD template file (default 'data/ulad_template.json'): ").strip()
+            args_ulad_template = ulad_template_input if ulad_template_input else "data/ulad_template.json"
         except ValueError:
             print("Invalid number entered. Using default 1.")
             args_number = 1
             args_output = "generated_data"
+            args_ulad_template = "data/ulad_template.json"
     else:
         args = parser.parse_args()
         args_number = args.number
         args_output = args.output
+        args_ulad_template = args.ulad_template
     
     if not os.path.exists(args_output):
         os.makedirs(args_output)
@@ -516,7 +521,7 @@ def main():
     for i in range(args_number):
         plaid_generator = PlaidGenerator()
         plaid_data = plaid_generator.generate_single_dataset()
-        ulad_generator = UladGenerator(args.ulad_template, plaid_data, args_output)
+        ulad_generator = UladGenerator(args_ulad_template, plaid_data, args_output)
         ulad_data = ulad_generator.generate_ulad()
 
         plaid_filename = f"plaid_{plaid_data['seed']}.json"

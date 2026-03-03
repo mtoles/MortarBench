@@ -1,14 +1,12 @@
 {
   "test_case_id": 3,
-  "test_case_number": "3",
+  "test_case_number": 1,
   "question": "Identify any large deposits on the borrower\u2019s bank statements.",
   "rephrased_question": "Which list of deposits, if any, are considered as large deposits?",
   "answer_type": "id_list",
   "label": "has_any",
-  "mutation_spec": {
-    "type": "transaction",
-    "mutation_type": "large_deposits"
-  },
+  "mutation_type": "transaction",
+  "mutation_key": "large_deposits",
   "ground_truth_answer": "[]",
   "need_bank_statement": true,
   "need_ulad": false,
