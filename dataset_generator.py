@@ -149,9 +149,10 @@ ECONOMIC_PROFILES = {
 }
 
 class PlaidGenerator:
-    def __init__(self, seed=None):
+    def __init__(self, seed=None, num_months=3):
         if seed:
             random.seed(seed)
+        self.num_months = num_months
         self.transaction_counter = 0
         self.dataset_id = str(uuid.uuid4())[:8]
         self.used_account_numbers = set()
@@ -189,7 +190,7 @@ class PlaidGenerator:
         # Generate basic payroll (Credit/Deposit -> Positive)
         payroll_range = profile["payroll"]
         payroll_base = round(random.uniform(payroll_range[0], payroll_range[1]), 2)
-        for i in range(1, 4): # 3 months
+        for i in range(1, self.num_months + 1):
             date_offset = -30 * i
             checking_txns.append({
                 "date_transacted": self._get_date(date_offset),
@@ -271,7 +272,7 @@ class PlaidGenerator:
         r = profile["undisclosed_income"]
         side_gig_keyword = random.choice(KEYWORDS["Undisclosed_Income"])
         side_gig_amount = round(random.uniform(r[0], r[1]), 2)
-        for _ in range(3):
+        for _ in range(self.num_months):
             # Minor variance in amount
             amt = side_gig_amount + round(random.uniform(- (side_gig_amount * 0.1), (side_gig_amount * 0.1)), 2)
             checking_txns.append(self._create_txn(side_gig_keyword, amt, tag=TAG_OPTIONS["undisclosed_income"]))
@@ -317,7 +318,7 @@ class PlaidGenerator:
             }
             # Fix dates for savings
             for t in savings_account["transactions"]:
-                 days = random.randint(-90, 0)
+                 days = random.randint(-30 * self.num_months, 0)
                  t['date_transacted'] = self._get_date(days)
                  t['date_posted'] = self._get_date(days + 1)
             accounts.append(savings_account)
@@ -328,7 +329,7 @@ class PlaidGenerator:
         # Re-sort Checking transactions + injected ones by date
         for t in checking_txns:
             if 'date_transacted' not in t: 
-                days = random.randint(-90, 0)
+                days = random.randint(-30 * self.num_months, 0)
                 t['date_transacted'] = self._get_date(days)
                 t['date_posted'] = self._get_date(days + 1)
         
@@ -367,7 +368,7 @@ class PlaidGenerator:
             )
             # Fix dates
             for t in retirement_account["transactions"]:
-                 days = random.randint(-90, 0)
+                 days = random.randint(-30 * self.num_months, 0)
                  t['date_transacted'] = self._get_date(days)
                  t['date_posted'] = self._get_date(days + 1)
             accounts.append(retirement_account)
@@ -389,7 +390,7 @@ class PlaidGenerator:
                 self._create_txn("Transfer", 100, tag=TAG_OPTIONS["default"])
             )
             for t in joint_account["transactions"]:
-                 days = random.randint(-90, 0)
+                 days = random.randint(-30 * self.num_months, 0)
                  t['date_transacted'] = self._get_date(days)
                  t['date_posted'] = self._get_date(days + 1)
             accounts.append(joint_account)
@@ -412,7 +413,7 @@ class PlaidGenerator:
                  self._create_txn("Transfer In", 50, tag=TAG_OPTIONS["custodial"])
             )
             for t in custodial_account["transactions"]:
-                 days = random.randint(-90, 0)
+                 days = random.randint(-30 * self.num_months, 0)
                  t['date_transacted'] = self._get_date(days)
                  t['date_posted'] = self._get_date(days + 1)
             accounts.append(custodial_account)
@@ -491,6 +492,7 @@ def main():
     parser.add_argument("--ulad-template", type=str, default="data/ulad_template.json", help="Input template file")
     parser.add_argument("-n", "--number", type=int, default=1, help="Number of datasets to generate")
     parser.add_argument("-o", "--output", type=str, default="generated_data", help="Output directory")
+    parser.add_argument("-m", "--months", type=int, default=3, help="Number of months of statements to generate")
     
     import sys
     
@@ -501,22 +503,27 @@ def main():
             args_number = int(num_input) if num_input else 1
             output_input = input("Enter output directory (default 'generated_data'): ").strip()
             args_output = output_input if output_input else "generated_data"
+            months_input = input("Enter the number of months of statements to generate (default 3): ").strip()
+            args_months = int(months_input) if months_input else 3
         except ValueError:
-            print("Invalid number entered. Using default 1.")
+            print("Invalid input entered. Using defaults.")
             args_number = 1
             args_output = "generated_data"
+            args_months = 3
     else:
         args = parser.parse_args()
         args_number = args.number
         args_output = args.output
+        args_months = args.months
     
     if not os.path.exists(args_output):
         os.makedirs(args_output)
         
     for i in range(args_number):
-        plaid_generator = PlaidGenerator()
+        plaid_generator = PlaidGenerator(num_months=args_months)
         plaid_data = plaid_generator.generate_single_dataset()
-        ulad_generator = UladGenerator(args.ulad_template, plaid_data, args_output)
+        ulad_template = args.ulad_template if 'args' in locals() else "data/ulad_template.json"
+        ulad_generator = UladGenerator(ulad_template, plaid_data, args_output)
         ulad_data = ulad_generator.generate_ulad()
 
         plaid_filename = f"plaid_{plaid_data['seed']}.json"
