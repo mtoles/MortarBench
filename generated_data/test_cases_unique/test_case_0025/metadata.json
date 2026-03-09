@@ -1,14 +1,12 @@
 {
   "test_case_id": 25,
-  "test_case_number": "25",
+  "test_case_number": 5,
   "question": "Verify that the borrower\u2019s address on their bank statements aligns with the current address or mailing address provided on the loan application.",
   "rephrased_question": "Does the borrower\u2019s address on the account statement match the current address on the loan application? Answer yes or no.",
   "answer_type": "boolean",
   "label": "statement_integrity",
-  "mutation_spec": {
-    "type": "ulad",
-    "fn": "mutate_address_match"
-  },
+  "mutation_type": "ulad",
+  "mutation_key": "mutate_address_match",
   "ground_truth_answer": "No",
   "need_bank_statement": true,
   "need_ulad": true,

@@ -1,15 +1,13 @@
 {
   "test_case_id": 22,
-  "test_case_number": "22",
+  "test_case_number": 5,
   "question": "Are there any provided retirement accounts that can be used as a source of funds for the mortgage?\n",
   "rephrased_question": "Which list of accounts, if any, are retirement accounts that can be used as a source of funds for the mortgage?",
   "answer_type": "id_list_account",
   "label": "metadata_consistency",
-  "mutation_spec": {
-    "type": "account",
-    "mutation_type": "retirement"
-  },
-  "ground_truth_answer": "['81930397']",
+  "mutation_type": "account",
+  "mutation_key": "retirement",
+  "ground_truth_answer": "['24347583']",
   "need_bank_statement": true,
   "need_ulad": false,
   "bank_statement_path": "bank_statement.json",

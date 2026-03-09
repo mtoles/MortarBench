@@ -1,32 +1,32 @@
 {
-  "seed": "generated-test-5e399dfb",
+  "seed": "generated-test-a5024c80",
   "override_accounts": [
     {
       "type": "depository",
       "subtype": "savings",
-      "starting_balance": 17070.6,
+      "starting_balance": 22653.74,
       "currency": "USD",
       "numbers": {
-        "account": "47703367"
+        "account": "80910109"
       },
       "transactions": [
         {
-          "description": "Sou-sou",
-          "amount": 169.73,
+          "description": "Savings Club",
+          "amount": 218.72,
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00024",
-          "tag": "general transaction",
-          "date_transacted": "2025-12-09",
-          "date_posted": "2025-12-10"
+          "transaction_id": "plaid-a5024c80-00024",
+          "tag": "private savings club",
+          "date_transacted": "2026-02-01",
+          "date_posted": "2026-02-02"
         },
         {
           "description": "Loan Proceeds",
-          "amount": 7192.35,
+          "amount": 3717.77,
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00025",
+          "transaction_id": "plaid-a5024c80-00025",
           "tag": "secured loan",
-          "date_transacted": "2025-11-25",
-          "date_posted": "2025-11-26"
+          "date_transacted": "2026-01-27",
+          "date_posted": "2026-01-28"
         }
       ],
       "identity": {
@@ -53,205 +53,205 @@
           }
         ]
       },
-      "end_balance": 24432.68
+      "end_balance": 26590.23
     },
     {
       "type": "depository",
       "subtype": "checking",
-      "starting_balance": 6522.62,
+      "starting_balance": 3147.47,
       "currency": "USD",
       "numbers": {
-        "account": "98328990"
+        "account": "15512266"
       },
       "transactions": [
-        {
-          "description": "Non-Sufficient Funds",
-          "amount": -25.0,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00009",
-          "tag": "overdraft or NSF",
-          "date_transacted": "2026-02-08",
-          "date_posted": "2026-02-09"
-        },
-        {
-          "description": "Payment to Nelnet",
-          "amount": -278.65,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00010",
-          "tag": "general transaction",
-          "date_transacted": "2026-02-08",
-          "date_posted": "2026-02-09"
-        },
-        {
-          "description": "Ace Cash Express",
-          "amount": 877.19,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00011",
-          "tag": "payday loan or high-interest lending source",
-          "date_transacted": "2026-02-02",
-          "date_posted": "2026-02-03"
-        },
         {
           "description": "Transfer from Alice Homeowner",
           "amount": 500,
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00022",
+          "transaction_id": "plaid-a5024c80-00022",
           "tag": "additional account holder",
-          "date_transacted": "2026-02-02",
-          "date_posted": "2026-02-03"
+          "date_transacted": "2026-02-24",
+          "date_posted": "2026-02-25"
         },
         {
-          "description": "Purchase at Coinbase",
-          "amount": -377.61,
+          "description": "Payment to Navient",
+          "amount": -455.87,
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00007",
-          "tag": "withdrawal",
-          "date_transacted": "2026-02-01",
-          "date_posted": "2026-02-02"
-        },
-        {
-          "description": "Flagstar Bank",
-          "amount": -1386.08,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00005",
+          "transaction_id": "plaid-a5024c80-00010",
           "tag": "general transaction",
-          "date_transacted": "2026-01-31",
-          "date_posted": "2026-02-01"
+          "date_transacted": "2026-02-13",
+          "date_posted": "2026-02-14"
         },
         {
-          "description": "ATM Cash Deposit",
-          "amount": 2373.78,
+          "description": "Wire Transfer",
+          "amount": 2609.74,
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00014",
-          "tag": "excessive cash deposits",
+          "transaction_id": "plaid-a5024c80-00013",
+          "tag": "large deposits",
+          "date_transacted": "2026-02-12",
+          "date_posted": "2026-02-13"
+        },
+        {
+          "description": "Earnest Money Deposit",
+          "amount": -2231.1,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-00015",
+          "tag": "withdrawal",
+          "date_transacted": "2026-02-06",
+          "date_posted": "2026-02-07"
+        },
+        {
+          "description": "SoFi",
+          "amount": 8041.61,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-00016",
+          "tag": "unexplained deposits",
+          "date_transacted": "2026-02-03",
+          "date_posted": "2026-02-04"
+        },
+        {
+          "description": "Ace Cash Express",
+          "amount": 895.82,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-00011",
+          "tag": "payday loan or high-interest lending source",
+          "date_transacted": "2026-01-30",
+          "date_posted": "2026-01-31"
+        },
+        {
+          "description": "Klarna",
+          "amount": -121.14,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-00004",
+          "tag": "BNPL transactions",
+          "date_transacted": "2026-01-29",
+          "date_posted": "2026-01-30"
+        },
+        {
+          "description": "International Wire",
+          "amount": 1044.55,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-00012",
+          "tag": "foreign origin",
           "date_transacted": "2026-01-28",
           "date_posted": "2026-01-29"
         },
         {
-          "date_transacted": "2026-01-18",
-          "date_posted": "2026-01-19",
-          "amount": 2875.51,
-          "description": "ACH CREDIT PAYROLL - State University",
+          "date_transacted": "2026-01-25",
+          "date_posted": "2026-01-26",
+          "amount": 4617.93,
+          "description": "ACH CREDIT PAYROLL - Acme Corp",
           "currency": "USD",
           "tag": "general transaction",
-          "transaction_id": "plaid-5e399dfb-00001"
+          "transaction_id": "plaid-a5024c80-00001"
+        },
+        {
+          "description": "Deposit from Binance",
+          "amount": 62.91,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-00008",
+          "tag": "deposit from cryptocurrency source",
+          "date_transacted": "2026-01-16",
+          "date_posted": "2026-01-17"
+        },
+        {
+          "description": "Housing Payment",
+          "amount": -1898.12,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-00005",
+          "tag": "undisclosed housing payments",
+          "date_transacted": "2026-01-14",
+          "date_posted": "2026-01-15"
+        },
+        {
+          "description": "Purchase at Crypto.com",
+          "amount": -487.29,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-00007",
+          "tag": "withdrawal",
+          "date_transacted": "2026-01-10",
+          "date_posted": "2026-01-11"
+        },
+        {
+          "description": "Non-Sufficient Funds",
+          "amount": -50.0,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-00009",
+          "tag": "overdraft or NSF",
+          "date_transacted": "2026-01-09",
+          "date_posted": "2026-01-10"
+        },
+        {
+          "description": "Cash Deposit",
+          "amount": 3484.71,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-00014",
+          "tag": "excessive cash deposits",
+          "date_transacted": "2026-01-06",
+          "date_posted": "2026-01-07"
+        },
+        {
+          "description": "Child Support",
+          "amount": -740.57,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-00006",
+          "tag": "general transaction",
+          "date_transacted": "2025-12-31",
+          "date_posted": "2026-01-01"
         },
         {
           "description": "Consulting Income",
-          "amount": 1208.01,
+          "amount": 1165.05,
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01016",
+          "transaction_id": "plaid-a5024c80-01014",
           "tag": "undisclosed income source",
-          "date_transacted": "2026-01-11",
-          "date_posted": "2026-01-12"
+          "date_transacted": "2025-12-30",
+          "date_posted": "2025-12-31"
         },
         {
-          "description": "Personal Loan",
-          "amount": 9988.15,
+          "date_transacted": "2025-12-26",
+          "date_posted": "2025-12-27",
+          "amount": 4617.93,
+          "description": "ACH CREDIT PAYROLL - Acme Corp",
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00016",
-          "tag": "unexplained deposits",
-          "date_transacted": "2026-01-05",
-          "date_posted": "2026-01-06"
+          "tag": "general transaction",
+          "transaction_id": "plaid-a5024c80-00002"
         },
         {
-          "description": "Deposit from Gemini",
-          "amount": 85.82,
+          "description": "Gift from Relative",
+          "amount": 2547.04,
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00008",
-          "tag": "deposit from cryptocurrency source",
-          "date_transacted": "2026-01-01",
-          "date_posted": "2026-01-02"
+          "transaction_id": "plaid-a5024c80-00020",
+          "tag": "large deposits",
+          "date_transacted": "2025-12-26",
+          "date_posted": "2025-12-27"
         },
         {
           "description": "Check Deposit (No Image)",
           "amount": 1200,
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00023",
+          "transaction_id": "plaid-a5024c80-00023",
           "tag": "general transaction",
-          "date_transacted": "2026-01-01",
-          "date_posted": "2026-01-02"
-        },
-        {
-          "description": "DC OAG",
-          "amount": -621.95,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00006",
-          "tag": "general transaction",
-          "date_transacted": "2025-12-27",
-          "date_posted": "2025-12-28"
-        },
-        {
-          "description": "Earnest Money Deposit",
-          "amount": -4851.39,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00015",
-          "tag": "withdrawal",
-          "date_transacted": "2025-12-23",
-          "date_posted": "2025-12-24"
-        },
-        {
-          "date_transacted": "2025-12-19",
-          "date_posted": "2025-12-20",
-          "amount": 2875.51,
-          "description": "ACH CREDIT PAYROLL - State University",
-          "currency": "USD",
-          "tag": "general transaction",
-          "transaction_id": "plaid-5e399dfb-00002"
-        },
-        {
-          "description": "PayPal in 4",
-          "amount": -47.51,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00004",
-          "tag": "BNPL transactions",
-          "date_transacted": "2025-12-13",
-          "date_posted": "2025-12-14"
-        },
-        {
-          "description": "Swift Transfer",
-          "amount": 899.44,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00012",
-          "tag": "foreign origin",
-          "date_transacted": "2025-12-09",
-          "date_posted": "2025-12-10"
+          "date_transacted": "2025-12-04",
+          "date_posted": "2025-12-05"
         },
         {
           "description": "Consulting Income",
-          "amount": 1197.79,
+          "amount": 1145.89,
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-01015",
+          "transaction_id": "plaid-a5024c80-01013",
           "tag": "undisclosed income source",
-          "date_transacted": "2025-12-01",
-          "date_posted": "2025-12-02"
+          "date_transacted": "2025-11-27",
+          "date_posted": "2025-11-28"
         },
         {
-          "description": "Wire Transfer",
-          "amount": 3592.02,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00013",
-          "tag": "large deposits",
-          "date_transacted": "2025-11-23",
-          "date_posted": "2025-11-24"
-        },
-        {
-          "description": "Wire In - Gift",
-          "amount": 6120.12,
-          "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00020",
-          "tag": "large deposits",
-          "date_transacted": "2025-11-21",
-          "date_posted": "2025-11-22"
-        },
-        {
-          "date_transacted": "2025-11-19",
-          "date_posted": "2025-11-20",
-          "amount": 2875.51,
-          "description": "ACH CREDIT PAYROLL - State University",
+          "date_transacted": "2025-11-26",
+          "date_posted": "2025-11-27",
+          "amount": 4617.93,
+          "description": "ACH CREDIT PAYROLL - Acme Corp",
           "currency": "USD",
           "tag": "general transaction",
-          "transaction_id": "plaid-5e399dfb-00003"
+          "transaction_id": "plaid-a5024c80-00003"
         }
       ],
       "identity": {
@@ -278,25 +278,25 @@
           }
         ]
       },
-      "end_balance": 35283.26
+      "end_balance": 34438.97
     },
     {
       "type": "investment",
       "subtype": "401k",
-      "starting_balance": 94855.73,
+      "starting_balance": 117570.65,
       "currency": "USD",
       "numbers": {
-        "account": "11177490"
+        "account": "84025963"
       },
       "transactions": [
         {
           "description": "Contribution",
           "amount": 500,
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00026",
+          "transaction_id": "plaid-a5024c80-00026",
           "tag": "retirement assets",
-          "date_transacted": "2026-01-20",
-          "date_posted": "2026-01-21"
+          "date_transacted": "2025-12-10",
+          "date_posted": "2025-12-11"
         }
       ],
       "identity": {
@@ -326,31 +326,31 @@
       "tags": [
         "retirement accounts"
       ],
-      "end_balance": 95355.73
+      "end_balance": 118070.65
     },
     {
       "type": "depository",
-      "subtype": "money market",
-      "official_name": "Custodial Account for Jr",
-      "starting_balance": 2189.55,
+      "subtype": "checking",
+      "starting_balance": 6938.87,
       "currency": "USD",
       "numbers": {
-        "account": "22985689"
+        "account": "69769950"
       },
       "transactions": [
         {
-          "description": "Transfer In",
-          "amount": 50,
+          "description": "Transfer",
+          "amount": 100,
           "currency": "USD",
-          "transaction_id": "plaid-5e399dfb-00027",
-          "tag": "custodial account",
-          "date_transacted": "2025-11-24",
-          "date_posted": "2025-11-25"
+          "transaction_id": "plaid-a5024c80-00027",
+          "tag": "general transaction",
+          "date_transacted": "2026-02-16",
+          "date_posted": "2026-02-17"
         }
       ],
       "identity": {
         "names": [
-          "John Homeowner"
+          "John Homeowner",
+          "Alice Homeowner"
         ],
         "emails": [
           {
@@ -372,44 +372,7 @@
           }
         ]
       },
-      "end_balance": 2239.55
-    },
-    {
-      "type": "depository",
-      "subtype": "checking",
-      "class": "business",
-      "official_name": "John's Business LLC",
-      "starting_balance": 6261.4,
-      "currency": "USD",
-      "numbers": {
-        "account": "35846349"
-      },
-      "transactions": [],
-      "identity": {
-        "names": [
-          "John's Business LLC"
-        ],
-        "emails": [
-          {
-            "data": "john@business.com",
-            "primary": true,
-            "type": "work"
-          }
-        ],
-        "addresses": [
-          {
-            "data": {
-              "city": "Washington",
-              "country": "US",
-              "postal_code": "20013",
-              "region": "DC",
-              "street": "123 Biz St"
-            },
-            "primary": true
-          }
-        ]
-      },
-      "end_balance": 6261.4
+      "end_balance": 7038.87
     }
   ]
 }
