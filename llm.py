@@ -22,7 +22,7 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 
 # Load environment variables from .env file
-load_dotenv()
+load_dotenv(override=True)
 
 # Initialize joblib memory for caching
 memory = Memory("joblib_cache", verbose=0)
@@ -71,7 +71,8 @@ def _uncached_llm_call(model_id: str, messages: List[Dict[str, str]], tools: Lis
         Tuple of (response_content, input_tokens, output_tokens)
     """
     if model_id.startswith("gpt-"):
-        client = OpenAI()
+        OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+        client = OpenAI(api_key=OPENAI_API_KEY)
         # Use Chat Completions API which supports messages directly
         kwargs = {"model": model_id, "messages": messages}
         if tools:

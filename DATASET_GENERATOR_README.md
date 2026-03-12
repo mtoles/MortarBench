@@ -41,7 +41,7 @@ The generator creates a user "John Homeowner" and populates a list of `override_
 ## Usage
 
 ### Interactive Mode
-Simply run the script without arguments to be prompted for input:
+Simply run the script without arguments to be prompted for input (number of datasets, output directory, and months of statements to generate):
 ```bash
 python dataset_generator.py
 ```
@@ -49,19 +49,20 @@ python dataset_generator.py
 ### Command Line Mode
 Run the script with arguments for automation:
 ```bash
-python dataset_generator.py -n <number_of_datasets> -o <output_directory>
+python dataset_generator.py -n <number_of_datasets> -o <output_directory> -m <number_of_months>
 ```
 
 **Arguments:**
 - `--ulad-template`: The path to the ULAD template file (default: `data/ulad_template.json`).
 - `-n`, `--number`: The number of unique dataset files to generate (default: 1).
 - `-o`, `--output`: The directory where JSON files will be saved (default: `generated_data`).
+- `-m`, `--months`: The number of months of statements to generate (default: 3).
 
 **Example:**
 ```bash
-python dataset_generator.py -n 5 -o ./data/test_batch_1 --ulad-template ./data/ulad_template.json
+python dataset_generator.py -n 5 -m 6 -o ./data/test_batch_1 --ulad-template ./data/ulad_template.json
 ```
-This will create 5 JSON files in the `./data/test_batch_1` folder, each with unique transaction and account IDs. It will also create 5 ULAD JSON files in the `./data/test_batch_1` folder, each with unique ULAD data.
+This will create 5 JSON files in the `./data/test_batch_1` folder, each with unique transaction and account IDs, spanning 6 months of data. It will also create 5 ULAD JSON files in the `./data/test_batch_1` folder, each with unique ULAD data.
 
 ## Question Coverage
 

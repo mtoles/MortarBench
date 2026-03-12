@@ -48,11 +48,13 @@ TAG_OPTIONS = {
     "additional_holder": "additional account holder",
     "undisclosed_housing": "undisclosed housing payments",
     "undisclosed_income": "undisclosed income source",
+    "undisclosed_income": "undisclosed income source",
     "unexplained_deposit": "unexplained deposits",
     "excessive_cash": "excessive cash deposits",
     "default": "general transaction",
-    "child_support": "child support",
-    "undisclosed_debt": "undisclosed debt",
+    "mortgage_payments": "mortgage payments",
+    "savings_club": "private savings club",
+    "business_account": "business account"
 }
 
 EMPLOYERS = ["Acme Corp", "Global Tech", "State University", "City Hospital"]
@@ -147,9 +149,10 @@ ECONOMIC_PROFILES = {
 }
 
 class PlaidGenerator:
-    def __init__(self, seed=None):
+    def __init__(self, seed=None, num_months=3):
         if seed:
             random.seed(seed)
+        self.num_months = num_months
         self.transaction_counter = 0
         self.dataset_id = str(uuid.uuid4())[:8]
         self.used_account_numbers = set()
@@ -187,7 +190,7 @@ class PlaidGenerator:
         # Generate basic payroll (Credit/Deposit -> Positive)
         payroll_range = profile["payroll"]
         payroll_base = round(random.uniform(payroll_range[0], payroll_range[1]), 2)
-        for i in range(1, 4): # 3 months
+        for i in range(1, self.num_months + 1):
             date_offset = -30 * i
             checking_txns.append({
                 "date_transacted": self._get_date(date_offset),
@@ -212,13 +215,13 @@ class PlaidGenerator:
         if rand_val < 0.33:
              checking_txns.append(self._create_txn(random.choice(KEYWORDS["Rental"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["rental"]))
         elif rand_val < 0.66:
-             checking_txns.append(self._create_txn(random.choice(KEYWORDS["Mortgage"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["default"]))
+             checking_txns.append(self._create_txn(random.choice(KEYWORDS["Mortgage"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["mortgage_payments"]))
         else:
              checking_txns.append(self._create_txn("Housing Payment", -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["undisclosed_housing"]))
         
         # Child Support (Liability) (Debit/Withdrawal -> Negative)
         r = profile["child_support"]
-        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Child_Support"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["child_support"]))
+        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Child_Support"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["default"]))
         
         # Crypto (Debit - Purchase -> Negative)
         r = profile["crypto"]
@@ -235,7 +238,7 @@ class PlaidGenerator:
         
         # Undisclosed Debt (Debit/Withdrawal -> Negative)
         r = profile["undisclosed_debt"]
-        checking_txns.append(self._create_txn("Payment to " + random.choice(KEYWORDS["Undisclosed_Debt"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["undisclosed_debt"]))
+        checking_txns.append(self._create_txn("Payment to " + random.choice(KEYWORDS["Undisclosed_Debt"]), -round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["default"]))
         
         # Payday Loan (Income/Deposit -> Positive)
         r = profile["payday"]
@@ -269,7 +272,7 @@ class PlaidGenerator:
         r = profile["undisclosed_income"]
         side_gig_keyword = random.choice(KEYWORDS["Undisclosed_Income"])
         side_gig_amount = round(random.uniform(r[0], r[1]), 2)
-        for _ in range(3):
+        for _ in range(self.num_months):
             # Minor variance in amount
             amt = side_gig_amount + round(random.uniform(- (side_gig_amount * 0.1), (side_gig_amount * 0.1)), 2)
             checking_txns.append(self._create_txn(side_gig_keyword, amt, tag=TAG_OPTIONS["undisclosed_income"]))
@@ -297,7 +300,7 @@ class PlaidGenerator:
         # Prepare Savings Transactions
         # Savings Club (Credit/Deposit -> Positive)
         r = profile["savings_club"]
-        savings_txns_to_move.append(self._create_txn(random.choice(KEYWORDS["Savings_Club"]), round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["default"]))
+        savings_txns_to_move.append(self._create_txn(random.choice(KEYWORDS["Savings_Club"]), round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["savings_club"]))
         # Secured Loan Deposit (Credit/Deposit -> Positive)
         r = profile["secured_loan"]
         savings_txns_to_move.append(self._create_txn(random.choice(KEYWORDS["Secured_Loan"]), round(random.uniform(r[0], r[1]), 2), tag=TAG_OPTIONS["secured_loan"]))
@@ -315,7 +318,7 @@ class PlaidGenerator:
             }
             # Fix dates for savings
             for t in savings_account["transactions"]:
-                 days = random.randint(-90, 0)
+                 days = random.randint(-30 * self.num_months, 0)
                  t['date_transacted'] = self._get_date(days)
                  t['date_posted'] = self._get_date(days + 1)
             accounts.append(savings_account)
@@ -326,7 +329,7 @@ class PlaidGenerator:
         # Re-sort Checking transactions + injected ones by date
         for t in checking_txns:
             if 'date_transacted' not in t: 
-                days = random.randint(-90, 0)
+                days = random.randint(-30 * self.num_months, 0)
                 t['date_transacted'] = self._get_date(days)
                 t['date_posted'] = self._get_date(days + 1)
         
@@ -365,7 +368,7 @@ class PlaidGenerator:
             )
             # Fix dates
             for t in retirement_account["transactions"]:
-                 days = random.randint(-90, 0)
+                 days = random.randint(-30 * self.num_months, 0)
                  t['date_transacted'] = self._get_date(days)
                  t['date_posted'] = self._get_date(days + 1)
             accounts.append(retirement_account)
@@ -387,7 +390,7 @@ class PlaidGenerator:
                 self._create_txn("Transfer", 100, tag=TAG_OPTIONS["default"])
             )
             for t in joint_account["transactions"]:
-                 days = random.randint(-90, 0)
+                 days = random.randint(-30 * self.num_months, 0)
                  t['date_transacted'] = self._get_date(days)
                  t['date_posted'] = self._get_date(days + 1)
             accounts.append(joint_account)
@@ -410,7 +413,7 @@ class PlaidGenerator:
                  self._create_txn("Transfer In", 50, tag=TAG_OPTIONS["custodial"])
             )
             for t in custodial_account["transactions"]:
-                 days = random.randint(-90, 0)
+                 days = random.randint(-30 * self.num_months, 0)
                  t['date_transacted'] = self._get_date(days)
                  t['date_posted'] = self._get_date(days + 1)
             accounts.append(custodial_account)
@@ -431,7 +434,8 @@ class PlaidGenerator:
                      "names": ["John's Business LLC"],
                      "emails": [{"data": "john@business.com", "primary": True, "type": "work"}],
                      "addresses": [{"data": {"city": "Washington", "country": "US", "postal_code": "20013", "region": "DC", "street": "123 Biz St"}, "primary": True}]
-                }
+                },
+                "tags": [TAG_OPTIONS["business_account"]]
             }
             accounts.append(business_account)
 
@@ -488,6 +492,7 @@ def main():
     parser.add_argument("--ulad-template", type=str, default="data/ulad_template.json", help="Input template file")
     parser.add_argument("-n", "--number", type=int, default=1, help="Number of datasets to generate")
     parser.add_argument("-o", "--output", type=str, default="generated_data", help="Output directory")
+    parser.add_argument("-m", "--months", type=int, default=3, help="Number of months of statements to generate")
     
     import sys
     
@@ -498,26 +503,27 @@ def main():
             args_number = int(num_input) if num_input else 1
             output_input = input("Enter output directory (default 'generated_data'): ").strip()
             args_output = output_input if output_input else "generated_data"
-            ulad_template_input = input("Enter the path to the ULAD template file (default 'data/ulad_template.json'): ").strip()
-            args_ulad_template = ulad_template_input if ulad_template_input else "data/ulad_template.json"
+            months_input = input("Enter the number of months of statements to generate (default 3): ").strip()
+            args_months = int(months_input) if months_input else 3
         except ValueError:
-            print("Invalid number entered. Using default 1.")
+            print("Invalid input entered. Using defaults.")
             args_number = 1
             args_output = "generated_data"
-            args_ulad_template = "data/ulad_template.json"
+            args_months = 3
     else:
         args = parser.parse_args()
         args_number = args.number
         args_output = args.output
-        args_ulad_template = args.ulad_template
+        args_months = args.months
     
     if not os.path.exists(args_output):
         os.makedirs(args_output)
         
     for i in range(args_number):
-        plaid_generator = PlaidGenerator()
+        plaid_generator = PlaidGenerator(num_months=args_months)
         plaid_data = plaid_generator.generate_single_dataset()
-        ulad_generator = UladGenerator(args_ulad_template, plaid_data, args_output)
+        ulad_template = args.ulad_template if 'args' in locals() else "data/ulad_template.json"
+        ulad_generator = UladGenerator(ulad_template, plaid_data, args_output)
         ulad_data = ulad_generator.generate_ulad()
 
         plaid_filename = f"plaid_{plaid_data['seed']}.json"
