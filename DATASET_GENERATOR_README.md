@@ -36,7 +36,7 @@ The generator creates a user "John Homeowner" and populates a list of `override_
 ### 4. Logic Flow
 1.  **Date Handling**: All dates are generated relative to "today", ensuring the data looks recent and consistent (e.g., `date_posted` is always 1 day after `date_transacted`).
 2.  **Transaction Mixing**: While payroll and standard behavior are standardized, the "Scenario Injection" phase appends specific transactions to the main checking account.
-3.  **Output**: The final structure wraps these accounts in a root object containing the `seed` and `override_accounts` list, matching the schema expected by the benchmark test cases.
+3.  **Output**: The final structure wraps these accounts in a root object containing the `seed` and `override_accounts` list, as well as structurally restructured data including `Transactions`, `BankStatementAccounts`, `BankStatements`, and `AggregateFigures` arrays to mimic a formalized bank statement layout expected by the revised benchmark test cases.
 
 ## Usage
 

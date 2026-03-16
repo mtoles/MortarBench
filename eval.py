@@ -174,6 +174,30 @@ def iter_plaid_accounts(bank_statement):
 def flatten_plaid_transactions(bank_statement):
     """Flatten plaid transactions to a simple list for prompting/cleanup."""
     flat = []
+    
+    if isinstance(bank_statement, dict) and "Transactions" in bank_statement:
+        accounts_map = {acc.get("BankStatementAccountID"): acc for acc in bank_statement.get("BankStatementAccounts", [])}
+        for txn in bank_statement.get("Transactions", []):
+            acc_id = txn.get("BankStatementAccountID")
+            acc = accounts_map.get(acc_id, {})
+            account_last4 = acc.get("AccountNumber", "").replace("x", "").replace("•", "").strip()
+            if len(account_last4) > 4:
+                account_last4 = account_last4[-4:]
+
+            entry = {
+                "transaction_id": txn.get("TransactionID"),
+                "account_type": acc.get("AccountType"),
+                "account_subtype": acc.get("AccountType"),
+                "account_last4": account_last4,
+                "description": txn.get("Description"),
+                "amount": txn.get("Amount") if str(txn.get("Type", "debit")).lower() == "credit" else -float(txn.get("Amount", 0)),
+                "currency": "USD",
+                "date_transacted": txn.get("Date")[:10] if txn.get("Date") else None,
+                "date_posted": txn.get("Date")[:10] if txn.get("Date") else None,
+            }
+            flat.append(entry)
+        return flat
+
     for account in iter_plaid_accounts(bank_statement) or []:
         account_numbers = account.get("numbers", {}) or {}
         account_last4 = account_numbers.get("account")
@@ -204,6 +228,20 @@ def flatten_plaid_transactions(bank_statement):
 def extract_plaid_accounts(bank_statement):
     """Extract account metadata (including last 4 digits) from plaid payloads."""
     accounts = []
+    
+    if isinstance(bank_statement, dict) and "BankStatementAccounts" in bank_statement:
+        for acc in bank_statement.get("BankStatementAccounts", []):
+            last4 = acc.get("AccountNumber", "").replace("x", "").replace("•", "").strip()
+            if len(last4) > 4:
+                last4 = last4[-4:]
+            accounts.append({
+                "name": acc.get("AccountType", ""),
+                "type": acc.get("AccountType", ""),
+                "subtype": acc.get("AccountType", ""),
+                "account_number_last4": last4
+            })
+        return accounts
+
     for account in iter_plaid_accounts(bank_statement) or []:
         numbers = account.get("numbers", {}) or {}
         account_number = numbers.get("account")
@@ -629,7 +667,14 @@ def load_dataset(
                 # Keep it as formatted JSON string for the prompt
                 ulad_du = json.dumps(ulad_du_obj, indent=2)
 
+        metadata_path = os.path.join(tc_dir, "metadata.json")
         gt_answer = row["revised_answer"]
+        if os.path.exists(metadata_path):
+            with open(metadata_path, "r") as f:
+                metadata = json.load(f)
+                if "ground_truth_answer" in metadata:
+                    gt_answer = metadata["ground_truth_answer"]
+
         answer_type = row["answer_type"]
         
         if answer_type == "id_list":
@@ -1088,7 +1133,7 @@ def save_results(
 
     # Create markdown summary
     summary_path = f"{output_dir}/{output_model_id}_summary.md"
-    with open(summary_path, "w") as f:
+    with open(summary_path, "w", encoding="utf-8") as f:
         f.write(f"# Evaluation Results: {output_model_id}\n\n")
         f.write(
             f"**Date:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
@@ -1338,7 +1383,7 @@ def main():
         "--question_col",
         type=str,
         default="Question",
-        choices=["Question", "Rephrased Question"],
+        choices=["Question", "Rephrased Question", "question", "rephrased_question"],
     )
     parser.add_argument(
         "--row_indexes",
