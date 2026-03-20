@@ -61,7 +61,7 @@ Automatically handles answer formatting based on `answer_type` column when prese
 | `custodial` | `depository / money market` | Add/remove UTMA custodial account |
 | `business` | `depository / checking (class=business)` | Add/remove business checking |
 
-### ULAD Cross-Document Mutations (return `bank, ulad, answer`)
+### ULAD Cross-Document Mutations (return `bank, ulad, answer` unless noted)
 
 | Method | What it mutates | Default answer_type |
 |--------|----------------|-------------|
@@ -69,12 +69,23 @@ Automatically handles answer formatting based on `answer_type` column when prese
 | `mutate_address_match` | Bank identity address vs ULAD residence address | `boolean` |
 | `mutate_gift_deposit` | ULAD PURCHASE_CREDITS gift amount + matching bank deposit | `id_list` |
 | `mutate_child_support_disclosure` | Bank: recurring child-support payments not in ULAD | `id_list` |
-| `mutate_undisclosed_liabilities` | Bank: creditor payments absent from ULAD LIABILITIES | `id_list` |
+| `mutate_undisclosed_liabilities` | Bank: recurring BNPL / alimony / Venmo rent payments **present on the bank statement but intentionally absent from ULAD LIABILITIES** | `id_list` |
 | `mutate_rental_income_consistency` | ULAD REO rental income + bank deposits | `boolean` |
 | `mutate_joint_account_holder` | Bank: joint account with non-borrower; ULAD: single borrower | `id_list_account` |
 | `mutate_payroll_paystub_consistency` | Bank payroll deposits vs hypothetical paystub amount | `boolean` |
 | `mutate_payroll_undisclosed_employer` | ULAD employer A, bank payroll from employer B | `id_list` |
 | `mutate_undisclosed_income_source` | Bank: recurring SSA/side-gig deposits absent from ULAD | `id_list` |
+| `mutate_large_deposit_corresponding_debit` | **Two-bank-statement + ULAD**: large deposit in Borrower A’s account and (optional) matching debit in Borrower B’s account within a 3‑day window | `boolean` / `id_list` / detailed |
+| `mutate_auto_loan_third_party_payment` | **Two-bank-statement + ULAD**: auto loan liability in ULAD; third party pays the auto loan for ≥12 months in their own (non‑joint) account | `boolean` / `id_list` / detailed |
+| `mutate_credit_card_full_balance_payment` | Bank + ULAD: revolving credit card liability in ULAD and monthly credit card payments that look like either full‑balance payments (high, varying) or minimum payments (low, consistent) across the entire bank‑statement span | `boolean` / `id_list` / detailed |
+
+### Bank-Only Special Mutations
+
+These return only a bank statement and an answer (no ULAD changes).
+
+| Method | What it mutates | Default answer_type |
+|--------|----------------|-------------|
+| `mutate_missing_transactions` | Adjusts ending balance so that `starting_balance + sum(transactions) != end_balance`, creating an apparent gap / missing transactions | `boolean` / detailed |
 
 **Note:** All ULAD functions now accept an `answer_type` parameter to control output format.
 

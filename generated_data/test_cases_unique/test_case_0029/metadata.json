@@ -1,0 +1,18 @@
+{
+  "test_case_id": 1,
+  "test_case_number": null,
+  "question": "Can this account be excluded from the debt because the borrower pays the full balance each month?",
+  "rephrased_question": "Can this account be excluded from the debt because the borrower pays the full balance each month?",
+  "answer_type": "boolean",
+  "label": "debt_exclusion",
+  "mutation_type": "ulad",
+  "mutation_key": "mutate_credit_card_full_balance_payment",
+  "ground_truth_answer": "Yes",
+  "need_bank_statement": true,
+  "need_ulad": true,
+  "bank_statement_path": "bank_statement.json",
+  "bank_statement_b_path": null,
+  "ulad_path": "ulad.json",
+  "gid": null,
+  "old_id": null
+}
