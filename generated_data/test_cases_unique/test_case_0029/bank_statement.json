@@ -74,6 +74,15 @@
           "date_posted": "2026-02-25"
         },
         {
+          "description": "ACH DEBIT - American Express Gold PAYMENT",
+          "amount": -3855.9,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01001",
+          "tag": "credit card payment",
+          "date_transacted": "2026-02-21",
+          "date_posted": "2026-02-22"
+        },
+        {
           "description": "Venmo Cash Out",
           "amount": 347.3,
           "currency": "USD",
@@ -137,6 +146,15 @@
           "date_posted": "2026-01-31"
         },
         {
+          "description": "Klarna",
+          "amount": -121.14,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-00004",
+          "tag": "BNPL transactions",
+          "date_transacted": "2026-01-29",
+          "date_posted": "2026-01-30"
+        },
+        {
           "description": "International Wire",
           "amount": 1044.55,
           "currency": "USD",
@@ -155,20 +173,20 @@
           "transaction_id": "plaid-a5024c80-00001"
         },
         {
-          "description": "ACH DEBIT NJFSPC",
-          "amount": -978.7,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01002",
-          "tag": "undisclosed liability",
-          "date_transacted": "2026-01-25",
-          "date_posted": "2026-01-26"
-        },
-        {
           "description": "Deposit from Binance",
           "amount": 62.91,
           "currency": "USD",
           "transaction_id": "plaid-a5024c80-00008",
           "tag": "deposit from cryptocurrency source",
+          "date_transacted": "2026-01-16",
+          "date_posted": "2026-01-17"
+        },
+        {
+          "description": "ACH DEBIT - American Express Gold PAYMENT",
+          "amount": -2804.87,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01002",
+          "tag": "credit card payment",
           "date_transacted": "2026-01-16",
           "date_posted": "2026-01-17"
         },
@@ -180,15 +198,6 @@
           "tag": "undisclosed housing payments",
           "date_transacted": "2026-01-14",
           "date_posted": "2026-01-15"
-        },
-        {
-          "description": "Purchase at Crypto.com",
-          "amount": -487.29,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-00007",
-          "tag": "withdrawal",
-          "date_transacted": "2026-01-10",
-          "date_posted": "2026-01-11"
         },
         {
           "description": "Non-Sufficient Funds",
@@ -236,15 +245,6 @@
           "date_posted": "2025-12-27"
         },
         {
-          "description": "ACH DEBIT NJFSPC",
-          "amount": -973.11,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01001",
-          "tag": "undisclosed liability",
-          "date_transacted": "2025-12-21",
-          "date_posted": "2025-12-22"
-        },
-        {
           "description": "Venmo Cash Out",
           "amount": 337.34000000000003,
           "currency": "USD",
@@ -252,6 +252,15 @@
           "tag": "undisclosed income source",
           "date_transacted": "2025-12-19",
           "date_posted": "2025-12-20"
+        },
+        {
+          "description": "ACH DEBIT - American Express Gold PAYMENT",
+          "amount": -2488.52,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01003",
+          "tag": "credit card payment",
+          "date_transacted": "2025-12-18",
+          "date_posted": "2025-12-19"
         },
         {
           "description": "Venmo Cash Out",
@@ -279,6 +288,15 @@
           "currency": "USD",
           "tag": "general transaction",
           "transaction_id": "plaid-a5024c80-00003"
+        },
+        {
+          "description": "ACH DEBIT - American Express Gold PAYMENT",
+          "amount": -1814.43,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01004",
+          "tag": "credit card payment",
+          "date_transacted": "2025-11-19",
+          "date_posted": "2025-11-20"
         }
       ],
       "identity": {

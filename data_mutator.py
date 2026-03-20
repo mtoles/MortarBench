@@ -255,12 +255,33 @@ ULAD_MUTATION_CONFIGS = {
         "description_template": "ACH DEBIT {keyword}",
     },
     "undisclosed_liabilities": {
-        "amount_range": (50, 500),
-        "creditors": [
-            "Capital One", "American Express", "Discover", "Ally Bank",
-            "Chase Credit Card", "AMEX", "Visa Credit Card", "No Nonsense Credit Card",
+        "liability_types": [
+            {
+                "type": "bnpl",
+                "providers": ["Klarna", "Afterpay", "Affirm", "Sezzle", "Zip Co"],
+                "description_template": "ACH DEBIT - {provider} PMT",
+                "amount_range": (25, 150),
+                "recurring_count": (2, 4),
+                "date_spacing": "monthly"
+            },
+            {
+                "type": "alimony",
+                "providers": ["DC OAG", "NJFSPC", "Child Support Services", "Family Court"],
+                "description_template": "ACH DEBIT {provider}",
+                "amount_range": (300, 1500),
+                "recurring_count": (2, 3),
+                "date_spacing": "monthly"
+            },
+            {
+                "type": "rent_venmo",
+                "providers": ["LANDLORD", "PROPERTY MGT", "RENTAL PAYMENT", "HOUSING PMT"],
+                "description_template": "VENMO PAYMENT TO {provider}",
+                "amount_range": (800, 2500),
+                "recurring_count": (2, 3),
+                "date_spacing": "monthly"
+            }
         ],
-        "num_range": (2, 5),
+        "num_liability_types": (1, 2),  # How many different liability types to add
     },
     "rental_income_consistency": {
         "rental_amounts": [2000, 2400, 3000, 3500, 5000, 8000],
@@ -287,17 +308,69 @@ ULAD_MUTATION_CONFIGS = {
         "num_sources": 2,
         "date_spacing": "monthly",
     },
+    "large_deposit_corresponding_debit": {
+        "borrower_names": [
+            {"first": "John", "last": "Homeowner", "email": "john.homeowner@testmail.com"},
+            {"first": "Alice", "last": "Homeowner", "email": "alice.homeowner@testmail.com"}
+        ],
+        "deposit_amount_range": (5000, 50000),
+        "time_window_days": 3,  # Debit must be within 3 days of deposit
+        "match_probability": 0.7,
+        "description_templates": {
+            "deposit": "WIRE IN CREDIT - TRANSFER FROM {borrower_name}",
+            "debit": "WIRE OUT - TRANSFER TO {borrower_name}"
+        }
+    },
+    "auto_loan_third_party_payment": {
+        "borrower_names": [
+            {"first": "John", "last": "Homeowner", "email": "john.homeowner@testmail.com"},
+            {"first": "Sarah", "last": "Parent", "email": "sarah.parent@testmail.com"}  # Third party (parent)
+        ],
+        "auto_loan": {
+            "creditors": ["Toyota Financial", "Honda Finance", "Ford Credit", "Chase Auto", "Capital One Auto"],
+            "monthly_payment_range": (250, 800),
+            "description_template": "ACH DEBIT - {creditor} AUTO LOAN",
+            "liability_amount_range": (15000, 45000)
+        },
+        "months_required": 12,
+        "third_party_payment_probability": 0.7,  # 70% chance third party pays consistently
+    },
+    "credit_card_full_balance_payment": {
+        "credit_cards": [
+            {"name": "Chase Sapphire", "account_suffix": "4532"},
+            {"name": "Capital One Venture", "account_suffix": "8901"},
+            {"name": "American Express Gold", "account_suffix": "1234"},
+            {"name": "Citi Double Cash", "account_suffix": "5678"},
+            {"name": "Discover It", "account_suffix": "9012"}
+        ],
+        "payment_amount_range": (800, 4500),  # High payment amounts indicating full balance
+        "minimum_payment_range": (25, 150),   # Low amounts indicating minimum payments
+        "full_balance_probability": 0.7,  # 70% chance borrower pays full balance
+        "liability_balance_range": (2000, 15000),  # Credit card debt amount in ULAD
+        "description_template": "ACH DEBIT - {card_name} PAYMENT"
+    },
 }
 
 
 class DataMutator:
     """Handles mutation of bank statements and ULAD data for test case generation."""
 
-    def __init__(self, bank_statement_path: str, ulad_path: str):
+    def __init__(self, bank_statement_path: str, ulad_path: str, bank_statement_2_path: str = None, ulad_2_path: str = None):
         with open(bank_statement_path, 'r') as f:
             self.base_bank_statement = json.load(f)
         with open(ulad_path, 'r') as f:
             self.base_ulad = json.load(f)
+        
+        # Optional second bank statement and ULAD for two-borrower scenarios
+        self.base_bank_statement_2 = None
+        self.base_ulad_2 = None
+        if bank_statement_2_path:
+            with open(bank_statement_2_path, 'r') as f:
+                self.base_bank_statement_2 = json.load(f)
+        if ulad_2_path:
+            with open(ulad_2_path, 'r') as f:
+                self.base_ulad_2 = json.load(f)
+                
         self.transaction_counter = 1000
 
     def _generate_txn_id(self, dataset_id: str) -> str:
@@ -470,6 +543,238 @@ class DataMutator:
                     "country": country,
                 }
 
+    def _set_bank_identity_name(self, bank: Dict, name: str, email: str) -> None:
+        """Set the identity name and email for all accounts in a bank statement."""
+        for account in bank["override_accounts"]:
+            identity = account.get("identity", {})
+            identity["names"] = [name]
+            if "emails" in identity and identity["emails"]:
+                identity["emails"][0]["data"] = email
+            else:
+                identity["emails"] = [{"data": email, "primary": True, "type": "primary"}]
+
+    def _add_borrower_to_ulad(self, ulad: Dict, first_name: str, last_name: str, email: str, sequence_num: int) -> None:
+        """Add a second borrower to the ULAD PARTIES section."""
+        deal = self._get_deal(ulad)
+        parties = deal["PARTIES"]["PARTY"]
+        
+        if not isinstance(parties, list):
+            parties = [parties]
+            deal["PARTIES"]["PARTY"] = parties
+        
+        # Create new borrower party
+        new_borrower = {
+            "INDIVIDUAL": {
+                "CONTACT_POINTS": {
+                    "CONTACT_POINT": [
+                        {
+                            "CONTACT_POINT_TELEPHONE": {
+                                "ContactPointTelephoneValue": "9999999998"
+                            },
+                            "CONTACT_POINT_DETAIL": {
+                                "ContactPointRoleType": "Mobile"
+                            }
+                        },
+                        {
+                            "CONTACT_POINT_EMAIL": {
+                                "ContactPointEmailValue": email
+                            }
+                        }
+                    ]
+                },
+                "NAME": {
+                    "FirstName": first_name,
+                    "LastName": last_name
+                }
+            },
+            "ROLES": {
+                "ROLE": {
+                    "BORROWER": {
+                        "BORROWER_DETAIL": {
+                            "BorrowerBirthDate": "1990-01-01",
+                            "CommunityPropertyStateResidentIndicator": "false",
+                            "DependentCount": "0",
+                            "MaritalStatusType": "Married"
+                        },
+                        "CURRENT_INCOME": {
+                            "CURRENT_INCOME_ITEMS": {
+                                "CURRENT_INCOME_ITEM": {
+                                    "CURRENT_INCOME_ITEM_DETAIL": {
+                                        "CurrentIncomeMonthlyTotalAmount": "5500",
+                                        "EmploymentIncomeIndicator": "true",
+                                        "IncomeType": "Base"
+                                    },
+                                    "_SequenceNumber": "1",
+                                    "_xlink:label": f"CURRENT_INCOME_ITEM_{sequence_num}_1"
+                                }
+                            }
+                        },
+                        "DECLARATION": {
+                            "DECLARATION_DETAIL": {
+                                "BankruptcyIndicator": "false",
+                                "CitizenshipResidencyType": "USCitizen",
+                                "HomeownerPastThreeYearsType": "No",
+                                "IntentToOccupyType": "Yes",
+                                "OutstandingJudgmentsIndicator": "false",
+                                "PartyToLawsuitIndicator": "false",
+                                "PresentlyDelinquentIndicator": "false",
+                                "PriorPropertyDeedInLieuConveyedIndicator": "false",
+                                "PriorPropertyForeclosureCompletedIndicator": "false",
+                                "PriorPropertyShortSaleCompletedIndicator": "false",
+                                "PropertyProposedCleanEnergyLienIndicator": "false",
+                                "UndisclosedBorrowedFundsIndicator": "false",
+                                "UndisclosedComakerOfNoteIndicator": "false",
+                                "UndisclosedCreditApplicationIndicator": "false",
+                                "UndisclosedMortgageApplicationIndicator": "false",
+                                "EXTENSION": {
+                                    "OTHER": {
+                                        "DECLARATION_DETAIL_EXTENSION": {
+                                            "SpecialBorrowerSellerRelationshipIndicator": {
+                                                "__prefix": "ULAD",
+                                                "__text": "false"
+                                            },
+                                            "__prefix": "ULAD"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "DEPENDENTS": "",
+                        "EMPLOYERS": {
+                            "EMPLOYER": {
+                                "LEGAL_ENTITY": {
+                                    "LEGAL_ENTITY_DETAIL": {
+                                        "FullName": "Tech Corp"
+                                    }
+                                },
+                                "EMPLOYMENT": {
+                                    "EmploymentBorrowerSelfEmployedIndicator": "false",
+                                    "EmploymentClassificationType": "Primary",
+                                    "EmploymentPositionDescription": "Software Engineer",
+                                    "EmploymentStartDate": "2015-01-01",
+                                    "EmploymentStatusType": "Current",
+                                    "EmploymentTimeInLineOfWorkMonthsCount": "120",
+                                    "SpecialBorrowerEmployerRelationshipIndicator": "false",
+                                    "EXTENSION": {
+                                        "OTHER": {
+                                            "EMPLOYMENT_EXTENSION": {
+                                                "ForeignIncomeIndicator": {
+                                                    "__prefix": "DU",
+                                                    "__text": "false"
+                                                },
+                                                "SeasonalIncomeIndicator": {
+                                                    "__prefix": "DU",
+                                                    "__text": "false"
+                                                },
+                                                "__prefix": "DU"
+                                            }
+                                        }
+                                    }
+                                },
+                                "_SequenceNumber": "1",
+                                "_xlink:label": f"EMPLOYER_{sequence_num}_1"
+                            }
+                        },
+                        "GOVERNMENT_BORROWER": "",
+                        "GOVERNMENT_MONITORING": {
+                            "GOVERNMENT_MONITORING_DETAIL": {
+                                "HMDAEthnicityCollectedBasedOnVisualObservationOrSurnameIndicator": "false",
+                                "HMDAEthnicityRefusalIndicator": "false",
+                                "HMDAGenderCollectedBasedOnVisualObservationOrNameIndicator": "false",
+                                "HMDAGenderRefusalIndicator": "false",
+                                "HMDARaceCollectedBasedOnVisualObservationOrSurnameIndicator": "false",
+                                "HMDARaceRefusalIndicator": "false",
+                                "EXTENSION": {
+                                    "OTHER": {
+                                        "GOVERNMENT_MONITORING_DETAIL_EXTENSION": {
+                                            "__prefix": "ULAD"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "RESIDENCES": {
+                            "RESIDENCE": {
+                                "ADDRESS": {
+                                    "AddressLineText": "175 13th St",
+                                    "CityName": "Washington",
+                                    "CountryCode": "US",
+                                    "PostalCode": "20013",
+                                    "StateCode": "DC"
+                                },
+                                "LANDLORD": {
+                                    "LANDLORD_DETAIL": {
+                                        "MonthlyRentAmount": "3000.00"
+                                    }
+                                },
+                                "RESIDENCE_DETAIL": {
+                                    "BorrowerResidencyBasisType": "Rent",
+                                    "BorrowerResidencyDurationMonthsCount": "120",
+                                    "BorrowerResidencyType": "Current"
+                                }
+                            }
+                        }
+                    },
+                    "ROLE_DETAIL": {
+                        "PartyRoleType": "Borrower"
+                    },
+                    "_SequenceNumber": sequence_num,
+                    "_xlink:label": f"BORROWER_{sequence_num}"
+                }
+            },
+            "TAXPAYER_IDENTIFIERS": {
+                "TAXPAYER_IDENTIFIER": {
+                    "TaxpayerIdentifierType": "SocialSecurityNumber",
+                    "TaxpayerIdentifierValue": "991919992"
+                }
+            }
+        }
+        
+        parties.append(new_borrower)
+        
+        # Update loan detail to reflect multiple borrowers
+        loans = deal.get("LOANS", {}).get("LOAN", {})
+        loan = loans[0] if isinstance(loans, list) else loans
+        loan["LOAN_DETAIL"]["BorrowerCount"] = str(len(parties) - 1)  # Subtract 1 for property owner
+
+    def _add_auto_loan_to_ulad(self, ulad: Dict, creditor: str, monthly_payment: float, balance: float) -> None:
+        """Add an auto loan liability to the ULAD LIABILITIES section."""
+        deal = self._get_deal(ulad)
+        
+        # Ensure LIABILITIES section exists
+        if "LIABILITIES" not in deal:
+            deal["LIABILITIES"] = {"LIABILITY": []}
+        
+        liabilities = deal["LIABILITIES"].get("LIABILITY", [])
+        
+        if not isinstance(liabilities, list):
+            liabilities = [liabilities] if liabilities else []
+        
+        # Create new auto loan liability
+        auto_loan = {
+            "LIABILITY_DETAIL": {
+                "LiabilityAccountIdentifier": f"AUTO{random.randint(100000, 999999)}",
+                "LiabilityExclusionIndicator": "false",
+                "LiabilityMonthlyPaymentAmount": f"{monthly_payment:.2f}",
+                "LiabilityPayoffStatusIndicator": "false",
+                "LiabilityRemainingTermMonthsCount": str(random.randint(24, 72)),
+                "LiabilityType": "Installment",
+                "LiabilityUnpaidBalanceAmount": f"{balance:.2f}"
+            },
+            "LIABILITY_HOLDER": {
+                "NAME": {
+                    "FullName": creditor
+                }
+            },
+            "_SequenceNumber": str(len(liabilities) + 1),
+            "_xlink:label": f"LIABILITY_{len(liabilities) + 1}"
+        }
+        
+        liabilities.append(auto_loan)
+        
+        # Update the LIABILITIES structure
+        deal["LIABILITIES"]["LIABILITY"] = liabilities
+
     # ==================== BANK STATEMENT-ONLY MUTATION FUNCTIONS ====================
 
     def mutate_transaction(self, transaction_type: str, num_transactions: int = None, answer_type: str = "id_list") -> Tuple[Dict, str]:
@@ -633,7 +938,6 @@ class DataMutator:
         return bank, answer
 
     # ==================== ULAD MUTATION FUNCTIONS ====================
-    # All return (mutated_bank, mutated_ulad, answer_string)
 
     def mutate_employer_payroll_consistency(self, match: bool = None, answer_type: str = "boolean") -> Tuple[Dict, Dict, str]:
         """
@@ -868,11 +1172,15 @@ class DataMutator:
 
         return bank, ulad, answer
 
-    def mutate_undisclosed_liabilities(self, num_undisclosed: int = None, answer_type: str = "id_list") -> Tuple[Dict, Dict, str]:
+    def mutate_undisclosed_liabilities(self, num_liability_types: int = None, answer_type: str = "id_list") -> Tuple[Dict, Dict, str]:
         """
-        Add recurring payments to creditors in the bank statement that do NOT appear
-        in ULAD liabilities, simulating undisclosed debt obligations.
+        Add recurring payments for undisclosed liabilities (BNPL, alimony, rent from Venmo) 
+        to the bank statement that do NOT appear in ULAD liabilities.
 
+        Strategy:
+        - Bank statement: includes recurring payments for BNPL, alimony, rent from Venmo
+        - ULAD: does NOT include these undisclosed liabilities
+        
         Returns:
             (mutated_bank, mutated_ulad, answer)
         """
@@ -880,10 +1188,13 @@ class DataMutator:
         bank = copy.deepcopy(self.base_bank_statement)
         ulad = copy.deepcopy(self.base_ulad)
 
-        if num_undisclosed is None:
-            num_undisclosed = random.randint(*config["num_range"])
+        if num_liability_types is None:
+            num_liability_types = random.randint(*config["num_liability_types"])
 
-        # Get existing ULAD creditors to avoid overlap
+        # Remove any existing transactions that might conflict with our undisclosed liabilities
+        self._remove_transactions_by_description(bank, ["klarna", "afterpay", "affirm", "venmo payment", "dc oag", "njfspc"])
+
+        # Get existing ULAD creditors to ensure we don't accidentally match them
         deal = self._get_deal(ulad)
         liabilities = deal.get("LIABILITIES", {}).get("LIABILITY", [])
         if not isinstance(liabilities, list):
@@ -893,27 +1204,53 @@ class DataMutator:
             for lib in liabilities if isinstance(lib, dict)
         }
 
-        available = [c for c in config["creditors"] if c.lower() not in existing_creditors]
-        if len(available) < num_undisclosed:
-            available = config["creditors"]
+        # Select liability types to add (ensuring they don't overlap with ULAD)
+        available_types = []
+        for liability_type in config["liability_types"]:
+            # Check if any providers overlap with existing ULAD creditors
+            non_overlapping_providers = [
+                p for p in liability_type["providers"] 
+                if p.lower() not in existing_creditors
+            ]
+            if non_overlapping_providers:
+                liability_type_copy = liability_type.copy()
+                liability_type_copy["providers"] = non_overlapping_providers
+                available_types.append(liability_type_copy)
 
-        creditors_chosen = random.sample(available, min(num_undisclosed, len(available)))
+        if not available_types:
+            # Fallback: use all types if no overlap found
+            available_types = config["liability_types"]
+
+        selected_types = random.sample(available_types, min(num_liability_types, len(available_types)))
         added = []
 
-        for creditor in creditors_chosen:
-            amount = round(random.uniform(*config["amount_range"]), 2)
-            date_transacted, date_posted = self._get_random_date()
-            txn = {
-                "description": f"ACH DEBIT {creditor} PMT",
-                "amount": -amount,
-                "currency": "USD",
-                "transaction_id": "",
-                "tag": "general transaction",
-                "date_transacted": date_transacted,
-                "date_posted": date_posted,
-            }
-            self._add_transaction_to_checking(bank, txn)
-            added.append(txn)
+        for liability_type in selected_types:
+            provider = random.choice(liability_type["providers"])
+            base_amount = round(random.uniform(*liability_type["amount_range"]), 2)
+            num_payments = random.randint(*liability_type["recurring_count"])
+            
+            # Generate recurring payment dates
+            dates = self._get_spaced_dates(num_payments, liability_type["date_spacing"])
+            
+            for i in range(num_payments):
+                # Add slight variation to amount for realism
+                amount = round(base_amount + random.uniform(-10, 10), 2)
+                date_transacted, date_posted = dates[i]
+                
+                txn = {
+                    "description": liability_type["description_template"].format(provider=provider),
+                    "amount": -abs(amount),  # Ensure negative (payment out)
+                    "currency": "USD",
+                    "transaction_id": "",
+                    "tag": "undisclosed liability",
+                    "date_transacted": date_transacted,
+                    "date_posted": date_posted,
+                }
+                self._add_transaction_to_checking(bank, txn)
+                added.append(txn)
+
+        # IMPORTANT: Do NOT add these liabilities to ULAD - they remain undisclosed
+        # The ULAD is returned unchanged to maintain the "undisclosed" nature
 
         answer = self._format_transaction_list(added, answer_type)
         return bank, ulad, answer
@@ -1202,6 +1539,528 @@ class DataMutator:
 
         answer = self._format_transaction_list(added, answer_type)
         return bank, ulad, answer
+
+    def mutate_missing_transactions(self, answer_type: str = "boolean") -> Tuple[Dict, str]:
+        """
+        Create a scenario where starting balance + transactions don't equal ending balance,
+        indicating missing transactions in the bank statement.
+        
+        This function will:
+        1. Calculate the actual balance based on starting balance + all transactions
+        2. Set the ending balance to a different value to create a discrepancy
+        3. The discrepancy indicates missing transactions
+        
+        Args:
+            answer_type: Format of answer - "boolean", "id_list", or "default"
+            
+        Returns:
+            (mutated_bank_statement, answer_string)
+        """
+        bank = copy.deepcopy(self.base_bank_statement)
+        
+        # Find the primary checking account to modify
+        primary_account = None
+        for account in bank["override_accounts"]:
+            if (account.get("type") == "depository" 
+                and account.get("subtype") == "checking" 
+                and account.get("class") != "business"):
+                primary_account = account
+                break
+        
+        if not primary_account:
+            # Fallback to first account if no checking account found
+            primary_account = bank["override_accounts"][0]
+        
+        # Calculate what the ending balance should be based on transactions
+        starting_balance = primary_account.get("starting_balance", 0)
+        transaction_sum = sum(txn.get("amount", 0) for txn in primary_account.get("transactions", []))
+        calculated_ending_balance = starting_balance + transaction_sum
+        
+        # Create a discrepancy by setting ending balance to a different value
+        # This simulates missing transactions
+        discrepancy_amounts = [500, 750, 1000, 1250, 1500, 2000, -300, -500, -750, -1000]
+        discrepancy = random.choice(discrepancy_amounts)
+        
+        # Set ending balance to create the discrepancy
+        primary_account["end_balance"] = calculated_ending_balance + discrepancy
+        
+        # Determine if there are missing transactions based on the discrepancy
+        has_missing_transactions = abs(discrepancy) > 0
+        
+        if answer_type == "boolean":
+            answer = "Yes" if has_missing_transactions else "No"
+        elif answer_type == "id_list":
+            # For missing transactions, we can't return specific transaction IDs since they're missing
+            # Return empty list to indicate no specific transactions can be identified
+            answer = "[]"
+        else:
+            # Default detailed format
+            if has_missing_transactions:
+                answer = (f"Yes - Balance discrepancy detected.\n"
+                         f"Starting balance: ${starting_balance:,.2f}\n"
+                         f"Sum of transactions: ${transaction_sum:,.2f}\n"
+                         f"Expected ending balance: ${calculated_ending_balance:,.2f}\n"
+                         f"Actual ending balance: ${primary_account['end_balance']:,.2f}\n"
+                         f"Discrepancy: ${discrepancy:,.2f} (indicates missing transactions)")
+            else:
+                answer = (f"No - All transactions accounted for.\n"
+                         f"Starting balance + transactions = ending balance")
+        
+        return bank, answer
+
+    def mutate_large_deposit_corresponding_debit(self, match: bool = None, answer_type: str = "boolean") -> Tuple[Dict, Dict, Dict, str]:
+        """
+        Create a scenario with two borrowers where a large deposit in one borrower's account
+        has (or doesn't have) a corresponding debit in the other borrower's account within
+        the correct time window.
+        
+        Strategy:
+        - Two bank statements: BorrowerA and BorrowerB with different names
+        - ULAD: Contains both borrowers in PARTIES section
+        - Large deposit in BorrowerA's account
+        - Corresponding debit in BorrowerB's account (if match=True) within time window
+        
+        Returns:
+            (mutated_bank_A, mutated_bank_B, mutated_ulad, answer)
+        """
+        if self.base_bank_statement_2 is None:
+            raise ValueError("Second bank statement template required for two-borrower mutation")
+            
+        config = ULAD_MUTATION_CONFIGS["large_deposit_corresponding_debit"]
+        
+        # Create copies of both bank statements and ULAD
+        bank_a = copy.deepcopy(self.base_bank_statement)
+        bank_b = copy.deepcopy(self.base_bank_statement_2)
+        ulad = copy.deepcopy(self.base_ulad)
+        
+        if match is None:
+            match = random.random() < config["match_probability"]
+        
+        # Set up borrower identities
+        borrower_a = config["borrower_names"][0]  # John Homeowner
+        borrower_b = config["borrower_names"][1]  # Alice Homeowner
+        
+        # Update bank statement identities
+        borrower_a_name = f"{borrower_a['first']} {borrower_a['last']}"
+        borrower_b_name = f"{borrower_b['first']} {borrower_b['last']}"
+        
+        self._set_bank_identity_name(bank_a, borrower_a_name, borrower_a["email"])
+        self._set_bank_identity_name(bank_b, borrower_b_name, borrower_b["email"])
+        
+        # Add both borrowers to ULAD
+        # First borrower is already in the base ULAD, update their name
+        party = self._get_primary_borrower_party(ulad)
+        if party:
+            party["INDIVIDUAL"]["NAME"]["FirstName"] = borrower_a["first"]
+            party["INDIVIDUAL"]["NAME"]["LastName"] = borrower_a["last"]
+            # Update email in contact points
+            contact_points = party["INDIVIDUAL"]["CONTACT_POINTS"]["CONTACT_POINT"]
+            for cp in contact_points:
+                if "CONTACT_POINT_EMAIL" in cp:
+                    cp["CONTACT_POINT_EMAIL"]["ContactPointEmailValue"] = borrower_a["email"]
+        
+        # Add second borrower to ULAD
+        self._add_borrower_to_ulad(ulad, borrower_b["first"], borrower_b["last"], borrower_b["email"], 2)
+        
+        # Remove existing large deposits from both accounts
+        self._remove_transactions_by_tag(bank_a, "large deposits")
+        self._remove_transactions_by_tag(bank_b, "large deposits")
+        
+        # Generate deposit amount and dates
+        deposit_amount = round(random.uniform(*config["deposit_amount_range"]), 2)
+        deposit_date = self._get_random_date(30, 5)  # Deposit 5-30 days ago
+        
+        # Create large deposit in BorrowerA's account
+        deposit_txn = {
+            "description": config["description_templates"]["deposit"].format(borrower_name=borrower_b_name),
+            "amount": deposit_amount,
+            "currency": "USD",
+            "transaction_id": "",
+            "tag": "large deposits",
+            "date_transacted": deposit_date[0],
+            "date_posted": deposit_date[1],
+        }
+        self._add_transaction_to_checking(bank_a, deposit_txn)
+        
+        debit_txn = None
+        if match:
+            # Create corresponding debit in BorrowerB's account within time window
+            # Debit should be 1-3 days before the deposit
+            days_before = random.randint(1, config["time_window_days"])
+            debit_date_obj = datetime.strptime(deposit_date[0], "%Y-%m-%d") - timedelta(days=days_before)
+            debit_date = (debit_date_obj.strftime("%Y-%m-%d"), 
+                         (debit_date_obj + timedelta(days=1)).strftime("%Y-%m-%d"))
+            
+            debit_txn = {
+                "description": config["description_templates"]["debit"].format(borrower_name=borrower_a_name),
+                "amount": -deposit_amount,  # Same amount, negative
+                "currency": "USD",
+                "transaction_id": "",
+                "tag": "withdrawal",
+                "date_transacted": debit_date[0],
+                "date_posted": debit_date[1],
+            }
+            self._add_transaction_to_checking(bank_b, debit_txn)
+        
+        # Format answer
+        if answer_type == "boolean":
+            answer = "Yes" if match else "No"
+        elif answer_type == "id_list":
+            if match and debit_txn:
+                answer = str([debit_txn.get("transaction_id", "")])
+            else:
+                answer = "[]"
+        else:
+            # Default detailed format
+            if match and debit_txn:
+                answer = (f"Yes - Corresponding debit found.\n"
+                         f"Deposit: {deposit_txn['date_transacted']} - {borrower_a_name} received ${deposit_amount:,.2f} from {borrower_b_name}\n"
+                         f"Debit: {debit_txn['date_transacted']} - {borrower_b_name} sent ${deposit_amount:,.2f} to {borrower_a_name}\n"
+                         f"Time difference: {days_before} day(s) (within {config['time_window_days']}-day window)")
+            else:
+                answer = (f"No - No corresponding debit found.\n"
+                         f"Deposit: {deposit_txn['date_transacted']} - {borrower_a_name} received ${deposit_amount:,.2f}\n"
+                         f"No matching debit transaction found in {borrower_b_name}'s account within the {config['time_window_days']}-day time window.")
+        
+        return bank_a, bank_b, ulad, answer
+
+    def mutate_auto_loan_third_party_payment(self, third_party_pays: bool = None, answer_type: str = "boolean") -> Tuple[Dict, Dict, Dict, str]:
+        """
+        Create a scenario where an auto loan liability exists in ULAD and check if a third party
+        has been consistently paying it for the last 12 months.
+        
+        Strategy:
+        - Borrower's bank statement: May or may not have auto loan payments (assumes 12+ months of data)
+        - Third party's bank statement: Has consistent auto loan payments (if third_party_pays=True)
+        - ULAD: Contains auto loan liability
+        - Verify third party account is not joint with borrower
+        
+        Returns:
+            (mutated_borrower_bank, mutated_third_party_bank, mutated_ulad, answer)
+        """
+        if self.base_bank_statement_2 is None:
+            raise ValueError("Second bank statement template required for auto loan mutation (third party)")
+            
+        config = ULAD_MUTATION_CONFIGS["auto_loan_third_party_payment"]
+        
+        # Create copies
+        borrower_bank = copy.deepcopy(self.base_bank_statement)
+        third_party_bank = copy.deepcopy(self.base_bank_statement_2)
+        ulad = copy.deepcopy(self.base_ulad)
+        
+        if third_party_pays is None:
+            third_party_pays = random.random() < config["third_party_payment_probability"]
+        
+        # Set up identities
+        borrower = config["borrower_names"][0]  # borrower
+        third_party = config["borrower_names"][1]  # third party
+        
+        borrower_name = f"{borrower['first']} {borrower['last']}"
+        third_party_name = f"{third_party['first']} {third_party['last']}"
+        
+        # Update bank statement identities
+        self._set_bank_identity_name(borrower_bank, borrower_name, borrower["email"])
+        self._set_bank_identity_name(third_party_bank, third_party_name, third_party["email"])
+        
+        # Ensure third party account is NOT joint with borrower
+        for account in third_party_bank["override_accounts"]:
+            identity = account.get("identity", {})
+            names = identity.get("names", [])
+            if len(names) > 1:  # Remove any joint names
+                identity["names"] = [third_party_name]
+        
+        # Set up auto loan details
+        creditor = random.choice(config["auto_loan"]["creditors"])
+        monthly_payment = round(random.uniform(*config["auto_loan"]["monthly_payment_range"]), 2)
+        loan_balance = round(random.uniform(*config["auto_loan"]["liability_amount_range"]), 2)
+        
+        # Add auto loan to ULAD
+        self._add_auto_loan_to_ulad(ulad, creditor, monthly_payment, loan_balance)
+        
+        # Remove existing auto loan payments from both accounts
+        auto_keywords = ["auto", "car", "vehicle", creditor.lower()]
+        self._remove_transactions_by_description(borrower_bank, auto_keywords)
+        self._remove_transactions_by_description(third_party_bank, auto_keywords)
+        
+        # Generate 12 months of auto loan payment history
+        months_with_payments = 0
+        payment_months = []
+        
+        if third_party_pays:
+            # Third party pays consistently (all 12 months)
+            payment_months = list(range(config["months_required"]))  # All 12 months
+            months_with_payments = len(payment_months)
+            
+            for month_offset in payment_months:
+                # Calculate payment date (going back from current date)
+                payment_date_obj = datetime.now() - timedelta(days=30 * month_offset + random.randint(5, 25))
+                payment_date = (payment_date_obj.strftime("%Y-%m-%d"), 
+                               (payment_date_obj + timedelta(days=1)).strftime("%Y-%m-%d"))
+                
+                # Add slight variation to payment amount
+                payment_amount = round(monthly_payment + random.uniform(-10, 10), 2)
+                
+                txn = {
+                    "description": config["auto_loan"]["description_template"].format(creditor=creditor),
+                    "amount": -abs(payment_amount),
+                    "currency": "USD",
+                    "transaction_id": "",
+                    "tag": "auto loan payment",
+                    "date_transacted": payment_date[0],
+                    "date_posted": payment_date[1],
+                }
+                self._add_transaction_to_checking(third_party_bank, txn)
+        else:
+            # Third party doesn't pay consistently (or borrower pays themselves)
+            # Add sporadic payments from borrower or no payments at all
+            sporadic_months = random.randint(0, 3)  # 0-3 months only
+            payment_months = random.sample(range(config["months_required"]), sporadic_months)
+            months_with_payments = len(payment_months)
+            
+            for month_offset in payment_months:
+                payment_date_obj = datetime.now() - timedelta(days=30 * month_offset + random.randint(5, 25))
+                payment_date = (payment_date_obj.strftime("%Y-%m-%d"), 
+                               (payment_date_obj + timedelta(days=1)).strftime("%Y-%m-%d"))
+                
+                payment_amount = round(monthly_payment + random.uniform(-10, 10), 2)
+                
+                # Randomly choose who makes the sporadic payment
+                if random.random() < 0.5:
+                    # Borrower makes payment
+                    txn = {
+                        "description": config["auto_loan"]["description_template"].format(creditor=creditor),
+                        "amount": -abs(payment_amount),
+                        "currency": "USD",
+                        "transaction_id": "",
+                        "tag": "auto loan payment",
+                        "date_transacted": payment_date[0],
+                        "date_posted": payment_date[1],
+                    }
+                    self._add_transaction_to_checking(borrower_bank, txn)
+                else:
+                    # Third party makes sporadic payment
+                    txn = {
+                        "description": config["auto_loan"]["description_template"].format(creditor=creditor),
+                        "amount": -abs(payment_amount),
+                        "currency": "USD",
+                        "transaction_id": "",
+                        "tag": "auto loan payment",
+                        "date_transacted": payment_date[0],
+                        "date_posted": payment_date[1],
+                    }
+                    self._add_transaction_to_checking(third_party_bank, txn)
+        
+        # Determine if loan can be excluded (third party paid for exactly 12 months or above)
+        can_exclude = (third_party_pays and 
+                      months_with_payments >= config["months_required"])
+        
+        # Format answer
+        if answer_type == "boolean":
+            answer = "Yes" if can_exclude else "No"
+        elif answer_type == "id_list":
+            # Return transaction IDs of third party payments
+            third_party_payments = []
+            for account in third_party_bank["override_accounts"]:
+                if account.get("type") == "depository" and account.get("subtype") in ["checking", "savings"]:
+                    payments = [txn for txn in account.get("transactions", []) if txn.get("tag") == "auto loan payment"]
+                    third_party_payments.extend(payments)
+            answer = str([txn.get("transaction_id", "") for txn in third_party_payments])
+        else:
+            # Default detailed format
+            if can_exclude:
+                answer = (f"Yes - Auto loan can be excluded.\n"
+                         f"Third party ({third_party_name}) made {months_with_payments} payments out of {config['months_required']} months.\n"
+                         f"Creditor: {creditor}\n"
+                         f"Monthly payment: ${monthly_payment:,.2f}\n"
+                         f"Third party account is not joint with borrower.")
+            else:
+                answer = (f"No - Auto loan cannot be excluded.\n"
+                         f"Third party ({third_party_name}) made only {months_with_payments} payments out of {config['months_required']} months.\n"
+                         f"Minimum required: {config['months_required']} months.\n"
+                         f"Creditor: {creditor}")
+        
+        return borrower_bank, third_party_bank, ulad, answer
+
+    def mutate_credit_card_full_balance_payment(self, pays_full_balance: bool = None, answer_type: str = "boolean") -> Tuple[Dict, Dict, str]:
+        """
+        Create a scenario where a credit card liability exists in ULAD and analyze if the borrower
+        pays the full balance each month (high varying amounts) vs minimum payments (low consistent amounts).
+        
+        Strategy:
+        - Bank statement: Contains credit card payment transactions
+        - ULAD: Contains credit card liability
+        - High varying payments indicate full balance payments (can exclude debt)
+        - Low consistent payments indicate minimum payments (cannot exclude debt)
+        
+        Returns:
+            (mutated_bank, mutated_ulad, answer)
+        """
+        config = ULAD_MUTATION_CONFIGS["credit_card_full_balance_payment"]
+        
+        # Create copies
+        bank = copy.deepcopy(self.base_bank_statement)
+        ulad = copy.deepcopy(self.base_ulad)
+        
+        if pays_full_balance is None:
+            pays_full_balance = random.random() < config["full_balance_probability"]
+        
+        # Select a credit card
+        credit_card = random.choice(config["credit_cards"])
+        card_name = credit_card["name"]
+        
+        # Set up credit card liability in ULAD
+        liability_balance = round(random.uniform(*config["liability_balance_range"]), 2)
+        monthly_minimum = round(liability_balance * 0.02, 2)  # Typical 2% minimum payment
+        
+        # Add credit card liability to ULAD
+        self._add_credit_card_to_ulad(ulad, card_name, monthly_minimum, liability_balance)
+        
+        # Remove existing credit card payments
+        cc_keywords = ["credit card", "visa", "mastercard", "amex", "discover", "chase", "capital one", "citi"]
+        self._remove_transactions_by_description(bank, cc_keywords)
+        
+        # Calculate the number of months from the bank statement data
+        months_to_analyze = self._calculate_bank_statement_months(bank)
+        
+        # Generate payment history for all months in the bank statement
+        payments_added = []
+        
+        for month_offset in range(months_to_analyze):
+            # Calculate payment date (going back from current date)
+            payment_date_obj = datetime.now() - timedelta(days=30 * month_offset + random.randint(15, 28))
+            payment_date = (payment_date_obj.strftime("%Y-%m-%d"), 
+                           (payment_date_obj + timedelta(days=1)).strftime("%Y-%m-%d"))
+            
+            if pays_full_balance:
+                # High varying amounts (full balance payments)
+                # Simulate varying statement balances being paid in full
+                base_amount = random.uniform(*config["payment_amount_range"])
+                # Add significant variation to show different monthly balances
+                variation = random.uniform(-500, 800)
+                payment_amount = round(max(500, base_amount + variation), 2)
+            else:
+                # Low consistent amounts (minimum payments)
+                # Minimum payments are typically consistent and low
+                base_minimum = random.uniform(*config["minimum_payment_range"])
+                # Small variation for realism but still clearly minimum payments
+                variation = random.uniform(-10, 25)
+                payment_amount = round(max(25, base_minimum + variation), 2)
+            
+            txn = {
+                "description": config["description_template"].format(card_name=card_name),
+                "amount": -abs(payment_amount),
+                "currency": "USD",
+                "transaction_id": "",
+                "tag": "credit card payment",
+                "date_transacted": payment_date[0],
+                "date_posted": payment_date[1],
+            }
+            self._add_transaction_to_checking(bank, txn)
+            payments_added.append(txn)
+        
+        # Analyze payment pattern to determine if full balance is being paid
+        payment_amounts = [abs(p["amount"]) for p in payments_added]
+        avg_payment = sum(payment_amounts) / len(payment_amounts)
+        payment_variation = max(payment_amounts) - min(payment_amounts)
+        
+        # Determine if payments indicate full balance (high amounts with significant variation)
+        indicates_full_balance = (pays_full_balance and 
+                                avg_payment > 400 and 
+                                payment_variation > 200)
+        
+        # Format answer
+        if answer_type == "boolean":
+            answer = "Yes" if indicates_full_balance else "No"
+        elif answer_type == "id_list":
+            # Return transaction IDs of credit card payments
+            answer = str([txn.get("transaction_id", "") for txn in payments_added])
+        else:
+            # Default detailed format
+            if indicates_full_balance:
+                answer = (f"Yes - Credit card debt can be excluded.\n"
+                         f"Payment pattern indicates full balance payments:\n"
+                         f"Average payment: ${avg_payment:,.2f}\n"
+                         f"Payment variation: ${payment_variation:,.2f}\n"
+                         f"Payments range from ${min(payment_amounts):,.2f} to ${max(payment_amounts):,.2f}\n"
+                         f"High varying amounts suggest full statement balance payments, not minimums.")
+            else:
+                answer = (f"No - Credit card debt cannot be excluded.\n"
+                         f"Payment pattern indicates minimum payments:\n"
+                         f"Average payment: ${avg_payment:,.2f}\n"
+                         f"Payment variation: ${payment_variation:,.2f}\n"
+                         f"Payments range from ${min(payment_amounts):,.2f} to ${max(payment_amounts):,.2f}\n"
+                         f"Low consistent amounts suggest minimum payments, not full balance.")
+        
+        return bank, ulad, answer
+
+    def _add_credit_card_to_ulad(self, ulad: Dict, card_name: str, monthly_payment: float, balance: float) -> None:
+        """Add a credit card liability to the ULAD LIABILITIES section."""
+        deal = self._get_deal(ulad)
+        
+        # Ensure LIABILITIES section exists
+        if "LIABILITIES" not in deal:
+            deal["LIABILITIES"] = {"LIABILITY": []}
+        
+        liabilities = deal["LIABILITIES"].get("LIABILITY", [])
+        
+        if not isinstance(liabilities, list):
+            liabilities = [liabilities] if liabilities else []
+        
+        # Create new credit card liability
+        credit_card = {
+            "LIABILITY_DETAIL": {
+                "LiabilityAccountIdentifier": f"CC{random.randint(100000, 999999)}",
+                "LiabilityExclusionIndicator": "false",
+                "LiabilityMonthlyPaymentAmount": f"{monthly_payment:.2f}",
+                "LiabilityPayoffStatusIndicator": "false",
+                "LiabilityRemainingTermMonthsCount": "0",  # Credit cards don't have fixed terms
+                "LiabilityType": "Revolving",
+                "LiabilityUnpaidBalanceAmount": f"{balance:.2f}"
+            },
+            "LIABILITY_HOLDER": {
+                "NAME": {
+                    "FullName": card_name
+                }
+            },
+            "_SequenceNumber": str(len(liabilities) + 1),
+            "_xlink:label": f"LIABILITY_{len(liabilities) + 1}"
+        }
+        
+        liabilities.append(credit_card)
+        
+        # Update the LIABILITIES structure
+        deal["LIABILITIES"]["LIABILITY"] = liabilities
+
+    def _calculate_bank_statement_months(self, bank: Dict) -> int:
+        """
+        Calculate the number of months covered by the bank statement based on transaction dates.
+        Returns the number of months to generate credit card payments for.
+        """
+        all_dates = []
+        
+        # Collect all transaction dates from all accounts
+        for account in bank.get("override_accounts", []):
+            for txn in account.get("transactions", []):
+                date_str = txn.get("date_transacted")
+                if date_str:
+                    try:
+                        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+                        all_dates.append(date_obj)
+                    except ValueError:
+                        continue
+        
+        if not all_dates:
+           raise ValueError("No valid dates found in the bank statement")
+        
+        # Find the earliest and latest dates
+        earliest_date = min(all_dates)
+        latest_date = max(all_dates)
+        
+        # Calculate the difference in months
+        months_diff = (latest_date.year - earliest_date.year) * 12 + (latest_date.month - earliest_date.month)
+        
+        # Add 1 to include both start and end months, minimum of 3 months for meaningful analysis
+        return max(3, months_diff + 1)
 
 
 def main():

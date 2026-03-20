@@ -123,6 +123,37 @@ MUTATION_RULES = [
     ("payroll deposits on the bank statements exactly match",
      {"type": "ulad", "fn": "mutate_payroll_paystub_consistency"}),
 
+    # ── Two-borrower mutations ─────────────────────────────────────────────
+    ("large deposit documented by a corresponding debit from the other borrower",
+     {"type": "two_borrower", "fn": "mutate_large_deposit_corresponding_debit"}),
+
+    ("corresponding debit from the other borrower's account within the correct time window",
+     {"type": "two_borrower", "fn": "mutate_large_deposit_corresponding_debit"}),
+
+    # ── Auto loan third party payment mutations ────────────────────────────
+    ("automobile loan be excluded from the borrower's debt because a third party has been paying",
+     {"type": "auto_loan", "fn": "mutate_auto_loan_third_party_payment"}),
+
+    ("third party has been paying it for the last 12 months",
+     {"type": "auto_loan", "fn": "mutate_auto_loan_third_party_payment"}),
+
+    # ── Credit card debt exclusion mutations ───────────────────────────────
+    ("account be excluded from the debt because the borrower pays the full balance each month",
+     {"type": "ulad", "fn": "mutate_credit_card_full_balance_payment"}),
+
+    ("pays the full balance each month",
+     {"type": "ulad", "fn": "mutate_credit_card_full_balance_payment"}),
+
+    # ── Bank-only special mutations ────────────────────────────────────────
+    ("missing transactions",
+     {"type": "bank_special", "fn": "mutate_missing_transactions"}),
+
+    ("any missing transactions",
+     {"type": "bank_special", "fn": "mutate_missing_transactions"}),
+
+    ("are there any missing transactions",
+     {"type": "bank_special", "fn": "mutate_missing_transactions"}),
+
     # ── Bank-transaction mutations ─────────────────────────────────────────
     ("bnpl",
      {"type": "transaction", "mutation_type": "bnpl"}),
@@ -273,6 +304,12 @@ def execute_mutation(mutator: DataMutator, spec: Dict, answer_type: str):
         ulad = copy.deepcopy(mutator.base_ulad)
         return bank, ulad, answer
 
+    if mtype == "bank_special":
+        fn = getattr(mutator, spec["fn"])
+        bank, answer = fn(answer_type=answer_type)
+        ulad = copy.deepcopy(mutator.base_ulad)
+        return bank, ulad, answer
+
     if mtype == "ulad":
         fn = getattr(mutator, spec["fn"])
         # Try to call with answer_type parameter
@@ -282,6 +319,18 @@ def execute_mutation(mutator: DataMutator, spec: Dict, answer_type: str):
             # Function doesn't support answer_type parameter
             result = fn()
         # All ULAD mutation functions return (bank, ulad, answer)
+        return result
+
+    if mtype == "two_borrower":
+        fn = getattr(mutator, spec["fn"])
+        # Two-borrower functions return (bank_a, bank_b, ulad, answer)
+        result = fn(answer_type=answer_type)
+        return result
+
+    if mtype == "auto_loan":
+        fn = getattr(mutator, spec["fn"])
+        # Auto loan functions return (borrower_bank_12m, third_party_bank_12m, ulad, answer)
+        result = fn(answer_type=answer_type)
         return result
 
     raise ValueError(f"Unknown mutation type: {mtype}")
@@ -316,7 +365,18 @@ def generate_test_case(
     try:
         # Use answer_type from CSV (both questions.csv and unique_questions.csv have this column)
         answer_type_param = row['answer_type']
-        mutated_bank, mutated_ulad, answer = execute_mutation(mutator, spec, answer_type_param)
+        result = execute_mutation(mutator, spec, answer_type_param)
+        
+        # Handle different return formats
+        if spec["type"] in ["two_borrower", "auto_loan"]:
+            # Two-borrower and auto loan mutations return (bank_a, bank_b, ulad, answer)
+            mutated_bank_a, mutated_bank_b, mutated_ulad, answer = result
+            mutated_bank = mutated_bank_a  # Primary bank statement
+        else:
+            # Standard mutations return (bank, ulad, answer)
+            mutated_bank, mutated_ulad, answer = result
+            mutated_bank_b = None
+            
     except Exception as exc:
         print(f"  ✗ Mutation error: {exc}")
         return None
@@ -326,12 +386,22 @@ def generate_test_case(
     os.makedirs(tc_dir, exist_ok=True)
 
     bank_rel_path = None
+    bank_b_rel_path = None
     ulad_rel_path = None
 
     if need_bank:
         bank_rel_path = "bank_statement.json"
         with open(os.path.join(tc_dir, bank_rel_path), "w") as f:
             json.dump(mutated_bank, f, indent=2)
+        
+        # Write second bank statement if it exists (two-borrower or auto loan case)
+        if mutated_bank_b is not None:
+            if spec["type"] == "auto_loan":
+                bank_b_rel_path = "bank_statement_third_party.json"
+            else:
+                bank_b_rel_path = "bank_statement_b.json"
+            with open(os.path.join(tc_dir, bank_b_rel_path), "w") as f:
+                json.dump(mutated_bank_b, f, indent=2)
 
     if need_ulad:
         ulad_rel_path = "ulad.json"
@@ -352,6 +422,7 @@ def generate_test_case(
         "need_bank_statement": bool(need_bank),
         "need_ulad": bool(need_ulad),
         "bank_statement_path": bank_rel_path,
+        "bank_statement_b_path": bank_b_rel_path,
         "ulad_path": ulad_rel_path,
         "gid": gid,
         "old_id": old_id,
@@ -373,6 +444,16 @@ def main():
     parser.add_argument(
         "--ulad",
         default="generated_data/ulad.json",
+    )
+    parser.add_argument(
+        "--bank-statement-2",
+        default="generated_data/bank_statement_2.json",
+        help="Second bank statement for two-borrower scenarios"
+    )
+    parser.add_argument(
+        "--ulad-2",
+        default="generated_data/ulad_2.json",
+        help="Second ULAD for two-borrower scenarios"
     )
     parser.add_argument("--output", default="test_cases")
     parser.add_argument("--limit", type=int, default=None,
@@ -403,8 +484,9 @@ def main():
     print(f"Processing {len(df)} questions...")
     print(f"  Bank statement : {args.bank_statement}")
     print(f"  ULAD           : {args.ulad}")
+    print(f"  Bank statement 2: {args.bank_statement_2}")
 
-    mutator = DataMutator(args.bank_statement, args.ulad)
+    mutator = DataMutator(args.bank_statement, args.ulad, args.bank_statement_2, args.ulad_2)
 
     results, success, skipped = [], 0, 0
 

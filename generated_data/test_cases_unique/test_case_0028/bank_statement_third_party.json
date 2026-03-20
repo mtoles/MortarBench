@@ -1,0 +1,540 @@
+{
+  "seed": "generated-test-ed9edb1f",
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "savings",
+      "starting_balance": 11485.56,
+      "currency": "USD",
+      "numbers": {
+        "account": "43151522"
+      },
+      "transactions": [
+        {
+          "description": "Sou-sou",
+          "amount": 237.39,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00024",
+          "tag": "private savings club",
+          "date_transacted": "2026-02-26",
+          "date_posted": "2026-02-27"
+        },
+        {
+          "description": "Secured Loan Deposit",
+          "amount": 5641.87,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00025",
+          "tag": "secured loan",
+          "date_transacted": "2026-02-03",
+          "date_posted": "2026-02-04"
+        }
+      ],
+      "identity": {
+        "names": [
+          "Sarah Parent"
+        ],
+        "emails": [
+          {
+            "data": "sarah.parent@testmail.com",
+            "primary": true,
+            "type": "primary"
+          }
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "country": "US",
+              "city": "Washington",
+              "street": "175 13th St",
+              "postal_code": "20013",
+              "region": "DC"
+            }
+          }
+        ]
+      },
+      "end_balance": 17364.82
+    },
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 4108.7,
+      "currency": "USD",
+      "numbers": {
+        "account": "64330807"
+      },
+      "transactions": [
+        {
+          "description": "Earnest Money Deposit",
+          "amount": -5861.13,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00015",
+          "tag": "withdrawal",
+          "date_transacted": "2026-03-07",
+          "date_posted": "2026-03-08"
+        },
+        {
+          "description": "Wire Transfer",
+          "amount": 8161.93,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00013",
+          "tag": "large deposits",
+          "date_transacted": "2026-02-26",
+          "date_posted": "2026-02-27"
+        },
+        {
+          "description": "ACH DEBIT - Honda Finance AUTO LOAN",
+          "amount": -393.45,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-01001",
+          "tag": "auto loan payment",
+          "date_transacted": "2026-02-22",
+          "date_posted": "2026-02-23"
+        },
+        {
+          "description": "Consulting Income",
+          "amount": 235.93,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00017",
+          "tag": "undisclosed income source",
+          "date_transacted": "2026-02-14",
+          "date_posted": "2026-02-15"
+        },
+        {
+          "date_transacted": "2026-02-06",
+          "date_posted": "2026-02-07",
+          "amount": 2864.56,
+          "description": "ACH CREDIT PAYROLL - City Hospital",
+          "currency": "USD",
+          "tag": "general transaction",
+          "transaction_id": "plaid-ed9edb1f-00001"
+        },
+        {
+          "description": "Personal Loan",
+          "amount": 3022.03,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00016",
+          "tag": "unexplained deposits",
+          "date_transacted": "2026-02-05",
+          "date_posted": "2026-02-06"
+        },
+        {
+          "description": "Alimony",
+          "amount": -723.27,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00006",
+          "tag": "general transaction",
+          "date_transacted": "2026-01-30",
+          "date_posted": "2026-01-31"
+        },
+        {
+          "description": "ACH CREDIT PAYROLL - Global Tech",
+          "amount": 1135.0,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00021",
+          "tag": "undisclosed income source",
+          "date_transacted": "2026-01-30",
+          "date_posted": "2026-01-31"
+        },
+        {
+          "description": "Overdraft Fee",
+          "amount": -50.0,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00009",
+          "tag": "overdraft or NSF",
+          "date_transacted": "2026-01-22",
+          "date_posted": "2026-01-23"
+        },
+        {
+          "description": "Transfer from Alice Homeowner",
+          "amount": 500,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00022",
+          "tag": "additional account holder",
+          "date_transacted": "2026-01-17",
+          "date_posted": "2026-01-18"
+        },
+        {
+          "description": "ACH DEBIT - Honda Finance AUTO LOAN",
+          "amount": -395.38,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-01002",
+          "tag": "auto loan payment",
+          "date_transacted": "2026-01-15",
+          "date_posted": "2026-01-16"
+        },
+        {
+          "description": "Ace Cash Express",
+          "amount": 577.72,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00011",
+          "tag": "payday loan or high-interest lending source",
+          "date_transacted": "2026-01-14",
+          "date_posted": "2026-01-15"
+        },
+        {
+          "description": "Branch Deposit",
+          "amount": 2317.11,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00014",
+          "tag": "excessive cash deposits",
+          "date_transacted": "2026-01-09",
+          "date_posted": "2026-01-10"
+        },
+        {
+          "description": "Deposit from Binance",
+          "amount": 427.15,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00008",
+          "tag": "deposit from cryptocurrency source",
+          "date_transacted": "2026-01-08",
+          "date_posted": "2026-01-09"
+        },
+        {
+          "date_transacted": "2026-01-07",
+          "date_posted": "2026-01-08",
+          "amount": 2864.56,
+          "description": "ACH CREDIT PAYROLL - City Hospital",
+          "currency": "USD",
+          "tag": "general transaction",
+          "transaction_id": "plaid-ed9edb1f-00002"
+        },
+        {
+          "description": "Swift Transfer",
+          "amount": 1149.7,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00012",
+          "tag": "foreign origin",
+          "date_transacted": "2026-01-03",
+          "date_posted": "2026-01-04"
+        },
+        {
+          "description": "ACH DEBIT - Honda Finance AUTO LOAN",
+          "amount": -382.65,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-01003",
+          "tag": "auto loan payment",
+          "date_transacted": "2026-01-02",
+          "date_posted": "2026-01-03"
+        },
+        {
+          "description": "Check Deposit (No Image)",
+          "amount": 1200,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00023",
+          "tag": "general transaction",
+          "date_transacted": "2025-12-31",
+          "date_posted": "2026-01-01"
+        },
+        {
+          "description": "Purchase at Binance",
+          "amount": -303.99,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00007",
+          "tag": "withdrawal",
+          "date_transacted": "2025-12-28",
+          "date_posted": "2025-12-29"
+        },
+        {
+          "description": "Gift from Relative",
+          "amount": 7018.99,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00020",
+          "tag": "large deposits",
+          "date_transacted": "2025-12-28",
+          "date_posted": "2025-12-29"
+        },
+        {
+          "description": "Afterpay",
+          "amount": -120.0,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00004",
+          "tag": "BNPL transactions",
+          "date_transacted": "2025-12-22",
+          "date_posted": "2025-12-23"
+        },
+        {
+          "description": "Housing Payment",
+          "amount": -2285.94,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00005",
+          "tag": "undisclosed housing payments",
+          "date_transacted": "2025-12-18",
+          "date_posted": "2025-12-19"
+        },
+        {
+          "description": "Consulting Income",
+          "amount": 270.48,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00019",
+          "tag": "undisclosed income source",
+          "date_transacted": "2025-12-14",
+          "date_posted": "2025-12-15"
+        },
+        {
+          "date_transacted": "2025-12-08",
+          "date_posted": "2025-12-09",
+          "amount": 2864.56,
+          "description": "ACH CREDIT PAYROLL - City Hospital",
+          "currency": "USD",
+          "tag": "general transaction",
+          "transaction_id": "plaid-ed9edb1f-00003"
+        },
+        {
+          "description": "Consulting Income",
+          "amount": 236.12,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00018",
+          "tag": "undisclosed income source",
+          "date_transacted": "2025-12-08",
+          "date_posted": "2025-12-09"
+        },
+        {
+          "description": "ACH DEBIT - Honda Finance AUTO LOAN",
+          "amount": -385.78,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-01004",
+          "tag": "auto loan payment",
+          "date_transacted": "2025-11-26",
+          "date_posted": "2025-11-27"
+        },
+        {
+          "description": "ACH DEBIT - Honda Finance AUTO LOAN",
+          "amount": -386.66,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-01005",
+          "tag": "auto loan payment",
+          "date_transacted": "2025-10-25",
+          "date_posted": "2025-10-26"
+        },
+        {
+          "description": "ACH DEBIT - Honda Finance AUTO LOAN",
+          "amount": -391.97,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-01006",
+          "tag": "auto loan payment",
+          "date_transacted": "2025-10-05",
+          "date_posted": "2025-10-06"
+        },
+        {
+          "description": "ACH DEBIT - Honda Finance AUTO LOAN",
+          "amount": -391.0,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-01007",
+          "tag": "auto loan payment",
+          "date_transacted": "2025-08-20",
+          "date_posted": "2025-08-21"
+        },
+        {
+          "description": "ACH DEBIT - Honda Finance AUTO LOAN",
+          "amount": -392.12,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-01008",
+          "tag": "auto loan payment",
+          "date_transacted": "2025-07-23",
+          "date_posted": "2025-07-24"
+        },
+        {
+          "description": "ACH DEBIT - Honda Finance AUTO LOAN",
+          "amount": -381.31,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-01009",
+          "tag": "auto loan payment",
+          "date_transacted": "2025-07-07",
+          "date_posted": "2025-07-08"
+        },
+        {
+          "description": "ACH DEBIT - Honda Finance AUTO LOAN",
+          "amount": -383.96,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-01010",
+          "tag": "auto loan payment",
+          "date_transacted": "2025-05-28",
+          "date_posted": "2025-05-29"
+        },
+        {
+          "description": "ACH DEBIT - Honda Finance AUTO LOAN",
+          "amount": -379.97,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-01011",
+          "tag": "auto loan payment",
+          "date_transacted": "2025-05-06",
+          "date_posted": "2025-05-07"
+        },
+        {
+          "description": "ACH DEBIT - Honda Finance AUTO LOAN",
+          "amount": -375.73,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-01012",
+          "tag": "auto loan payment",
+          "date_transacted": "2025-03-26",
+          "date_posted": "2025-03-27"
+        }
+      ],
+      "identity": {
+        "names": [
+          "Sarah Parent"
+        ],
+        "emails": [
+          {
+            "data": "sarah.parent@testmail.com",
+            "primary": true,
+            "type": "primary"
+          }
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "country": "US",
+              "city": "Washington",
+              "street": "175 13th St",
+              "postal_code": "20013",
+              "region": "DC"
+            }
+          }
+        ]
+      },
+      "end_balance": 29260.1
+    },
+    {
+      "type": "investment",
+      "subtype": "401k",
+      "starting_balance": 83873.74,
+      "currency": "USD",
+      "numbers": {
+        "account": "59479927"
+      },
+      "transactions": [
+        {
+          "description": "Contribution",
+          "amount": 500,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00026",
+          "tag": "retirement assets",
+          "date_transacted": "2026-01-24",
+          "date_posted": "2026-01-25"
+        }
+      ],
+      "identity": {
+        "names": [
+          "Sarah Parent"
+        ],
+        "emails": [
+          {
+            "data": "sarah.parent@testmail.com",
+            "primary": true,
+            "type": "primary"
+          }
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "country": "US",
+              "city": "Washington",
+              "street": "175 13th St",
+              "postal_code": "20013",
+              "region": "DC"
+            }
+          }
+        ]
+      },
+      "tags": [
+        "retirement accounts"
+      ],
+      "end_balance": 84373.74
+    },
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 1611.33,
+      "currency": "USD",
+      "numbers": {
+        "account": "10625257"
+      },
+      "transactions": [
+        {
+          "description": "Transfer",
+          "amount": 100,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00027",
+          "tag": "general transaction",
+          "date_transacted": "2026-01-24",
+          "date_posted": "2026-01-25"
+        }
+      ],
+      "identity": {
+        "names": [
+          "Sarah Parent"
+        ],
+        "emails": [
+          {
+            "data": "sarah.parent@testmail.com",
+            "primary": true,
+            "type": "primary"
+          }
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "country": "US",
+              "city": "Washington",
+              "street": "175 13th St",
+              "postal_code": "20013",
+              "region": "DC"
+            }
+          }
+        ]
+      },
+      "end_balance": 1711.33
+    },
+    {
+      "type": "depository",
+      "subtype": "money market",
+      "official_name": "Custodial Account for Jr",
+      "starting_balance": 4403.88,
+      "currency": "USD",
+      "numbers": {
+        "account": "44863434"
+      },
+      "transactions": [
+        {
+          "description": "Transfer In",
+          "amount": 50,
+          "currency": "USD",
+          "transaction_id": "plaid-ed9edb1f-00028",
+          "tag": "custodial account",
+          "date_transacted": "2026-01-24",
+          "date_posted": "2026-01-25"
+        }
+      ],
+      "identity": {
+        "names": [
+          "Sarah Parent"
+        ],
+        "emails": [
+          {
+            "data": "sarah.parent@testmail.com",
+            "primary": true,
+            "type": "primary"
+          }
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "country": "US",
+              "city": "Washington",
+              "street": "175 13th St",
+              "postal_code": "20013",
+              "region": "DC"
+            }
+          }
+        ]
+      },
+      "end_balance": 4453.88
+    }
+  ]
+}
