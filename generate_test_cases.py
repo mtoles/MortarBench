@@ -123,6 +123,29 @@ MUTATION_RULES = [
     ("payroll deposits on the bank statements exactly match",
      {"type": "ulad", "fn": "mutate_payroll_paystub_consistency"}),
 
+    # ── Recurring income / expense matching ─────────────────────────────────
+    ("recurring deposits match the claimed alimony",
+     {"type": "ulad", "fn": "mutate_recurring_income_match"}),
+
+    ("recurring deposits match the claimed",
+     {"type": "ulad", "fn": "mutate_recurring_income_match"}),
+
+    ("recurring debit match the claimed alimony",
+     {"type": "ulad", "fn": "mutate_recurring_expense_match"}),
+
+    ("recurring debits match the claimed alimony",
+     {"type": "ulad", "fn": "mutate_recurring_expense_match"}),
+
+    ("recurring debits match the claimed",
+     {"type": "ulad", "fn": "mutate_recurring_expense_match"}),
+
+    # ── Eligible income ──────────────────────────────────────────────────
+    ("eligible income",
+     {"type": "ulad", "fn": "mutate_eligible_income"}),
+
+    ("what is the eligible income",
+     {"type": "ulad", "fn": "mutate_eligible_income"}),
+
     # ── Two-borrower mutations ─────────────────────────────────────────────
     ("large deposit documented by a corresponding debit from the other borrower",
      {"type": "two_borrower", "fn": "mutate_large_deposit_corresponding_debit"}),
@@ -130,11 +153,17 @@ MUTATION_RULES = [
     ("corresponding debit from the other borrower's account within the correct time window",
      {"type": "two_borrower", "fn": "mutate_large_deposit_corresponding_debit"}),
 
+    ("is the large deposit documented",
+     {"type": "two_borrower", "fn": "mutate_large_deposit_corresponding_debit"}),
+
     # ── Auto loan third party payment mutations ────────────────────────────
     ("automobile loan be excluded from the borrower's debt because a third party has been paying",
      {"type": "auto_loan", "fn": "mutate_auto_loan_third_party_payment"}),
 
     ("third party has been paying it for the last 12 months",
+     {"type": "auto_loan", "fn": "mutate_auto_loan_third_party_payment"}),
+
+    ("made the last 12 month auto payment",
      {"type": "auto_loan", "fn": "mutate_auto_loan_third_party_payment"}),
 
     # ── Credit card debt exclusion mutations ───────────────────────────────
@@ -153,6 +182,12 @@ MUTATION_RULES = [
 
     ("are there any missing transactions",
      {"type": "bank_special", "fn": "mutate_missing_transactions"}),
+
+    ("missing date",
+     {"type": "bank_special", "fn": "mutate_missing_date"}),
+
+    ("any missing date",
+     {"type": "bank_special", "fn": "mutate_missing_date"}),
 
     # ── Bank-transaction mutations ─────────────────────────────────────────
     ("bnpl",
@@ -291,26 +326,29 @@ def execute_mutation(mutator: DataMutator, spec: Dict, answer_type: str):
     """
     Execute a mutation and return a normalised 3-tuple (bank, ulad, answer).
     Bank-only mutations pad ulad with a deep copy of the base.
+    After mutation, rebuilds bank statement metadata (Transactions,
+    BankStatementAccounts, BankStatements, AggregateFigures) so the
+    output matches the format produced by dataset_generator.py.
     """
     mtype = spec["type"]
 
     if mtype == "transaction":
         bank, answer = mutator.mutate_transaction(spec["mutation_type"], answer_type=answer_type)
         ulad = copy.deepcopy(mutator.base_ulad)
-        return bank, ulad, answer
+        result = (bank, ulad, answer)
 
-    if mtype == "account":
+    elif mtype == "account":
         bank, answer = mutator.mutate_account(spec["mutation_type"], answer_type=answer_type)
         ulad = copy.deepcopy(mutator.base_ulad)
-        return bank, ulad, answer
+        result = (bank, ulad, answer)
 
-    if mtype == "bank_special":
+    elif mtype == "bank_special":
         fn = getattr(mutator, spec["fn"])
         bank, answer = fn(answer_type=answer_type)
         ulad = copy.deepcopy(mutator.base_ulad)
-        return bank, ulad, answer
+        result = (bank, ulad, answer)
 
-    if mtype == "ulad":
+    elif mtype == "ulad":
         fn = getattr(mutator, spec["fn"])
         # Try to call with answer_type parameter
         try:
@@ -318,22 +356,48 @@ def execute_mutation(mutator: DataMutator, spec: Dict, answer_type: str):
         except TypeError:
             # Function doesn't support answer_type parameter
             result = fn()
-        # All ULAD mutation functions return (bank, ulad, answer)
-        return result
 
-    if mtype == "two_borrower":
+    elif mtype == "two_borrower":
         fn = getattr(mutator, spec["fn"])
         # Two-borrower functions return (bank_a, bank_b, ulad, answer)
         result = fn(answer_type=answer_type)
-        return result
 
-    if mtype == "auto_loan":
+    elif mtype == "auto_loan":
         fn = getattr(mutator, spec["fn"])
         # Auto loan functions return (borrower_bank_12m, third_party_bank_12m, ulad, answer)
         result = fn(answer_type=answer_type)
-        return result
 
-    raise ValueError(f"Unknown mutation type: {mtype}")
+    else:
+        raise ValueError(f"Unknown mutation type: {mtype}")
+
+    # Rebuild bank statement metadata so Transactions / BankStatementAccounts /
+    # BankStatements / AggregateFigures stay consistent with override_accounts.
+    # The rebuild also honours the _monthly_statements flag if set by the mutation.
+    if mtype in ("two_borrower", "auto_loan"):
+        # result is (bank_a, bank_b, ulad, answer)
+        mutator._rebuild_bank_metadata(result[0])
+        mutator._rebuild_bank_metadata(result[1])
+    else:
+        # result is (bank, ulad, answer)
+        mutator._rebuild_bank_metadata(result[0])
+
+    # Apply any post-rebuild actions (e.g. removing a monthly statement for Q2)
+    banks_to_process = (
+        [result[0], result[1]] if mtype in ("two_borrower", "auto_loan")
+        else [result[0]]
+    )
+    for b in banks_to_process:
+        actions = b.pop("_post_rebuild_actions", None)
+        if not actions:
+            continue
+        if actions.get("remove_statement_month"):
+            month_prefix = actions["remove_statement_month"]  # "YYYY-MM"
+            b["BankStatements"] = [
+                s for s in b["BankStatements"]
+                if not s["StartDate"].startswith(month_prefix)
+            ]
+
+    return result
 
 
 def generate_test_case(

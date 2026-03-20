@@ -116,6 +116,26 @@ python generate_test_cases.py \
 
 ---
 
+## Bank Statement Format
+
+Each generated `bank_statement.json` contains the following top-level keys:
+
+| Key | Description |
+|-----|-------------|
+| `seed` | Unique dataset identifier |
+| `override_accounts` | Raw account objects with nested transactions (internal format) |
+| `SearchParams` | Sort/pagination params (`SortField`, `SortOrder`, `Size`) |
+| `Transactions` | Flat list of all transactions across accounts (eval-ready format) |
+| `BankStatementAccounts` | Per-account metadata (balances, totals, masked account numbers) |
+| `BankStatements` | Per-account statement metadata (date ranges, client info) |
+| `AggregateFigures` | Overall credit/debit totals and transaction count |
+
+The `Transactions` list uses absolute `Amount` values with a `Type` field (`"credit"` or `"debit"`), while `override_accounts` uses signed amounts.
+
+After mutation, `generate_test_cases.py` calls `_rebuild_bank_metadata()` to regenerate `Transactions`, `BankStatementAccounts`, `BankStatements`, and `AggregateFigures` from `override_accounts`, keeping all sections consistent.
+
+---
+
 ## Output Structure
 
 ```
