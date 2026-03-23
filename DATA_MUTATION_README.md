@@ -75,6 +75,9 @@ Automatically handles answer formatting based on `answer_type` column when prese
 | `mutate_payroll_paystub_consistency` | Bank payroll deposits vs hypothetical paystub amount | `boolean` |
 | `mutate_payroll_undisclosed_employer` | ULAD employer A, bank payroll from employer B | `id_list` |
 | `mutate_undisclosed_income_source` | Bank: recurring SSA/side-gig deposits absent from ULAD | `id_list` |
+| `mutate_recurring_income_match` | ULAD income items (alimony, child support, Social Security, etc.) + matching or mismatching recurring deposits to bank; supports `disclosed=False` | `boolean` |
+| `mutate_recurring_expense_match` | ULAD liabilities + matching or mismatching recurring debits to bank; supports `disclosed=False` | `boolean` |
+| `mutate_eligible_income` | 12 months of categorized transactions (qualifying deposits, non-qualifying deposits, obligations); answer = qualifying minus obligations | `dollar_amount` |
 | `mutate_large_deposit_corresponding_debit` | **Two-bank-statement + ULAD**: large deposit in Borrower A’s account and (optional) matching debit in Borrower B’s account within a 3‑day window | `boolean` / `id_list` / detailed |
 | `mutate_auto_loan_third_party_payment` | **Two-bank-statement + ULAD**: auto loan liability in ULAD; third party pays the auto loan for ≥12 months in their own (non‑joint) account | `boolean` / `id_list` / detailed |
 | `mutate_credit_card_full_balance_payment` | Bank + ULAD: revolving credit card liability in ULAD and monthly credit card payments that look like either full‑balance payments (high, varying) or minimum payments (low, consistent) across the entire bank‑statement span | `boolean` / `id_list` / detailed |
@@ -86,6 +89,7 @@ These return only a bank statement and an answer (no ULAD changes).
 | Method | What it mutates | Default answer_type |
 |--------|----------------|-------------|
 | `mutate_missing_transactions` | Adjusts ending balance so that `starting_balance + sum(transactions) != end_balance`, creating an apparent gap / missing transactions | `boolean` / detailed |
+| `mutate_missing_date` | Enables monthly `BankStatements`, then removes one middle month’s statement to create a gap in date coverage | `boolean` / detailed |
 
 **Note:** All ULAD functions now accept an `answer_type` parameter to control output format.
 

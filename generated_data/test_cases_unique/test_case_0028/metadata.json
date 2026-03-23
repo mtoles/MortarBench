@@ -2,7 +2,7 @@
   "test_case_id": 28,
   "test_case_number": null,
   "question": "Can the automobile loan be excluded from the borrower's debt because a third party has been paying it for the last 12 months?",
-  "rephrased_question": "Can the automobile loan be excluded from the borrower's debt because a third party has been paying it for the last 12 months?",
+  "rephrased_question": "Do you see the third party made the last 12 month auto payment?",
   "answer_type": "boolean",
   "label": "debt_exclusion",
   "mutation_type": "auto_loan",
