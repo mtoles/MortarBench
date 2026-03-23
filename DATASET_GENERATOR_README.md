@@ -49,7 +49,7 @@ python dataset_generator.py
 ### Command Line Mode
 Run the script with arguments for automation:
 ```bash
-python dataset_generator.py -n <number_of_datasets> -o <output_directory> -m <number_of_months>
+python dataset_generator.py -n <number_of_datasets> -o <output_directory> -m <number_of_months> -u <user_name>
 ```
 
 **Arguments:**
