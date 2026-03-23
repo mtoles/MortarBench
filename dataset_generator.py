@@ -149,10 +149,11 @@ ECONOMIC_PROFILES = {
 }
 
 class PlaidGenerator:
-    def __init__(self, seed=None, num_months=3):
+    def __init__(self, seed=None, num_months=3, user_name="John Homeowner"):
         if seed:
             random.seed(seed)
         self.num_months = num_months
+        self.user_name = user_name
         self.transaction_counter = 0
         self.dataset_id = str(uuid.uuid4())[:8]
         self.used_account_numbers = set()
@@ -176,7 +177,7 @@ class PlaidGenerator:
 
     def generate_single_dataset(self):
         employer = random.choice(EMPLOYERS)
-        user_name = "John Homeowner" 
+        user_name = self.user_name 
         
         # Select Economic Profile
         profile_name = random.choice(["Lower", "Middle", "Upper"])
@@ -616,6 +617,7 @@ def main():
     parser.add_argument("-n", "--number", type=int, default=1, help="Number of datasets to generate")
     parser.add_argument("-o", "--output", type=str, default="generated_data", help="Output directory")
     parser.add_argument("-m", "--months", type=int, default=3, help="Number of months of statements to generate")
+    parser.add_argument("-u", "--user_name", type=str, default="John Homeowner", help="Borrower's name")
     
     import sys
     
@@ -628,22 +630,26 @@ def main():
             args_output = output_input if output_input else "generated_data"
             months_input = input("Enter the number of months of statements to generate (default 3): ").strip()
             args_months = int(months_input) if months_input else 3
+            user_input = input("Enter the borrower's name (default 'John Homeowner'): ").strip()
+            args_user_name = user_input if user_input else "John Homeowner"
         except ValueError:
             print("Invalid input entered. Using defaults.")
             args_number = 1
             args_output = "generated_data"
             args_months = 3
+            args_user_name = "John Homeowner"
     else:
         args = parser.parse_args()
         args_number = args.number
         args_output = args.output
         args_months = args.months
+        args_user_name = args.user_name
     
     if not os.path.exists(args_output):
         os.makedirs(args_output)
         
     for i in range(args_number):
-        plaid_generator = PlaidGenerator(num_months=args_months)
+        plaid_generator = PlaidGenerator(num_months=args_months, user_name=args_user_name)
         plaid_data = plaid_generator.generate_single_dataset()
         ulad_template = args.ulad_template if 'args' in locals() else "data/ulad_template.json"
         ulad_generator = UladGenerator(ulad_template, plaid_data, args_output)

@@ -41,7 +41,7 @@ The generator creates a user "John Homeowner" and populates a list of `override_
 ## Usage
 
 ### Interactive Mode
-Simply run the script without arguments to be prompted for input (number of datasets, output directory, and months of statements to generate):
+Simply run the script without arguments to be prompted for input (number of datasets, output directory, months of statements to generate, and borrower's name):
 ```bash
 python dataset_generator.py
 ```
@@ -57,6 +57,7 @@ python dataset_generator.py -n <number_of_datasets> -o <output_directory> -m <nu
 - `-n`, `--number`: The number of unique dataset files to generate (default: 1).
 - `-o`, `--output`: The directory where JSON files will be saved (default: `generated_data`).
 - `-m`, `--months`: The number of months of statements to generate (default: 3).
+- `-u`, `--user_name`: The borrower's name to use in the generated statements (default: `John Homeowner`).
 
 **Example:**
 ```bash
