@@ -36,12 +36,12 @@ The generator creates a user "John Homeowner" and populates a list of `override_
 ### 4. Logic Flow
 1.  **Date Handling**: All dates are generated relative to "today", ensuring the data looks recent and consistent (e.g., `date_posted` is always 1 day after `date_transacted`).
 2.  **Transaction Mixing**: While payroll and standard behavior are standardized, the "Scenario Injection" phase appends specific transactions to the main checking account.
-3.  **Output**: The final structure wraps these accounts in a root object containing the `seed` and `override_accounts` list, matching the schema expected by the benchmark test cases.
+3.  **Output**: The final structure wraps these accounts in a root object containing the `seed` and `override_accounts` list, as well as structurally restructured data including `Transactions`, `BankStatementAccounts`, `BankStatements`, and `AggregateFigures` arrays to mimic a formalized bank statement layout expected by the revised benchmark test cases.
 
 ## Usage
 
 ### Interactive Mode
-Simply run the script without arguments to be prompted for input (number of datasets, output directory, and months of statements to generate):
+Simply run the script without arguments to be prompted for input (number of datasets, output directory, months of statements to generate, and borrower's name):
 ```bash
 python dataset_generator.py
 ```
@@ -49,7 +49,7 @@ python dataset_generator.py
 ### Command Line Mode
 Run the script with arguments for automation:
 ```bash
-python dataset_generator.py -n <number_of_datasets> -o <output_directory> -m <number_of_months>
+python dataset_generator.py -n <number_of_datasets> -o <output_directory> -m <number_of_months> -u <user_name>
 ```
 
 **Arguments:**
@@ -57,6 +57,7 @@ python dataset_generator.py -n <number_of_datasets> -o <output_directory> -m <nu
 - `-n`, `--number`: The number of unique dataset files to generate (default: 1).
 - `-o`, `--output`: The directory where JSON files will be saved (default: `generated_data`).
 - `-m`, `--months`: The number of months of statements to generate (default: 3).
+- `-u`, `--user_name`: The borrower's name to use in the generated statements (default: `John Homeowner`).
 
 **Example:**
 ```bash

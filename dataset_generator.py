@@ -149,10 +149,11 @@ ECONOMIC_PROFILES = {
 }
 
 class PlaidGenerator:
-    def __init__(self, seed=None, num_months=3):
+    def __init__(self, seed=None, num_months=3, user_name="John Homeowner"):
         if seed:
             random.seed(seed)
         self.num_months = num_months
+        self.user_name = user_name
         self.transaction_counter = 0
         self.dataset_id = str(uuid.uuid4())[:8]
         self.used_account_numbers = set()
@@ -176,7 +177,7 @@ class PlaidGenerator:
 
     def generate_single_dataset(self):
         employer = random.choice(EMPLOYERS)
-        user_name = "John Homeowner" 
+        user_name = self.user_name 
         
         # Select Economic Profile
         profile_name = random.choice(["Lower", "Middle", "Upper"])
@@ -446,9 +447,132 @@ class PlaidGenerator:
             net_flow = sum(t.get("amount", 0.0) for t in txns)
             account["end_balance"] = round(starting + net_flow, 2)
 
+        transactions_out = []
+        bank_statement_accounts_out = []
+        bank_statements_out = []
+        
+        doc_id = "doc-" + self.dataset_id
+        
+        stmt_start_date = self._get_date(-30 * self.num_months)
+        stmt_end_date = self._get_date(0)
+        
+        for account in accounts:
+            acc_num = account.get("numbers", {}).get("account", "0000")
+            acc_id = "acc-" + acc_num
+            stmt_id = "stmt-" + acc_num
+            
+            client_names = account.get("identity", {}).get("names", [user_name])
+            
+            client_full_address = ""
+            addrs = account.get("identity", {}).get("addresses", [])
+            if addrs and isinstance(addrs, list) and len(addrs) > 0:
+                addr_data = addrs[0].get("data", {})
+                if isinstance(addr_data, dict):
+                    client_full_address = f"{addr_data.get('street','')} {addr_data.get('city','')} {addr_data.get('region','')}"
+            
+            acc_type = account.get("subtype", account.get("type", ""))
+            
+            bsa = {
+                "AccountNumber": f"xxxx{acc_num[-4:]}",
+                "AccountType": acc_type,
+                "BankName": "Generated Bank",
+                "BankFullAddress": "",
+                "ClientNames": client_names,
+                "ClientName": "",
+                "StartBalance": account.get("starting_balance", 0.0),
+                "EndBalance": account.get("end_balance", 0.0),
+                "TotalCreditAmount": sum(t.get("amount", 0) for t in account.get("transactions", []) if t.get("amount", 0) >= 0),
+                "TotalDebitAmount": sum(t.get("amount", 0) for t in account.get("transactions", []) if t.get("amount", 0) < 0),
+                "BankStatementAccountID": acc_id,
+                "ID": random.randint(100, 999),
+                "CreatedAt": self._get_date() + "T00:00:00Z",
+                "UpdatedAt": self._get_date() + "T00:00:00Z",
+                "LoanID": "generated-loan",
+                "AccountID": acc_id,
+                "ClientID": "generated-client"
+            }
+            bank_statement_accounts_out.append(bsa)
+            
+            bs = {
+                "BankName": "Generated Bank",
+                "BankFullAddress": "",
+                "ClientNames": client_names,
+                "ClientFullAddress": client_full_address,
+                "ClientName": "",
+                "StatementDate": stmt_end_date,
+                "StartDate": stmt_start_date,
+                "EndDate": stmt_end_date,
+                "StartBalance": account.get("starting_balance", 0.0),
+                "EndBalance": account.get("end_balance", 0.0),
+                "TotalCreditAmount": bsa["TotalCreditAmount"],
+                "TotalDebitAmount": bsa["TotalDebitAmount"],
+                "BankStatementID": stmt_id,
+                "BorrowerID": "",
+                "BorrowerItemID": "",
+                "DocumentID": doc_id,
+                "VirtualDocumentID": "vdoc-" + self.dataset_id,
+                "BankStatementAccountID": acc_id,
+                "IsPossibleDuplicate": False,
+                "ID": random.randint(1000, 9999),
+                "CreatedAt": self._get_date() + "T00:00:00Z",
+                "UpdatedAt": self._get_date() + "T00:00:00Z",
+                "LoanID": "generated-loan",
+                "AccountID": acc_id,
+                "ClientID": "generated-client"
+            }
+            bank_statements_out.append(bs)
+            
+            for txn in account.get("transactions", []):
+                amt = txn.get("amount", 0.0)
+                txn_type = "credit" if amt >= 0 else "debit"
+                abs_amt = abs(amt)
+                
+                txn_obj = {
+                    "Date": txn.get("date_transacted", ""),
+                    "ParsedDate": txn.get("date_transacted", "") + "T00:00:00Z",
+                    "Type": txn_type,
+                    "Description": txn.get("description", ""),
+                    "Amount": abs_amt,
+                    "Category": txn.get("tag", ""), 
+                    "TransactionID": txn.get("transaction_id", ""),
+                    "DocumentID": doc_id,
+                    "VirtualDocumentID": bs["VirtualDocumentID"],
+                    "BankStatementID": stmt_id,
+                    "BankStatementAccountID": acc_id,
+                    "PageNumber": 1,
+                    "BoundingBox": {"X0": 0, "X1": 0, "Y0": 0, "Y1": 0},
+                    "TaggedAt": self._get_date() + "T00:00:00Z",
+                    "ID": random.randint(10000, 99999),
+                    "CreatedAt": self._get_date() + "T00:00:00Z",
+                    "UpdatedAt": self._get_date() + "T00:00:00Z",
+                    "LoanID": "generated-loan",
+                    "AccountID": acc_id,
+                    "ClientID": "generated-client"
+                }
+                transactions_out.append(txn_obj)
+
+        total_credit = sum(t["Amount"] for t in transactions_out if t["Type"] == "credit")
+        total_debit = sum(-t["Amount"] for t in transactions_out if t["Type"] == "debit")
+
         return {
             "seed": f"generated-test-{self.dataset_id}",
-            "override_accounts": accounts
+            "override_accounts": accounts,
+            "SearchParams": {
+                "SortField": "Date",
+                "SortOrder": "desc",
+                "Size": 1000000
+            },
+            "Transactions": transactions_out,
+            "BankStatementAccounts": bank_statement_accounts_out,
+            "BankStatements": bank_statements_out,
+            "AggregateFigures": {
+                "Overall": {
+                    "TotalAmount": total_credit + total_debit,
+                    "CreditAmount": total_credit,
+                    "DebitAmount": total_debit,
+                    "Count": len(transactions_out)
+                }
+            }
         }
 
     def _create_txn(self, desc, amount, tag=None):
@@ -493,6 +617,7 @@ def main():
     parser.add_argument("-n", "--number", type=int, default=1, help="Number of datasets to generate")
     parser.add_argument("-o", "--output", type=str, default="generated_data", help="Output directory")
     parser.add_argument("-m", "--months", type=int, default=3, help="Number of months of statements to generate")
+    parser.add_argument("-u", "--user_name", type=str, default="John Homeowner", help="Borrower's name")
     
     import sys
     
@@ -505,22 +630,26 @@ def main():
             args_output = output_input if output_input else "generated_data"
             months_input = input("Enter the number of months of statements to generate (default 3): ").strip()
             args_months = int(months_input) if months_input else 3
+            user_input = input("Enter the borrower's name (default 'John Homeowner'): ").strip()
+            args_user_name = user_input if user_input else "John Homeowner"
         except ValueError:
             print("Invalid input entered. Using defaults.")
             args_number = 1
             args_output = "generated_data"
             args_months = 3
+            args_user_name = "John Homeowner"
     else:
         args = parser.parse_args()
         args_number = args.number
         args_output = args.output
         args_months = args.months
+        args_user_name = args.user_name
     
     if not os.path.exists(args_output):
         os.makedirs(args_output)
         
     for i in range(args_number):
-        plaid_generator = PlaidGenerator(num_months=args_months)
+        plaid_generator = PlaidGenerator(num_months=args_months, user_name=args_user_name)
         plaid_data = plaid_generator.generate_single_dataset()
         ulad_template = args.ulad_template if 'args' in locals() else "data/ulad_template.json"
         ulad_generator = UladGenerator(ulad_template, plaid_data, args_output)
