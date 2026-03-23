@@ -726,11 +726,14 @@ class UladGenerator:
             street = address["street"]
             postal_code = address["postal_code"]
             region = address["region"]
+            name_parts = name.split(" ", 1)
+            first_name = name_parts[0]
+            last_name = name_parts[1] if len(name_parts) > 1 else ""
 
             return BorrowerParty(
                 sequence_number=1,
-                first_name=name.split(" ")[0],
-                last_name=name.split(" ")[1],
+                first_name=first_name,
+                last_name=last_name,
                 mobile_phone="9999999999",
                 email=email,
                 borrower_birth_date="2000-01-01",
