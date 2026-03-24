@@ -2,8 +2,58 @@
 
 ## Overview
 
-A data mutation system that generates test cases from a list of questions CSV.  
+A data mutation system that generates test cases from a list of questions CSV.
 The system mutates both bank statements and ULAD files, then records a ground truth answer for each question.
+
+---
+
+## Quick Start (End-to-End)
+
+The fastest way to regenerate the `test_cases_unique` folder:
+
+```bash
+# Full pipeline: generate templates + mutate test cases
+./run_generate_test_cases.sh
+
+# Reuse existing templates (skip dataset_generator.py)
+./run_generate_test_cases.sh --skip-generate
+
+# Custom seed for reproducibility
+./run_generate_test_cases.sh --seed my-seed-123
+
+# Use a different questions file
+./run_generate_test_cases.sh --questions data/questions.csv --output generated_data/test_cases
+```
+
+### What the script does
+
+1. **Step 1** — Runs `dataset_generator.py` twice to produce:
+   - `generated_data/bank_statement.json` + `generated_data/ulad.json` (primary borrower)
+   - `generated_data/bank_statement_2.json` + `generated_data/ulad_2.json` (second borrower, for two-borrower scenarios)
+2. **Step 2** — Runs `generate_test_cases.py` with `data/questions_unique_generated.csv` to produce mutated test cases in `generated_data/test_cases_unique/`.
+
+To regenerate more synthetic data, simply run the script again (optionally with a different `--seed`).
+
+---
+
+## Boolean Probability Control
+
+All boolean-answer mutations are controlled by two global variables in `data_mutator.py`:
+
+```python
+BOOLEAN_PROB = 0.5          # Probability of "Yes" answer (0.0–1.0)
+BOOLEAN_FIXED_VALUE = None  # Set to "Yes" or "No" to force all answers
+```
+
+| Setting | Effect |
+|---------|--------|
+| `BOOLEAN_PROB = 0.5` | 50/50 chance of Yes/No (default) |
+| `BOOLEAN_PROB = 1.0` | Always Yes |
+| `BOOLEAN_PROB = 0.0` | Always No |
+| `BOOLEAN_FIXED_VALUE = "Yes"` | Force all boolean answers to Yes (overrides `BOOLEAN_PROB`) |
+| `BOOLEAN_FIXED_VALUE = "No"` | Force all boolean answers to No |
+
+Individual mutation functions still accept an explicit `match=True/False` parameter that takes highest priority.
 
 ---
 
@@ -27,6 +77,9 @@ Core mutation library with three public interfaces:
 Batch processor that reads any questions CSV file, detects the right mutation via
 `MUTATION_RULES`, runs it, and writes each test case to its own directory.
 Automatically handles answer formatting based on `answer_type` column when present.
+
+### `run_generate_test_cases.sh`
+End-to-end shell script that runs the full pipeline (template generation + test case mutation) in one command.
 
 ---
 
@@ -76,11 +129,10 @@ Automatically handles answer formatting based on `answer_type` column when prese
 | `mutate_payroll_undisclosed_employer` | ULAD employer A, bank payroll from employer B | `id_list` |
 | `mutate_undisclosed_income_source` | Bank: recurring SSA/side-gig deposits absent from ULAD | `id_list` |
 | `mutate_recurring_income_match` | ULAD income items (alimony, child support, Social Security, etc.) + matching or mismatching recurring deposits to bank; supports `disclosed=False` | `boolean` |
-| `mutate_recurring_expense_match` | ULAD liabilities + matching or mismatching recurring debits to bank; supports `disclosed=False` | `boolean` |
+| `mutate_recurring_expense_match` | ULAD EXPENSES (alimony, child support, SSA) + matching or mismatching recurring debits to bank; supports `disclosed=False` | `boolean` |
 | `mutate_eligible_income` | 12 months of categorized transactions (qualifying deposits, non-qualifying deposits, obligations); answer = qualifying minus obligations | `dollar_amount` |
-| `mutate_large_deposit_corresponding_debit` | **Two-bank-statement + ULAD**: large deposit in Borrower A’s account and (optional) matching debit in Borrower B’s account within a 3‑day window | `boolean` / `id_list` / detailed |
-| `mutate_auto_loan_third_party_payment` | **Two-bank-statement + ULAD**: auto loan liability in ULAD; third party pays the auto loan for ≥12 months in their own (non‑joint) account | `boolean` / `id_list` / detailed |
-| `mutate_credit_card_full_balance_payment` | Bank + ULAD: revolving credit card liability in ULAD and monthly credit card payments that look like either full‑balance payments (high, varying) or minimum payments (low, consistent) across the entire bank‑statement span | `boolean` / `id_list` / detailed |
+| `mutate_large_deposit_corresponding_debit` | **Two-bank-statement + ULAD**: large deposit in Borrower A's account and (optional) matching debit in Borrower B's account within a 3-day window | `boolean` / `id_list` / detailed |
+| `mutate_auto_loan_third_party_payment` | **Two-bank-statement + ULAD**: auto loan liability in ULAD; third party pays the auto loan for >=12 months in their own (non-joint) account | `boolean` / `id_list` / detailed |
 
 ### Bank-Only Special Mutations
 
@@ -89,7 +141,7 @@ These return only a bank statement and an answer (no ULAD changes).
 | Method | What it mutates | Default answer_type |
 |--------|----------------|-------------|
 | `mutate_missing_transactions` | Adjusts ending balance so that `starting_balance + sum(transactions) != end_balance`, creating an apparent gap / missing transactions | `boolean` / detailed |
-| `mutate_missing_date` | Enables monthly `BankStatements`, then removes one middle month’s statement to create a gap in date coverage | `boolean` / detailed |
+| `mutate_missing_date` | Enables monthly `BankStatements`, then removes one middle month's statement to create a gap in date coverage | `boolean` / detailed |
 
 **Note:** All ULAD functions now accept an `answer_type` parameter to control output format.
 
@@ -98,8 +150,17 @@ These return only a bank statement and an answer (no ULAD changes).
 ## Examples
 
 ```bash
-# Generate ALL test cases (88/90 covered)
-python generate_test_cases.py
+# End-to-end: generate templates + test cases
+./run_generate_test_cases.sh
+
+# Generate ALL test cases from unique questions
+python generate_test_cases.py \
+  --questions data/questions_unique_generated.csv \
+  --bank-statement generated_data/bank_statement.json \
+  --ulad generated_data/ulad.json \
+  --bank-statement-2 generated_data/bank_statement_2.json \
+  --ulad-2 generated_data/ulad_2.json \
+  --output generated_data/test_cases_unique
 
 # Generate first 10 for a quick look
 python generate_test_cases.py --limit 10
@@ -109,13 +170,6 @@ python generate_test_cases.py --tags "BNPL"
 
 # Multiple tags
 python generate_test_cases.py --tags "BNPL" "large deposit" "payday loan"
-
-# Custom file paths
-python generate_test_cases.py \
-  --questions data/questions.csv \
-  --bank-statement generated_data/bank_statement_template.json \
-  --ulad generated_data/ulad_template.json \
-  --output my_test_cases
 ```
 
 ---
@@ -143,17 +197,16 @@ After mutation, `generate_test_cases.py` calls `_rebuild_bank_metadata()` to reg
 ## Output Structure
 
 ```
-test_cases/
-├── summary.json               ← aggregate stats + all metadata
+generated_data/test_cases_unique/
+├── summary.json               <- aggregate stats + all metadata
 ├── test_case_0001/
-│   ├── metadata.json          ← question, answer, mutation info
-│   ├── bank_statement.json    ← mutated Plaid JSON (if need_bank_statement=1)
-│   └── ulad.json              ← mutated ULAD JSON   (if need_ulad=1)
+│   ├── metadata.json          <- question, answer, mutation info
+│   ├── bank_statement.json    <- mutated Plaid JSON (if need_bank_statement=1)
+│   └── ulad.json              <- mutated ULAD JSON   (if need_ulad=1)
 ├── test_case_0002/
 │   └── ...
 └── ...
 ```
-
 
 ---
 
@@ -170,4 +223,3 @@ test_cases/
 | `default_count_range` | tuple | `(min, max)` transaction count |
 | `date_spacing` | str/None | `"monthly"`, `"bi-weekly"`, `"weekly"`, or `None` |
 | `recurring` | bool | All transactions share the same keyword + base amount |
-

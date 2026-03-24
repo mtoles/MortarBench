@@ -20,6 +20,33 @@ from typing import Dict, List, Tuple, Optional
 import pandas as pd
 
 
+# ==================== GLOBAL BOOLEAN PROBABILITY CONTROL ====================
+# BOOLEAN_PROB: Single probability value controlling Yes/No outcomes for all boolean
+# questions. 0.5 = equal chance of Yes/No, 1.0 = always Yes, 0.0 = always No.
+# BOOLEAN_FIXED_VALUE: Set to "Yes" or "No" to force a specific answer for all boolean
+# questions, overriding BOOLEAN_PROB. Set to None to use probability-based generation.
+BOOLEAN_PROB = 0.5
+BOOLEAN_FIXED_VALUE = None  # Set to "Yes" or "No" to override probability
+
+
+def _resolve_boolean(explicit_value=None):
+    """
+    Resolve a boolean decision for mutation functions.
+
+    Priority:
+      1. explicit_value (passed directly to the mutation function)
+      2. BOOLEAN_FIXED_VALUE (global override)
+      3. BOOLEAN_PROB (global probability)
+
+    Returns True for "Yes" outcome, False for "No" outcome.
+    """
+    if explicit_value is not None:
+        return explicit_value
+    if BOOLEAN_FIXED_VALUE is not None:
+        return BOOLEAN_FIXED_VALUE.lower().startswith("y")
+    return random.random() < BOOLEAN_PROB
+
+
 # ==================== TRANSACTION CONFIGS ====================
 
 TRANSACTION_CONFIGS = {
@@ -225,7 +252,6 @@ ULAD_MUTATION_CONFIGS = {
             "NY MTA", "Amazon", "Google", "Microsoft", "City Hospital",
             "State University", "Wawa", "AAA", "Acme Corp", "Global Tech",
         ],
-        "match_probability": 0.5,
         "payroll_range": (2000, 5000),
         "num_payroll": 3,
     },
@@ -242,12 +268,10 @@ ULAD_MUTATION_CONFIGS = {
             {"AddressLineText": "73 Dwight Drive", "CityName": "Ocean",
              "CountryCode": "US", "PostalCode": "07712", "StateCode": "NJ"},
         ],
-        "match_probability": 0.5,
     },
     "gift_deposit": {
         "amount_range": (5000, 60000),
         "donor_names": ["Mary Homeowner", "Dad Homeowner", "Aunt Jane", "Uncle Bob"],
-        "match_probability": 0.7,
     },
     "child_support_disclosure": {
         "amount_range": (300, 2000),
@@ -286,8 +310,7 @@ ULAD_MUTATION_CONFIGS = {
     },
     "rental_income_consistency": {
         "rental_amounts": [2000, 2400, 3000, 3500, 5000, 8000],
-        "payer_names": ["Jane Doe", "John Smith", "Robert Johnson"], # can add more payer names here
-        "match_probability": 0.5,
+        "payer_names": ["Jane Doe", "John Smith", "Robert Johnson"],
     },
     "joint_account_holder": {
         "joint_names": ["Alice Homeowner", "DAD FIRSTIMER", "Jane Smith", "Bob Homeowner"],
@@ -297,7 +320,6 @@ ULAD_MUTATION_CONFIGS = {
         "employer": "AAA",
         "base_payroll_range": (2000, 5000),
         "mismatch_diffs": [300, 500, 600, -200, -300],
-        "match_probability": 0.5,
     },
     "payroll_undisclosed_employer": {
         "ulad_employers": ["Amazon", "Google", "Microsoft", "Wawa", "City Hospital"],
@@ -316,7 +338,6 @@ ULAD_MUTATION_CONFIGS = {
         ],
         "deposit_amount_range": (5000, 50000),
         "time_window_days": 3,  # Debit must be within 3 days of deposit
-        "match_probability": 0.7,
         "description_templates": {
             "deposit": "WIRE IN CREDIT - TRANSFER FROM {borrower_name}",
             "debit": "WIRE OUT - TRANSFER TO {borrower_name}"
@@ -334,25 +355,22 @@ ULAD_MUTATION_CONFIGS = {
             "liability_amount_range": (15000, 45000)
         },
         "months_required": 12,
-        "third_party_payment_probability": 0.7,  # 70% chance third party pays consistently
     },
-    "credit_card_full_balance_payment": {
-        "credit_cards": [
-            {"name": "Chase Sapphire", "account_suffix": "4532"},
-            {"name": "Capital One Venture", "account_suffix": "8901"},
-            {"name": "American Express Gold", "account_suffix": "1234"},
-            {"name": "Citi Double Cash", "account_suffix": "5678"},
-            {"name": "Discover It", "account_suffix": "9012"}
-        ],
-        "payment_amount_range": (800, 4500),  # High payment amounts indicating full balance
-        "minimum_payment_range": (25, 150),   # Low amounts indicating minimum payments
-        "full_balance_probability": 0.7,  # 70% chance borrower pays full balance
-        "liability_balance_range": (2000, 15000),  # Credit card debt amount in ULAD
-        "description_template": "ACH DEBIT - {card_name} PAYMENT"
-    },
-    "missing_date": {
-        "gap_probability": 0.7,
-    },
+    # "credit_card_full_balance_payment": {  # Commented out per PR review - row 30 deleted
+    #     "credit_cards": [
+    #         {"name": "Chase Sapphire", "account_suffix": "4532"},
+    #         {"name": "Capital One Venture", "account_suffix": "8901"},
+    #         {"name": "American Express Gold", "account_suffix": "1234"},
+    #         {"name": "Citi Double Cash", "account_suffix": "5678"},
+    #         {"name": "Discover It", "account_suffix": "9012"}
+    #     ],
+    #     "payment_amount_range": (800, 4500),
+    #     "minimum_payment_range": (25, 150),
+    #     "full_balance_probability": 0.7,
+    #     "liability_balance_range": (2000, 15000),
+    #     "description_template": "ACH DEBIT - {card_name} PAYMENT"
+    # },
+    "missing_date": {},
     "recurring_income_match": {
         "income_types": [
             {
@@ -378,38 +396,33 @@ ULAD_MUTATION_CONFIGS = {
             },
         ],
         "num_income_types": (1, 2),
-        "match_probability": 0.5,
         "num_months": 3,
     },
     "recurring_expense_match": {
         "expense_types": [
             {
                 "type": "Alimony",
-                "ulad_liability_type": "Other",
-                "creditor_name": "Alimony Payment",
+                "ulad_expense_type": "Alimony",
                 "keywords": ["ALIMONY PAYMENT", "SPOUSAL SUPPORT"],
                 "description_template": "ACH DEBIT - {keyword}",
                 "amount_range": (500, 3000),
             },
             {
                 "type": "ChildSupport",
-                "ulad_liability_type": "Other",
-                "creditor_name": "Child Support",
+                "ulad_expense_type": "ChildSupport",
                 "keywords": ["CHILD SUPPORT PMT", "DC OAG", "STATE CHILD SUPPORT"],
                 "description_template": "ACH DEBIT - {keyword}",
                 "amount_range": (300, 2000),
             },
             {
                 "type": "SocialSecurity",
-                "ulad_liability_type": "Other",
-                "creditor_name": "SSA Repayment",
+                "ulad_expense_type": "SeparateMaintenanceExpense",
                 "keywords": ["SSA REPAYMENT", "SOC SEC OVERPAYMENT"],
                 "description_template": "ACH DEBIT - {keyword}",
                 "amount_range": (200, 1000),
             },
         ],
         "num_expense_types": (1, 2),
-        "match_probability": 0.5,
         "num_months": 3,
     },
     "eligible_income": {
@@ -860,6 +873,45 @@ class DataMutator:
 
         liabilities.append(entry)
         deal["LIABILITIES"]["LIABILITY"] = liabilities
+
+    def _add_expense_to_ulad(self, ulad: Dict, expense_type: str,
+                              monthly_payment: float) -> None:
+        """Add an expense to the ULAD EXPENSES section under the primary borrower.
+
+        In the MISMO/ULAD format, recurring obligations like alimony, child support,
+        and Social Security repayments belong in BORROWER > EXPENSES > EXPENSE, not
+        in DEAL > LIABILITIES.
+
+        Args:
+            ulad: The ULAD data structure.
+            expense_type: MISMO ExpenseType (e.g. "Alimony", "ChildSupport",
+                          "SeparateMaintenanceExpense").
+            monthly_payment: Monthly payment amount.
+        """
+        party = self._get_primary_borrower_party(ulad)
+        if not party:
+            return
+        borrower = party["ROLES"]["ROLE"]["BORROWER"]
+
+        expenses = borrower.get("EXPENSES")
+        if not expenses or expenses == "":
+            expenses = {"EXPENSE": []}
+            borrower["EXPENSES"] = expenses
+
+        expense_list = expenses.get("EXPENSE", [])
+        if not isinstance(expense_list, list):
+            expense_list = [expense_list] if expense_list else []
+
+        seq = len(expense_list) + 1
+        expense_list.append({
+            "EXPENSE_DETAIL": {
+                "ExpenseMonthlyPaymentAmount": f"{monthly_payment:.2f}",
+                "ExpenseType": expense_type,
+            },
+            "_SequenceNumber": str(seq),
+            "_xlink:label": f"EXPENSE_{seq}",
+        })
+        borrower["EXPENSES"]["EXPENSE"] = expense_list
 
     def _add_income_item_to_ulad(self, ulad: Dict, income_type: str,
                                  monthly_amount: float,
@@ -1340,8 +1392,7 @@ class DataMutator:
         bank = copy.deepcopy(self.base_bank_statement)
         ulad = copy.deepcopy(self.base_ulad)
 
-        if match is None:
-            match = random.random() < config["match_probability"]
+        match = _resolve_boolean(match)
 
         # Pick ULAD employer
         ulad_employer = random.choice(config["employers"])
@@ -1396,8 +1447,7 @@ class DataMutator:
         bank = copy.deepcopy(self.base_bank_statement)
         ulad = copy.deepcopy(self.base_ulad)
 
-        if match is None:
-            match = random.random() < config["match_probability"]
+        match = _resolve_boolean(match)
 
         # Get the ULAD address
         ulad_addr = self._get_borrower_address(ulad) or {}
@@ -1459,8 +1509,7 @@ class DataMutator:
         bank = copy.deepcopy(self.base_bank_statement)
         ulad = copy.deepcopy(self.base_ulad)
 
-        if match is None:
-            match = random.random() < config["match_probability"]
+        match = _resolve_boolean(match)
 
         gift_amount = round(random.uniform(*config["amount_range"]), 2)
         donor = random.choice(config["donor_names"])
@@ -1656,8 +1705,7 @@ class DataMutator:
         bank = copy.deepcopy(self.base_bank_statement)
         ulad = copy.deepcopy(self.base_ulad)
 
-        if match is None:
-            match = random.random() < config["match_probability"]
+        match = _resolve_boolean(match)
 
         rental_amount = random.choice(config["rental_amounts"])
         payer = random.choice(config["payer_names"])
@@ -1808,8 +1856,7 @@ class DataMutator:
         bank = copy.deepcopy(self.base_bank_statement)
         ulad = copy.deepcopy(self.base_ulad)
 
-        if match is None:
-            match = random.random() < config["match_probability"]
+        match = _resolve_boolean(match)
 
         employer = config["employer"]
         bank_deposit = round(random.uniform(*config["base_payroll_range"]), 2)
@@ -1929,62 +1976,62 @@ class DataMutator:
         answer = self._format_transaction_list(added, answer_type)
         return bank, ulad, answer
 
-    def mutate_missing_transactions(self, answer_type: str = "boolean") -> Tuple[Dict, str]:
+    def mutate_missing_transactions(self, has_missing: bool = None, answer_type: str = "boolean") -> Tuple[Dict, str]:
         """
         Create a scenario where starting balance + transactions don't equal ending balance,
         indicating missing transactions in the bank statement.
-        
+
         This function will:
         1. Calculate the actual balance based on starting balance + all transactions
-        2. Set the ending balance to a different value to create a discrepancy
-        3. The discrepancy indicates missing transactions
-        
+        2. If has_missing=True, set ending balance to a different value to create a discrepancy
+        3. If has_missing=False, set ending balance to match (no missing transactions)
+
         Args:
+            has_missing: If True, create discrepancy. If False, balances match.
+                        Controlled by BOOLEAN_PROB / BOOLEAN_FIXED_VALUE when None.
             answer_type: Format of answer - "boolean", "id_list", or "default"
-            
+
         Returns:
             (mutated_bank_statement, answer_string)
         """
         bank = copy.deepcopy(self.base_bank_statement)
-        
+
+        has_missing = _resolve_boolean(has_missing)
+
         # Find the primary checking account to modify
         primary_account = None
         for account in bank["override_accounts"]:
-            if (account.get("type") == "depository" 
-                and account.get("subtype") == "checking" 
+            if (account.get("type") == "depository"
+                and account.get("subtype") == "checking"
                 and account.get("class") != "business"):
                 primary_account = account
                 break
-        
+
         if not primary_account:
             # Fallback to first account if no checking account found
             primary_account = bank["override_accounts"][0]
-        
+
         # Calculate what the ending balance should be based on transactions
         starting_balance = primary_account.get("starting_balance", 0)
         transaction_sum = sum(txn.get("amount", 0) for txn in primary_account.get("transactions", []))
         calculated_ending_balance = starting_balance + transaction_sum
-        
-        # Create a discrepancy by setting ending balance to a different value
-        # This simulates missing transactions
-        discrepancy_amounts = [500, 750, 1000, 1250, 1500, 2000, -300, -500, -750, -1000]
-        discrepancy = random.choice(discrepancy_amounts)
-        
-        # Set ending balance to create the discrepancy
-        primary_account["end_balance"] = calculated_ending_balance + discrepancy
-        
-        # Determine if there are missing transactions based on the discrepancy
-        has_missing_transactions = abs(discrepancy) > 0
-        
+
+        if has_missing:
+            # Create a discrepancy by setting ending balance to a different value
+            discrepancy_amounts = [500, 750, 1000, 1250, 1500, 2000, -300, -500, -750, -1000]
+            discrepancy = random.choice(discrepancy_amounts)
+            primary_account["end_balance"] = calculated_ending_balance + discrepancy
+        else:
+            # No missing transactions - ending balance matches
+            discrepancy = 0
+            primary_account["end_balance"] = calculated_ending_balance
+
         if answer_type == "boolean":
-            answer = "Yes" if has_missing_transactions else "No"
+            answer = "Yes" if has_missing else "No"
         elif answer_type == "id_list":
-            # For missing transactions, we can't return specific transaction IDs since they're missing
-            # Return empty list to indicate no specific transactions can be identified
             answer = "[]"
         else:
-            # Default detailed format
-            if has_missing_transactions:
+            if has_missing:
                 answer = (f"Yes - Balance discrepancy detected.\n"
                          f"Starting balance: ${starting_balance:,.2f}\n"
                          f"Sum of transactions: ${transaction_sum:,.2f}\n"
@@ -1994,7 +2041,7 @@ class DataMutator:
             else:
                 answer = (f"No - All transactions accounted for.\n"
                          f"Starting balance + transactions = ending balance")
-        
+
         return bank, answer
 
     def mutate_missing_date(self, gap: bool = None, answer_type: str = "boolean") -> Tuple[Dict, str]:
@@ -2009,12 +2056,10 @@ class DataMutator:
         Returns:
             (mutated_bank_statement, answer_string)
         """
-        config = ULAD_MUTATION_CONFIGS["missing_date"]
         bank = copy.deepcopy(self.base_bank_statement)
         bank["_monthly_statements"] = True
 
-        if gap is None:
-            gap = random.random() < config["gap_probability"]
+        gap = _resolve_boolean(gap)
 
         if gap:
             # Determine which months are covered and pick a middle one to remove
@@ -2058,8 +2103,7 @@ class DataMutator:
         bank = copy.deepcopy(self.base_bank_statement)
         ulad = copy.deepcopy(self.base_ulad)
 
-        if match is None:
-            match = random.random() < config["match_probability"]
+        match = _resolve_boolean(match)
 
         num_types = random.randint(*config["num_income_types"])
         selected = random.sample(config["income_types"], min(num_types, len(config["income_types"])))
@@ -2131,8 +2175,7 @@ class DataMutator:
         bank = copy.deepcopy(self.base_bank_statement)
         ulad = copy.deepcopy(self.base_ulad)
 
-        if match is None:
-            match = random.random() < config["match_probability"]
+        match = _resolve_boolean(match)
 
         num_types = random.randint(*config["num_expense_types"])
         selected = random.sample(config["expense_types"], min(num_types, len(config["expense_types"])))
@@ -2149,14 +2192,10 @@ class DataMutator:
             keyword = random.choice(expense_type["keywords"])
 
             if disclosed:
-                # Estimate a balance as 12x monthly payment
-                balance = round(declared_amount * 12, 2)
-                self._add_liability_to_ulad(
+                self._add_expense_to_ulad(
                     ulad,
-                    expense_type["creditor_name"],
-                    expense_type["ulad_liability_type"],
+                    expense_type["ulad_expense_type"],
                     declared_amount,
-                    balance,
                 )
 
             if not disclosed or match:
@@ -2311,8 +2350,7 @@ class DataMutator:
         bank_a["_monthly_statements"] = True
         bank_b["_monthly_statements"] = True
 
-        if match is None:
-            match = random.random() < config["match_probability"]
+        match = _resolve_boolean(match)
 
         # Set up borrower identities
         borrower_a = config["borrower_names"][0]  # John Homeowner
@@ -2427,9 +2465,8 @@ class DataMutator:
         ulad = copy.deepcopy(self.base_ulad)
         third_party_bank["_monthly_statements"] = True
         
-        if third_party_pays is None:
-            third_party_pays = random.random() < config["third_party_payment_probability"]
-        
+        third_party_pays = _resolve_boolean(third_party_pays)
+
         # Set up identities
         borrower = config["borrower_names"][0]  # borrower
         third_party = config["borrower_names"][1]  # third party
@@ -2560,186 +2597,15 @@ class DataMutator:
         
         return borrower_bank, third_party_bank, ulad, answer
 
-    def mutate_credit_card_full_balance_payment(self, pays_full_balance: bool = None, answer_type: str = "boolean") -> Tuple[Dict, Dict, str]:
-        """
-        Create a scenario where a credit card liability exists in ULAD and analyze if the borrower
-        pays the full balance each month (high varying amounts) vs minimum payments (low consistent amounts).
-        
-        Strategy:
-        - Bank statement: Contains credit card payment transactions
-        - ULAD: Contains credit card liability
-        - High varying payments indicate full balance payments (can exclude debt)
-        - Low consistent payments indicate minimum payments (cannot exclude debt)
-        
-        Returns:
-            (mutated_bank, mutated_ulad, answer)
-        """
-        config = ULAD_MUTATION_CONFIGS["credit_card_full_balance_payment"]
-        
-        # Create copies
-        bank = copy.deepcopy(self.base_bank_statement)
-        ulad = copy.deepcopy(self.base_ulad)
-        
-        if pays_full_balance is None:
-            pays_full_balance = random.random() < config["full_balance_probability"]
-        
-        # Select a credit card
-        credit_card = random.choice(config["credit_cards"])
-        card_name = credit_card["name"]
-        
-        # Set up credit card liability in ULAD
-        liability_balance = round(random.uniform(*config["liability_balance_range"]), 2)
-        monthly_minimum = round(liability_balance * 0.02, 2)  # Typical 2% minimum payment
-        
-        # Add credit card liability to ULAD
-        self._add_credit_card_to_ulad(ulad, card_name, monthly_minimum, liability_balance)
-        
-        # Remove existing credit card payments
-        cc_keywords = ["credit card", "visa", "mastercard", "amex", "discover", "chase", "capital one", "citi"]
-        self._remove_transactions_by_description(bank, cc_keywords)
-        
-        # Calculate the number of months from the bank statement data
-        months_to_analyze = self._calculate_bank_statement_months(bank)
-        
-        # Generate payment history for all months in the bank statement
-        payments_added = []
-        
-        for month_offset in range(months_to_analyze):
-            # Calculate payment date (going back from current date)
-            payment_date_obj = datetime.now() - timedelta(days=30 * month_offset + random.randint(15, 28))
-            payment_date = (payment_date_obj.strftime("%Y-%m-%d"), 
-                           (payment_date_obj + timedelta(days=1)).strftime("%Y-%m-%d"))
-            
-            if pays_full_balance:
-                # High varying amounts (full balance payments)
-                # Simulate varying statement balances being paid in full
-                base_amount = random.uniform(*config["payment_amount_range"])
-                # Add significant variation to show different monthly balances
-                variation = random.uniform(-500, 800)
-                payment_amount = round(max(500, base_amount + variation), 2)
-            else:
-                # Low consistent amounts (minimum payments)
-                # Minimum payments are typically consistent and low
-                base_minimum = random.uniform(*config["minimum_payment_range"])
-                # Small variation for realism but still clearly minimum payments
-                variation = random.uniform(-10, 25)
-                payment_amount = round(max(25, base_minimum + variation), 2)
-            
-            txn = {
-                "description": config["description_template"].format(card_name=card_name),
-                "amount": -abs(payment_amount),
-                "currency": "USD",
-                "transaction_id": "",
-                "tag": "credit card payment",
-                "date_transacted": payment_date[0],
-                "date_posted": payment_date[1],
-            }
-            self._add_transaction_to_checking(bank, txn)
-            payments_added.append(txn)
-        
-        # Analyze payment pattern to determine if full balance is being paid
-        payment_amounts = [abs(p["amount"]) for p in payments_added]
-        avg_payment = sum(payment_amounts) / len(payment_amounts)
-        payment_variation = max(payment_amounts) - min(payment_amounts)
-        
-        # Determine if payments indicate full balance (high amounts with significant variation)
-        indicates_full_balance = (pays_full_balance and 
-                                avg_payment > 400 and 
-                                payment_variation > 200)
-        
-        # Format answer
-        if answer_type == "boolean":
-            answer = "Yes" if indicates_full_balance else "No"
-        elif answer_type == "id_list":
-            # Return transaction IDs of credit card payments
-            answer = str([txn.get("transaction_id", "") for txn in payments_added])
-        else:
-            # Default detailed format
-            if indicates_full_balance:
-                answer = (f"Yes - Credit card debt can be excluded.\n"
-                         f"Payment pattern indicates full balance payments:\n"
-                         f"Average payment: ${avg_payment:,.2f}\n"
-                         f"Payment variation: ${payment_variation:,.2f}\n"
-                         f"Payments range from ${min(payment_amounts):,.2f} to ${max(payment_amounts):,.2f}\n"
-                         f"High varying amounts suggest full statement balance payments, not minimums.")
-            else:
-                answer = (f"No - Credit card debt cannot be excluded.\n"
-                         f"Payment pattern indicates minimum payments:\n"
-                         f"Average payment: ${avg_payment:,.2f}\n"
-                         f"Payment variation: ${payment_variation:,.2f}\n"
-                         f"Payments range from ${min(payment_amounts):,.2f} to ${max(payment_amounts):,.2f}\n"
-                         f"Low consistent amounts suggest minimum payments, not full balance.")
-        
-        return bank, ulad, answer
-
-    def _add_credit_card_to_ulad(self, ulad: Dict, card_name: str, monthly_payment: float, balance: float) -> None:
-        """Add a credit card liability to the ULAD LIABILITIES section."""
-        deal = self._get_deal(ulad)
-        
-        # Ensure LIABILITIES section exists
-        if "LIABILITIES" not in deal:
-            deal["LIABILITIES"] = {"LIABILITY": []}
-        
-        liabilities = deal["LIABILITIES"].get("LIABILITY", [])
-        
-        if not isinstance(liabilities, list):
-            liabilities = [liabilities] if liabilities else []
-        
-        # Create new credit card liability
-        credit_card = {
-            "LIABILITY_DETAIL": {
-                "LiabilityAccountIdentifier": f"CC{random.randint(100000, 999999)}",
-                "LiabilityExclusionIndicator": "false",
-                "LiabilityMonthlyPaymentAmount": f"{monthly_payment:.2f}",
-                "LiabilityPayoffStatusIndicator": "false",
-                "LiabilityRemainingTermMonthsCount": "0",  # Credit cards don't have fixed terms
-                "LiabilityType": "Revolving",
-                "LiabilityUnpaidBalanceAmount": f"{balance:.2f}"
-            },
-            "LIABILITY_HOLDER": {
-                "NAME": {
-                    "FullName": card_name
-                }
-            },
-            "_SequenceNumber": str(len(liabilities) + 1),
-            "_xlink:label": f"LIABILITY_{len(liabilities) + 1}"
-        }
-        
-        liabilities.append(credit_card)
-        
-        # Update the LIABILITIES structure
-        deal["LIABILITIES"]["LIABILITY"] = liabilities
-
-    def _calculate_bank_statement_months(self, bank: Dict) -> int:
-        """
-        Calculate the number of months covered by the bank statement based on transaction dates.
-        Returns the number of months to generate credit card payments for.
-        """
-        all_dates = []
-        
-        # Collect all transaction dates from all accounts
-        for account in bank.get("override_accounts", []):
-            for txn in account.get("transactions", []):
-                date_str = txn.get("date_transacted")
-                if date_str:
-                    try:
-                        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-                        all_dates.append(date_obj)
-                    except ValueError:
-                        continue
-        
-        if not all_dates:
-           raise ValueError("No valid dates found in the bank statement")
-        
-        # Find the earliest and latest dates
-        earliest_date = min(all_dates)
-        latest_date = max(all_dates)
-        
-        # Calculate the difference in months
-        months_diff = (latest_date.year - earliest_date.year) * 12 + (latest_date.month - earliest_date.month)
-        
-        # Add 1 to include both start and end months, minimum of 3 months for meaningful analysis
-        return max(3, months_diff + 1)
+    # NOTE: mutate_credit_card_full_balance_payment and its helpers (_add_credit_card_to_ulad,
+    # _calculate_bank_statement_months) have been commented out per PR review - row 30 deleted.
+    #
+    # def mutate_credit_card_full_balance_payment(self, pays_full_balance=None, answer_type="boolean"):
+    #     ...
+    # def _add_credit_card_to_ulad(self, ulad, card_name, monthly_payment, balance):
+    #     ...
+    # def _calculate_bank_statement_months(self, bank):
+    #     ...
 
 
 def main():

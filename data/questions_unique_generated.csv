@@ -36,7 +36,6 @@ test_case_number,label,answer_type,question,rephrased_question,revised_answer,gi
 ,statement_integrity,boolean,"Are there any missing transactions?","Are there any missing transactions in the bank statement?",Yes,,1,0,
 ,transaction_consistency,boolean,"Is the large deposit documented by a corresponding debit from the other borrower's account within the correct time window?","Is the large deposit documented?",Yes,,1,1,
 ,debt_exclusion,boolean,"Can the automobile loan be excluded from the borrower's debt because a third party has been paying it for the last 12 months?","Do you see the third party made the last 12 month auto payment?",Yes,,1,1,
-,debt_exclusion,boolean,"Can this account be excluded from the debt because the borrower pays the full balance each month?","Can this account be excluded from the debt because the borrower pays the full balance each month?",Yes,54,1,1,
 ,statement_integrity,boolean,"Is there any missing date?","Is there any missing date in the bank statements?",Yes,,1,0,
 ,transaction_consistency,boolean,"Do the recurring deposits match the claimed alimony, child support, or Social Security income?","Do the recurring deposits match the claimed alimony, child support, or Social Security income?",Yes,,1,1,
 ,transaction_consistency,boolean,"Do the recurring debits match the claimed alimony, child support, or Social Security expenses?","Do the recurring debits match the claimed alimony, child support, or Social Security expenses?",Yes,,1,1,

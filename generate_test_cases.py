@@ -166,12 +166,12 @@ MUTATION_RULES = [
     ("made the last 12 month auto payment",
      {"type": "auto_loan", "fn": "mutate_auto_loan_third_party_payment"}),
 
-    # ── Credit card debt exclusion mutations ───────────────────────────────
-    ("account be excluded from the debt because the borrower pays the full balance each month",
-     {"type": "ulad", "fn": "mutate_credit_card_full_balance_payment"}),
-
-    ("pays the full balance each month",
-     {"type": "ulad", "fn": "mutate_credit_card_full_balance_payment"}),
+    # ── Credit card debt exclusion mutations (commented out per PR review - row 30 deleted) ──
+    # ("account be excluded from the debt because the borrower pays the full balance each month",
+    #  {"type": "ulad", "fn": "mutate_credit_card_full_balance_payment"}),
+    #
+    # ("pays the full balance each month",
+    #  {"type": "ulad", "fn": "mutate_credit_card_full_balance_payment"}),
 
     # ── Bank-only special mutations ────────────────────────────────────────
     ("missing transactions",
