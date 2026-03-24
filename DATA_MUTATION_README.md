@@ -9,8 +9,7 @@ The system mutates both bank statements and ULAD files, then records a ground tr
 
 ## Quick Start (End-to-End)
 
-The fastest way to regenerate the `test_cases_unique` folder:
-
+End-to-end process to generate the test cases:
 ```bash
 # Full pipeline: generate templates + mutate test cases
 ./run_generate_test_cases.sh
