@@ -65,6 +65,15 @@
       },
       "transactions": [
         {
+          "description": "WIRE IN CREDIT - TRANSFER FROM Alice Homeowner",
+          "amount": 15855.05,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-01001",
+          "tag": "large deposits",
+          "date_transacted": "2026-03-02",
+          "date_posted": "2026-03-03"
+        },
+        {
           "description": "Transfer from Alice Homeowner",
           "amount": 500,
           "currency": "USD",
@@ -90,15 +99,6 @@
           "tag": "general transaction",
           "date_transacted": "2026-02-13",
           "date_posted": "2026-02-14"
-        },
-        {
-          "description": "Wire Transfer",
-          "amount": 2609.74,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-00013",
-          "tag": "large deposits",
-          "date_transacted": "2026-02-12",
-          "date_posted": "2026-02-13"
         },
         {
           "description": "Earnest Money Deposit",
@@ -137,6 +137,15 @@
           "date_posted": "2026-01-31"
         },
         {
+          "description": "Klarna",
+          "amount": -121.14,
+          "currency": "USD",
+          "transaction_id": "plaid-a5024c80-00004",
+          "tag": "BNPL transactions",
+          "date_transacted": "2026-01-29",
+          "date_posted": "2026-01-30"
+        },
+        {
           "description": "International Wire",
           "amount": 1044.55,
           "currency": "USD",
@@ -153,15 +162,6 @@
           "currency": "USD",
           "tag": "general transaction",
           "transaction_id": "plaid-a5024c80-00001"
-        },
-        {
-          "description": "ACH DEBIT NJFSPC",
-          "amount": -978.7,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01002",
-          "tag": "undisclosed liability",
-          "date_transacted": "2026-01-25",
-          "date_posted": "2026-01-26"
         },
         {
           "description": "Deposit from Binance",
@@ -225,24 +225,6 @@
           "currency": "USD",
           "tag": "general transaction",
           "transaction_id": "plaid-a5024c80-00002"
-        },
-        {
-          "description": "Gift from Relative",
-          "amount": 2547.04,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-00020",
-          "tag": "large deposits",
-          "date_transacted": "2025-12-26",
-          "date_posted": "2025-12-27"
-        },
-        {
-          "description": "ACH DEBIT NJFSPC",
-          "amount": -973.11,
-          "currency": "USD",
-          "transaction_id": "plaid-a5024c80-01001",
-          "tag": "undisclosed liability",
-          "date_transacted": "2025-12-21",
-          "date_posted": "2025-12-22"
         },
         {
           "description": "Venmo Cash Out",
@@ -376,8 +358,7 @@
       ],
       "identity": {
         "names": [
-          "John Homeowner",
-          "Alice Homeowner"
+          "John Homeowner"
         ],
         "emails": [
           {

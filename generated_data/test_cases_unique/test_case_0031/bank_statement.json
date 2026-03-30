@@ -110,6 +110,24 @@
           "date_posted": "2026-03-09"
         },
         {
+          "description": "ACH CREDIT - SSA US TREASURY",
+          "amount": 3060.77,
+          "currency": "USD",
+          "transaction_id": "plaid-329929cd-01006",
+          "tag": "recurring income",
+          "date_transacted": "2026-02-28",
+          "date_posted": "2026-03-01"
+        },
+        {
+          "description": "ACH CREDIT - STATE CHILD SUPPORT DEPOSIT",
+          "amount": 1624.81,
+          "currency": "USD",
+          "transaction_id": "plaid-329929cd-01003",
+          "tag": "recurring income",
+          "date_transacted": "2026-02-26",
+          "date_posted": "2026-02-27"
+        },
+        {
           "description": "Deposit from Binance",
           "amount": 140.65,
           "currency": "USD",
@@ -146,6 +164,15 @@
           "date_posted": "2026-02-19"
         },
         {
+          "description": "Klarna",
+          "amount": -96.31,
+          "currency": "USD",
+          "transaction_id": "plaid-329929cd-00004",
+          "tag": "BNPL transactions",
+          "date_transacted": "2026-02-10",
+          "date_posted": "2026-02-11"
+        },
+        {
           "description": "Speedy Cash",
           "amount": 966.55,
           "currency": "USD",
@@ -162,6 +189,24 @@
           "tag": "general transaction",
           "date_transacted": "2026-02-07",
           "date_posted": "2026-02-08"
+        },
+        {
+          "description": "ACH CREDIT - SSA US TREASURY",
+          "amount": 3037.57,
+          "currency": "USD",
+          "transaction_id": "plaid-329929cd-01005",
+          "tag": "recurring income",
+          "date_transacted": "2026-02-07",
+          "date_posted": "2026-02-08"
+        },
+        {
+          "description": "ACH CREDIT - STATE CHILD SUPPORT DEPOSIT",
+          "amount": 1631.13,
+          "currency": "USD",
+          "transaction_id": "plaid-329929cd-01002",
+          "tag": "recurring income",
+          "date_transacted": "2026-01-31",
+          "date_posted": "2026-02-01"
         },
         {
           "description": "Upstart",
@@ -234,6 +279,24 @@
           "tag": "foreign origin",
           "date_transacted": "2026-01-09",
           "date_posted": "2026-01-10"
+        },
+        {
+          "description": "ACH CREDIT - STATE CHILD SUPPORT DEPOSIT",
+          "amount": 1626.91,
+          "currency": "USD",
+          "transaction_id": "plaid-329929cd-01001",
+          "tag": "recurring income",
+          "date_transacted": "2026-01-07",
+          "date_posted": "2026-01-08"
+        },
+        {
+          "description": "ACH CREDIT - SSA US TREASURY",
+          "amount": 3055.19,
+          "currency": "USD",
+          "transaction_id": "plaid-329929cd-01004",
+          "tag": "recurring income",
+          "date_transacted": "2026-01-06",
+          "date_posted": "2026-01-07"
         },
         {
           "description": "Earnest Money Deposit",
@@ -410,7 +473,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 38587,
+      "ID": 93379,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -437,7 +500,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 14364,
+      "ID": 94519,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -464,7 +527,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 42264,
+      "ID": 26526,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -491,7 +554,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 61898,
+      "ID": 52808,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -518,7 +581,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 27919,
+      "ID": 59664,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -545,7 +608,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 97695,
+      "ID": 83950,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -572,7 +635,61 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 30840,
+      "ID": 75057,
+      "CreatedAt": "2026-03-20T00:00:00Z",
+      "UpdatedAt": "2026-03-20T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-28957633",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-02-28",
+      "ParsedDate": "2026-02-28T00:00:00Z",
+      "Type": "credit",
+      "Description": "ACH CREDIT - SSA US TREASURY",
+      "Amount": 3060.77,
+      "Category": "recurring income",
+      "TransactionID": "plaid-329929cd-01006",
+      "DocumentID": "doc-329929cd",
+      "VirtualDocumentID": "vdoc-329929cd",
+      "BankStatementID": "stmt-28957633",
+      "BankStatementAccountID": "acc-28957633",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-03-20T00:00:00Z",
+      "ID": 73458,
+      "CreatedAt": "2026-03-20T00:00:00Z",
+      "UpdatedAt": "2026-03-20T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-28957633",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-02-26",
+      "ParsedDate": "2026-02-26T00:00:00Z",
+      "Type": "credit",
+      "Description": "ACH CREDIT - STATE CHILD SUPPORT DEPOSIT",
+      "Amount": 1624.81,
+      "Category": "recurring income",
+      "TransactionID": "plaid-329929cd-01003",
+      "DocumentID": "doc-329929cd",
+      "VirtualDocumentID": "vdoc-329929cd",
+      "BankStatementID": "stmt-28957633",
+      "BankStatementAccountID": "acc-28957633",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-03-20T00:00:00Z",
+      "ID": 40438,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -599,7 +716,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 21188,
+      "ID": 53970,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -626,7 +743,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 13815,
+      "ID": 35570,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -653,7 +770,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 14742,
+      "ID": 53709,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -680,7 +797,34 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 90750,
+      "ID": 16030,
+      "CreatedAt": "2026-03-20T00:00:00Z",
+      "UpdatedAt": "2026-03-20T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-28957633",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-02-10",
+      "ParsedDate": "2026-02-10T00:00:00Z",
+      "Type": "debit",
+      "Description": "Klarna",
+      "Amount": 96.31,
+      "Category": "BNPL transactions",
+      "TransactionID": "plaid-329929cd-00004",
+      "DocumentID": "doc-329929cd",
+      "VirtualDocumentID": "vdoc-329929cd",
+      "BankStatementID": "stmt-28957633",
+      "BankStatementAccountID": "acc-28957633",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-03-20T00:00:00Z",
+      "ID": 14294,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -707,7 +851,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 61652,
+      "ID": 26110,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -734,7 +878,61 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 27650,
+      "ID": 90868,
+      "CreatedAt": "2026-03-20T00:00:00Z",
+      "UpdatedAt": "2026-03-20T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-28957633",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-02-07",
+      "ParsedDate": "2026-02-07T00:00:00Z",
+      "Type": "credit",
+      "Description": "ACH CREDIT - SSA US TREASURY",
+      "Amount": 3037.57,
+      "Category": "recurring income",
+      "TransactionID": "plaid-329929cd-01005",
+      "DocumentID": "doc-329929cd",
+      "VirtualDocumentID": "vdoc-329929cd",
+      "BankStatementID": "stmt-28957633",
+      "BankStatementAccountID": "acc-28957633",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-03-20T00:00:00Z",
+      "ID": 14496,
+      "CreatedAt": "2026-03-20T00:00:00Z",
+      "UpdatedAt": "2026-03-20T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-28957633",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-01-31",
+      "ParsedDate": "2026-01-31T00:00:00Z",
+      "Type": "credit",
+      "Description": "ACH CREDIT - STATE CHILD SUPPORT DEPOSIT",
+      "Amount": 1631.13,
+      "Category": "recurring income",
+      "TransactionID": "plaid-329929cd-01002",
+      "DocumentID": "doc-329929cd",
+      "VirtualDocumentID": "vdoc-329929cd",
+      "BankStatementID": "stmt-28957633",
+      "BankStatementAccountID": "acc-28957633",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-03-20T00:00:00Z",
+      "ID": 81302,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -761,7 +959,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 14542,
+      "ID": 98923,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -788,7 +986,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 56604,
+      "ID": 26380,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -815,7 +1013,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 24517,
+      "ID": 13953,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -842,7 +1040,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 64426,
+      "ID": 27130,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -869,7 +1067,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 49909,
+      "ID": 80522,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -896,7 +1094,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 91807,
+      "ID": 81279,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -923,7 +1121,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 70712,
+      "ID": 99403,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -950,7 +1148,61 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 71434,
+      "ID": 57448,
+      "CreatedAt": "2026-03-20T00:00:00Z",
+      "UpdatedAt": "2026-03-20T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-28957633",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-01-07",
+      "ParsedDate": "2026-01-07T00:00:00Z",
+      "Type": "credit",
+      "Description": "ACH CREDIT - STATE CHILD SUPPORT DEPOSIT",
+      "Amount": 1626.91,
+      "Category": "recurring income",
+      "TransactionID": "plaid-329929cd-01001",
+      "DocumentID": "doc-329929cd",
+      "VirtualDocumentID": "vdoc-329929cd",
+      "BankStatementID": "stmt-28957633",
+      "BankStatementAccountID": "acc-28957633",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-03-20T00:00:00Z",
+      "ID": 32957,
+      "CreatedAt": "2026-03-20T00:00:00Z",
+      "UpdatedAt": "2026-03-20T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-28957633",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-01-06",
+      "ParsedDate": "2026-01-06T00:00:00Z",
+      "Type": "credit",
+      "Description": "ACH CREDIT - SSA US TREASURY",
+      "Amount": 3055.19,
+      "Category": "recurring income",
+      "TransactionID": "plaid-329929cd-01004",
+      "DocumentID": "doc-329929cd",
+      "VirtualDocumentID": "vdoc-329929cd",
+      "BankStatementID": "stmt-28957633",
+      "BankStatementAccountID": "acc-28957633",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-03-20T00:00:00Z",
+      "ID": 82626,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -977,7 +1229,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 53552,
+      "ID": 13388,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -1004,7 +1256,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 22873,
+      "ID": 11912,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -1031,7 +1283,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 61743,
+      "ID": 39319,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -1058,7 +1310,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 62017,
+      "ID": 17732,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -1085,7 +1337,7 @@
         "Y1": 0
       },
       "TaggedAt": "2026-03-20T00:00:00Z",
-      "ID": 40505,
+      "ID": 62589,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -1108,7 +1360,7 @@
       "TotalCreditAmount": 8298.22,
       "TotalDebitAmount": 0,
       "BankStatementAccountID": "acc-97339083",
-      "ID": 182,
+      "ID": 136,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -1126,10 +1378,10 @@
       "ClientName": "",
       "StartBalance": 1723.67,
       "EndBalance": 27278.81,
-      "TotalCreditAmount": 32099.8,
-      "TotalDebitAmount": -6448.35,
+      "TotalCreditAmount": 46136.18,
+      "TotalDebitAmount": -6544.66,
       "BankStatementAccountID": "acc-28957633",
-      "ID": 167,
+      "ID": 682,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -1150,7 +1402,7 @@
       "TotalCreditAmount": 500,
       "TotalDebitAmount": 0,
       "BankStatementAccountID": "acc-46597541",
-      "ID": 282,
+      "ID": 787,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -1172,7 +1424,7 @@
       "TotalCreditAmount": 100,
       "TotalDebitAmount": 0,
       "BankStatementAccountID": "acc-91453895",
-      "ID": 506,
+      "ID": 785,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -1203,7 +1455,7 @@
       "VirtualDocumentID": "vdoc-329929cd",
       "BankStatementAccountID": "acc-97339083",
       "IsPossibleDuplicate": false,
-      "ID": 4107,
+      "ID": 2439,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -1223,8 +1475,8 @@
       "EndDate": "2026-03-12",
       "StartBalance": 1723.67,
       "EndBalance": 27278.81,
-      "TotalCreditAmount": 32099.8,
-      "TotalDebitAmount": -6448.35,
+      "TotalCreditAmount": 46136.18,
+      "TotalDebitAmount": -6544.66,
       "BankStatementID": "stmt-28957633",
       "BorrowerID": "",
       "BorrowerItemID": "",
@@ -1232,7 +1484,7 @@
       "VirtualDocumentID": "vdoc-329929cd",
       "BankStatementAccountID": "acc-28957633",
       "IsPossibleDuplicate": false,
-      "ID": 9369,
+      "ID": 6991,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -1261,7 +1513,7 @@
       "VirtualDocumentID": "vdoc-329929cd",
       "BankStatementAccountID": "acc-46597541",
       "IsPossibleDuplicate": false,
-      "ID": 5659,
+      "ID": 3346,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -1291,7 +1543,7 @@
       "VirtualDocumentID": "vdoc-329929cd",
       "BankStatementAccountID": "acc-91453895",
       "IsPossibleDuplicate": false,
-      "ID": 2104,
+      "ID": 6430,
       "CreatedAt": "2026-03-20T00:00:00Z",
       "UpdatedAt": "2026-03-20T00:00:00Z",
       "LoanID": "generated-loan",
@@ -1301,10 +1553,10 @@
   ],
   "AggregateFigures": {
     "Overall": {
-      "TotalAmount": 34549.67,
-      "CreditAmount": 40998.02,
-      "DebitAmount": -6448.35,
-      "Count": 26
+      "TotalAmount": 48489.740000000005,
+      "CreditAmount": 55034.4,
+      "DebitAmount": -6544.66,
+      "Count": 33
     }
   }
 }

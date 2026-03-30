@@ -1,0 +1,18 @@
+{
+  "test_case_id": 27,
+  "test_case_number": null,
+  "question": "Is the large deposit documented by a corresponding debit from the other borrower's account within the correct time window?",
+  "rephrased_question": "Is the large deposit documented?",
+  "answer_type": "boolean",
+  "label": "transaction_consistency",
+  "mutation_type": "two_borrower",
+  "mutation_key": "mutate_large_deposit_corresponding_debit",
+  "ground_truth_answer": "Yes",
+  "need_bank_statement": true,
+  "need_ulad": true,
+  "bank_statement_path": "bank_statement.json",
+  "bank_statement_b_path": "bank_statement_b.json",
+  "ulad_path": "ulad.json",
+  "gid": null,
+  "old_id": null
+}
