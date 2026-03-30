@@ -12,6 +12,7 @@ Mutation dispatch:
 import json
 import os
 import copy
+import random
 import pandas as pd
 from typing import Dict, Any, Optional
 from data_mutator import DataMutator
@@ -524,7 +525,12 @@ def main():
                         help="Max test cases to generate (for quick testing)")
     parser.add_argument("--tags", nargs="+", default=None,
                         help="Only process questions containing these keywords")
+    parser.add_argument("--seed", type=str, default=None,
+                        help="Random seed for reproducibility")
     args = parser.parse_args()
+
+    if args.seed is not None:
+        random.seed(args.seed)
 
     os.makedirs(args.output, exist_ok=True)
 

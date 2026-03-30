@@ -22,6 +22,7 @@ cd "$SCRIPT_DIR"
 
 # ── Defaults ──────────────────────────────────────────────────────────────
 SKIP_GENERATE=false
+SEED=""
 QUESTIONS="data/questions_unique_generated.csv"
 OUTPUT_DIR="generated_data/test_cases_unique"
 GEN_DIR="generated_data"
@@ -34,10 +35,11 @@ ULAD_2="$GEN_DIR/ulad_2.json"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --skip-generate) SKIP_GENERATE=true; shift ;;
+        --seed)          SEED="$2"; shift 2 ;;
         --questions)     QUESTIONS="$2"; shift 2 ;;
         --output)        OUTPUT_DIR="$2"; shift 2 ;;
         -h|--help)
-            echo "Usage: $0 [--skip-generate] [--questions CSV] [--output DIR]"
+            echo "Usage: $0 [--skip-generate] [--seed SEED] [--questions CSV] [--output DIR]"
             exit 0 ;;
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
@@ -52,8 +54,14 @@ if [ "$SKIP_GENERATE" = false ]; then
     echo ""
     echo "Step 1: Generating base bank statement and ULAD templates..."
 
+    # Build seed flags for dataset_generator.py
+    SEED_FLAG=""
+    if [ -n "$SEED" ]; then
+        SEED_FLAG="--seed $SEED"
+    fi
+
     # Generate primary borrower data
-    python dataset_generator.py -n 1 -o "$GEN_DIR"
+    python dataset_generator.py -n 1 -o "$GEN_DIR" $SEED_FLAG
     # Find the most recently created plaid/ulad files and copy to standard paths
     LATEST_PLAID=$(ls -t "$GEN_DIR"/plaid_*.json 2>/dev/null | head -1)
     LATEST_ULAD=$(ls -t "$GEN_DIR"/ulad_*.json 2>/dev/null | head -1)
@@ -69,7 +77,7 @@ if [ "$SKIP_GENERATE" = false ]; then
     echo "  -> ULAD:           $ULAD (from $LATEST_ULAD)"
 
     # Generate second borrower data (for two-borrower scenarios)
-    python dataset_generator.py -n 1 -o "$GEN_DIR"
+    python dataset_generator.py -n 1 -o "$GEN_DIR" $SEED_FLAG
     LATEST_PLAID_2=$(ls -t "$GEN_DIR"/plaid_*.json 2>/dev/null | head -1)
     LATEST_ULAD_2=$(ls -t "$GEN_DIR"/ulad_*.json 2>/dev/null | head -1)
 
@@ -96,13 +104,19 @@ echo "Step 2: Generating mutated test cases..."
 echo "  Questions: $QUESTIONS"
 echo "  Output:    $OUTPUT_DIR"
 
+SEED_FLAG_TC=""
+if [ -n "$SEED" ]; then
+    SEED_FLAG_TC="--seed $SEED"
+fi
+
 python generate_test_cases.py \
     --questions "$QUESTIONS" \
     --bank-statement "$BANK_STMT" \
     --ulad "$ULAD" \
     --bank-statement-2 "$BANK_STMT_2" \
     --ulad-2 "$ULAD_2" \
-    --output "$OUTPUT_DIR"
+    --output "$OUTPUT_DIR" \
+    $SEED_FLAG_TC
 
 echo ""
 echo "============================================================"
