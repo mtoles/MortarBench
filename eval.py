@@ -69,6 +69,7 @@ model_answer_instruction = {
     "txn_id_list": "Describe the relevant transactions in text (titles/amounts/dates); do not guess or output transaction IDs.",
     "boolean": "Answer with yes or no.",
     "account_id_list": "Identify the relevant accounts in text (names/descriptions/last4 digits); do not guess or output account IDs.",
+    "dollar_amount": "Answer with the exact dollar amount. Do not include any text or symbols other than the number.",
 }
 
 CLEANUP_MODEL_ID = "gpt-5"
@@ -77,6 +78,7 @@ cleaning_answer_instruction = {
     "txn_id_list": 'Return ONLY a valid JSON list of matching TransactionID values, e.g. `["plaid-2-00037", "plaid-2-00049"]`, or [] if there are no IDs.',
     "boolean": "Return only yes or no. DO NOT output any other text.",
     "account_id_list": 'Return ONLY a valid JSON list of account numbers (last 4 digits only). e.g. `["1234", "5678"]`, or [] if there are no account numbers.',
+    "dollar_amount": "Return only the numeric dollar amount without commas or currency symbols. DO NOT output any other text.",
 }
 
 
@@ -687,10 +689,14 @@ def load_dataset(
         except KeyError:
             question = str(row.get("question", ""))
 
+        tc_num = row.get("test_case_number")
+        if pd.isna(tc_num):
+            tc_num = tc_id
+            
         dataset.append({
             "question_id": f"{tc_id}",
             "loan_id": f"test_{tc_id}",
-            "test_case_number": int(row.get("test_case_number", tc_id)),
+            "test_case_number": int(tc_num),
             "question": question,
             "answer": gt_answer,
             "answer_type": answer_type,
@@ -718,6 +724,13 @@ def get_answer_type(answer):
         return "txn_id_list"
     if all(token.startswith("plaid-") for token in tokens):
         return "txn_id_list"
+    try:
+        # Check if the answer parses cleanly as a float/dollar amount
+        float(re.sub(r'[^\d.]', '', answer))
+        if re.search(r'\d', answer):  # must contain at least one digit
+            return "dollar_amount"
+    except ValueError:
+        pass
     raise ValueError(f"Unknown answer type: {answer}")
 
 
@@ -1095,6 +1108,19 @@ def is_correct(predicted_answer, answer_type, gt_answer):
         f1_score = calculate_f1_score(pred_set, gt_set)
 
         return {"exact_match": exact_match, "f1_score": f1_score}
+    elif answer_type == "dollar_amount":
+        try:
+            pred_str = re.sub(r'[^\d.]', '', str(predicted_answer))
+            gt_str = re.sub(r'[^\d.]', '', str(gt_answer))
+            if not pred_str or not gt_str:
+                return {"exact_match": False, "f1_score": 0.0}
+            pred_val = float(pred_str)
+            gt_val = float(gt_str)
+            exact_match = abs(pred_val - gt_val) < 0.01
+            return {"exact_match": exact_match, "f1_score": 1.0 if exact_match else 0.0}
+        except ValueError:
+            print(f"warning: invalid dollar amount in predicted answer: {predicted_answer} or answer: {gt_answer}")
+            return {"exact_match": False, "f1_score": 0.0}
     else:
         raise ValueError(f"Invalid answer type: {answer_type}")
 
