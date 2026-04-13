@@ -8,7 +8,7 @@ Adds two capabilities on top of the vanilla LLM-based Q&A pipeline:
      question + answer against the original source documents and refines
      the answer if needed.
 
-2. Numerical Reasoning via Code Execution (dollar_amounts answer type)
+2. Numerical Reasoning via Code Execution (dollar_amount answer type)
    - Instead of having the LLM compute arithmetic, it extracts operands and
      writes a Python expression; the code is executed in a subprocess and the
      result is fed back for a final answer.
@@ -261,7 +261,7 @@ class ReflectionAgent(BaselineAgent):
     1. Self-Correction: after the initial answer, one additional round checks
        the question + answer against the source documents and refines if needed.
 
-    2. Numerical Reasoning (dollar_amounts): the LLM writes Python code to
+    2. Numerical Reasoning (dollar_amount): the LLM writes Python code to
        compute the answer; it is executed in a subprocess and the result is
        returned as the cleaned answer.
     """
@@ -411,14 +411,14 @@ class ReflectionAgent(BaselineAgent):
     # Numerical reasoning via code execution
     # ------------------------------------------------------------------
 
-    def process_dollar_amounts(self, question: str, raw_answer: str, loan_id: str) -> tuple:
+    def process_dollar_amount(self, question: str, raw_answer: str, loan_id: str) -> tuple:
         """
         Reflection pass to verify numbers, then compute the result in Python.
 
         Returns:
             (reflected_answer, cleaned_dollar_str, total_input_tokens, total_output_tokens)
         """
-        reflected, ref_in, ref_out = self._reflect(question, raw_answer, "dollar_amounts")
+        reflected, ref_in, ref_out = self._reflect(question, raw_answer, "dollar_amount")
 
         source_excerpt = (
             f"Bank Statement:\n{self._bank_statement_str}\n\n"

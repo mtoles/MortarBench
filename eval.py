@@ -81,7 +81,7 @@ model_answer_instruction = {
     "txn_id_list": "Describe the relevant transactions in text (titles/amounts/dates); do not guess or output transaction IDs.",
     "boolean": "Answer with yes or no.",
     "account_id_list": "Identify the relevant accounts in text (names/descriptions/last4 digits); do not guess or output account IDs.",
-    "dollar_amounts": "Think step by step about which dollar amounts are relevant to the question and why. Then identify and list each relevant amount from the documents, stating what it represents. Do not calculate totals yourself.",
+    "dollar_amount": "Think step by step about which dollar amounts are relevant to the question and why. Then identify and list each relevant amount from the documents, stating what it represents. Do not calculate totals yourself.",
 }
 
 CLEANUP_MODEL_ID = "gpt-5"
@@ -90,7 +90,7 @@ cleaning_answer_instruction = {
     "txn_id_list": 'Return ONLY a valid JSON list of matching TransactionID values, e.g. `["plaid-2-00037", "plaid-2-00049"]`, or [] if there are no IDs.',
     "boolean": "Return only yes or no. DO NOT output any other text.",
     "account_id_list": 'Return ONLY a valid JSON list of account numbers (last 4 digits only). e.g. `["1234", "5678"]`, or [] if there are no account numbers.',
-    "dollar_amounts": "Return ONLY the final dollar amount as a plain number with two decimal places (e.g., 1234.56). No $ sign, no commas, no other text.",
+    "dollar_amount": "Return ONLY the final dollar amount as a plain number with two decimal places (e.g., 1234.56). No $ sign, no commas, no other text.",
 }
 
 
@@ -121,9 +121,9 @@ answer_type_map = {
     "n": "boolean",
     "id_list": "txn_id_list",
     "id_list_account": "account_id_list",
-    "dollar_amounts": "dollar_amounts",
-    "dollar_amount": "dollar_amounts",
-    "amount": "dollar_amounts",
+    "dollar_amounts": "dollar_amount",
+    "dollar_amount": "dollar_amount",
+    "amount": "dollar_amount",
 }
 
 
@@ -699,7 +699,7 @@ def load_dataset(
         elif answer_type == "id_list_account":
             answer_type = "account_id_list"
         elif answer_type in ("dollar_amount", "dollar_amounts"):
-            answer_type = "dollar_amounts"
+            answer_type = "dollar_amount"
 
         try:
             question = str(row[question_col]) if question_col in row else str(row["question"])
@@ -912,7 +912,7 @@ def evaluate_model(
                         question, raw_answer, loan_id, accounts_json,
                         cleaning_answer_instruction_str, account_last4_values
                     )
-                elif answer_type == "dollar_amounts":
+                elif answer_type == "dollar_amount":
                     processed_raw_answer, cleaned_answer, clean_in_tok, clean_out_tok = agent.process_dollar_amounts(
                         question, raw_answer, loan_id
                     )
@@ -1133,7 +1133,7 @@ def is_correct(predicted_answer, answer_type, gt_answer):
         f1_score = calculate_f1_score(pred_set, gt_set)
 
         return {"exact_match": exact_match, "f1_score": f1_score}
-    elif answer_type == "dollar_amounts":
+    elif answer_type == "dollar_amount":
         pred_val = normalize_dollar_answer(predicted_answer)
         gt_val = normalize_dollar_answer(gt_answer)
         if pred_val is None or gt_val is None:
