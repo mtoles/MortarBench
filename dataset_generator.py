@@ -149,11 +149,12 @@ ECONOMIC_PROFILES = {
 }
 
 class PlaidGenerator:
-    def __init__(self, seed=None, num_months=3, user_name="John Homeowner"):
+    def __init__(self, seed=None, num_months=3, user_name="John Homeowner", statement_type="personal"):
         if seed:
             random.seed(seed)
         self.num_months = num_months
         self.user_name = user_name
+        self.statement_type = statement_type.lower()
         self.transaction_counter = 0
         self.dataset_id = str(uuid.uuid4())[:8]
         self.used_account_numbers = set()
@@ -347,6 +348,14 @@ class PlaidGenerator:
             "transactions": checking_txns,
             "identity": self._create_identity(user_name)
         }
+
+        if self.statement_type == "business":
+            checking_account["class"] = "business"
+            checking_account["official_name"] = f"{user_name}'s Business LLC"
+            checking_account["identity"]["names"] = [f"{user_name}'s Business LLC"]
+            first_name = user_name.split()[0].lower() if user_name else "user"
+            checking_account["identity"]["emails"] = [{"data": f"{first_name}@business.com", "primary": True, "type": "work"}]
+
         accounts.append(checking_account)
         
         # 3. Retirement Account (Investment) - Probabilistic
@@ -495,6 +504,7 @@ class PlaidGenerator:
             
             bs = {
                 "BankName": "Generated Bank",
+                "StatementType": self.statement_type.capitalize(),
                 "BankFullAddress": "",
                 "ClientNames": client_names,
                 "ClientFullAddress": client_full_address,
@@ -556,6 +566,7 @@ class PlaidGenerator:
 
         return {
             "seed": f"generated-test-{self.dataset_id}",
+            "statement_type": self.statement_type,
             "override_accounts": accounts,
             "SearchParams": {
                 "SortField": "Date",
@@ -618,6 +629,7 @@ def main():
     parser.add_argument("-o", "--output", type=str, default="generated_data", help="Output directory")
     parser.add_argument("-m", "--months", type=int, default=3, help="Number of months of statements to generate")
     parser.add_argument("-u", "--user_name", type=str, default="John Homeowner", help="Borrower's name")
+    parser.add_argument("-t", "--statement_type", type=str, choices=["personal", "business"], default="personal", help="whether the dataset is for personal statement or business")
     
     import sys
     
@@ -632,24 +644,28 @@ def main():
             args_months = int(months_input) if months_input else 3
             user_input = input("Enter the borrower's name (default 'John Homeowner'): ").strip()
             args_user_name = user_input if user_input else "John Homeowner"
+            stmt_type_input = input("Enter statement type (personal/business, default 'personal'): ").strip().lower()
+            args_statement_type = stmt_type_input if stmt_type_input in ["personal", "business"] else "personal"
         except ValueError:
             print("Invalid input entered. Using defaults.")
             args_number = 1
             args_output = "generated_data"
             args_months = 3
             args_user_name = "John Homeowner"
+            args_statement_type = "personal"
     else:
         args = parser.parse_args()
         args_number = args.number
         args_output = args.output
         args_months = args.months
         args_user_name = args.user_name
+        args_statement_type = args.statement_type
     
     if not os.path.exists(args_output):
         os.makedirs(args_output)
         
     for i in range(args_number):
-        plaid_generator = PlaidGenerator(num_months=args_months, user_name=args_user_name)
+        plaid_generator = PlaidGenerator(num_months=args_months, user_name=args_user_name, statement_type=args_statement_type)
         plaid_data = plaid_generator.generate_single_dataset()
         ulad_template = args.ulad_template if 'args' in locals() else "data/ulad_template.json"
         ulad_generator = UladGenerator(ulad_template, plaid_data, args_output)
