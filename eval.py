@@ -26,6 +26,7 @@ Answer Types:
 Usage:
     python eval.py --model_id gpt-5 --model_type baseline --trials 3 --use_domain_expertise
     python eval.py --model_type solo --trials 3 --use_domain_expertise
+    python eval.py --model_type reflection --trials 1 --use_domain_expertise
 
 See --help for full list of command-line options.
 """
@@ -47,10 +48,12 @@ import time
 from decimal import Decimal, InvalidOperation
 from llm import call_llm_wrapper, clear_messages
 from agents import SoloAgent, BaselineAgent, ExperimentalAgent
+from reflection_agent import ReflectionAgent, normalize_dollar_answer
 
 
 # Pricing per million tokens (as of November 2025)
 MODEL_PRICING = {
+    "gpt-5.4": {"input": 1.25, "output": 10.00},
     "gpt-5": {"input": 1.25, "output": 10.00},
     "claude-opus-4-1-20250805": {"input": 15.00, "output": 75.00},
     "claude-sonnet-4-5": {"input": 3.00, "output": 15.00},
@@ -61,7 +64,16 @@ MODEL_PRICING = {
     "gemini-3-pro-preview": {"input": 1.25, "output": 10.00},
 }
 
-domain_expertise = "A large deposit is defined as exceeding 50% of the borrower's total monthly qualifying income."
+domain_expertise = (
+    "A large deposit is defined as exceeding 50% of the borrower's total monthly qualifying income. "
+    "Eligible income is calculated from the bank statement transactions, NOT from the ULAD DU's declared "
+    "income fields (e.g. CurrentIncomeMonthlyTotalAmount). "
+    "To compute eligible income, filter transactions by their 'tag' field (not by description text): "
+    "qualifying deposits have tag 'payroll' or 'ssa_income'; "
+    "debt obligations have tag 'auto_loan', 'mortgage', or 'child_support'. "
+    "All other tags (e.g. 'general transaction', 'mortgage payments', 'cash', 'crypto') are excluded. "
+    "Eligible income = sum(qualifying deposits) − sum(obligation payments)."
+)
 
 prompt = "{question}\n\nBank Statement: {context}\n\nULAD DU: {ulad_du}\n\nAnswer the question. {domain_expertise}Do not think out loud. {answer_instruction}."
 
@@ -69,6 +81,7 @@ model_answer_instruction = {
     "txn_id_list": "Describe the relevant transactions in text (titles/amounts/dates); do not guess or output transaction IDs.",
     "boolean": "Answer with yes or no.",
     "account_id_list": "Identify the relevant accounts in text (names/descriptions/last4 digits); do not guess or output account IDs.",
+    "dollar_amounts": "Think step by step about which dollar amounts are relevant to the question and why. Then identify and list each relevant amount from the documents, stating what it represents. Do not calculate totals yourself.",
 }
 
 CLEANUP_MODEL_ID = "gpt-5"
@@ -77,6 +90,7 @@ cleaning_answer_instruction = {
     "txn_id_list": 'Return ONLY a valid JSON list of matching TransactionID values, e.g. `["plaid-2-00037", "plaid-2-00049"]`, or [] if there are no IDs.',
     "boolean": "Return only yes or no. DO NOT output any other text.",
     "account_id_list": 'Return ONLY a valid JSON list of account numbers (last 4 digits only). e.g. `["1234", "5678"]`, or [] if there are no account numbers.',
+    "dollar_amounts": "Return ONLY the final dollar amount as a plain number with two decimal places (e.g., 1234.56). No $ sign, no commas, no other text.",
 }
 
 
@@ -107,6 +121,9 @@ answer_type_map = {
     "n": "boolean",
     "id_list": "txn_id_list",
     "id_list_account": "account_id_list",
+    "dollar_amounts": "dollar_amounts",
+    "dollar_amount": "dollar_amounts",
+    "amount": "dollar_amounts",
 }
 
 
@@ -681,17 +698,26 @@ def load_dataset(
             answer_type = "txn_id_list"
         elif answer_type == "id_list_account":
             answer_type = "account_id_list"
+        elif answer_type in ("dollar_amount", "dollar_amounts"):
+            answer_type = "dollar_amounts"
 
         try:
             question = str(row[question_col]) if question_col in row else str(row["question"])
         except KeyError:
             question = str(row.get("question", ""))
 
+        rephrased_question = (
+            metadata.get("rephrased_question")
+            if os.path.exists(metadata_path)
+            else None
+        ) or str(row.get("rephrased_question", "")) or question
+
         dataset.append({
             "question_id": f"{tc_id}",
             "loan_id": f"test_{tc_id}",
-            "test_case_number": int(row.get("test_case_number", tc_id)),
+            "test_case_number": int(tc_id if pd.isna(row.get("test_case_number")) else row.get("test_case_number")),
             "question": question,
+            "rephrased_question": rephrased_question,
             "answer": gt_answer,
             "answer_type": answer_type,
             "pii": False,
@@ -727,6 +753,8 @@ def create_agent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_
         return SoloAgent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func)
     elif model_type == "experimental":
         return ExperimentalAgent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, prompt_template)
+    elif model_type == "reflection":
+        return ReflectionAgent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, prompt_template)
     else:
         return BaselineAgent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, prompt_template)
 
@@ -783,6 +811,7 @@ def evaluate_model(
         """Process one row (one loan) and return result plus metrics."""
         loan_id = row["loan_id"]
         question = row["question"]
+        rephrased_question = row.get("rephrased_question") or question
         gt_answer = row["answer"]
         answer_type = row.get("answer_type")
         if answer_type:
@@ -839,6 +868,10 @@ def evaluate_model(
         # Setup loan (clears messages, enforces spacing for solo)
         agent.setup_loan()
 
+        # Provide source documents to the reflection agent for grounded verification
+        if isinstance(agent, ReflectionAgent):
+            agent.set_context(bank_statement, ulad_du)
+
         predicted_answers = []
         raw_answers = []
         solo_answers = [] if isinstance(agent, SoloAgent) else None
@@ -876,8 +909,12 @@ def evaluate_model(
                     )
                 elif answer_type == "account_id_list":
                     processed_raw_answer, cleaned_answer, clean_in_tok, clean_out_tok = agent.process_account_id_list(
-                        question, raw_answer, loan_id, accounts_json, 
+                        question, raw_answer, loan_id, accounts_json,
                         cleaning_answer_instruction_str, account_last4_values
+                    )
+                elif answer_type == "dollar_amounts":
+                    processed_raw_answer, cleaned_answer, clean_in_tok, clean_out_tok = agent.process_dollar_amounts(
+                        question, raw_answer, loan_id
                     )
                 else:
                     raise ValueError(f"Invalid answer type: {answer_type}")
@@ -919,6 +956,7 @@ def evaluate_model(
         result = {
             "loan_id": loan_id,
             "question": question,
+            "rephrased_question": rephrased_question,
             "true_answer": gt_answer,
             "predicted_answer": predicted_answers,
             "raw_answer": raw_answers,
@@ -1094,6 +1132,17 @@ def is_correct(predicted_answer, answer_type, gt_answer):
         exact_match = pred_set == gt_set
         f1_score = calculate_f1_score(pred_set, gt_set)
 
+        return {"exact_match": exact_match, "f1_score": f1_score}
+    elif answer_type == "dollar_amounts":
+        pred_val = normalize_dollar_answer(predicted_answer)
+        gt_val = normalize_dollar_answer(gt_answer)
+        if pred_val is None or gt_val is None:
+            return {"exact_match": False, "f1_score": 0.0}
+        exact_match = abs(pred_val - gt_val) <= 0.01
+        if gt_val == 0:
+            f1_score = 1.0 if exact_match else 0.0
+        else:
+            f1_score = max(0.0, 1.0 - abs(pred_val - gt_val) / abs(gt_val))
         return {"exact_match": exact_match, "f1_score": f1_score}
     else:
         raise ValueError(f"Invalid answer type: {answer_type}")
@@ -1278,7 +1327,7 @@ def save_results(
             for i, result in enumerate(errors):
                 f.write(f"### Error {i+1}\n")
                 f.write(f"**Loan ID:** {result['loan_id']}\n")
-                f.write(f"**Question:** {result['question']}\n")
+                f.write(f"**Question:** {result.get('rephrased_question') or result['question']}\n")
                 f.write(
                     f"**Expected:** {result['true_answer']} ({result['answer_type']})\n"
                 )
@@ -1310,7 +1359,7 @@ def save_results(
             for i, error in enumerate(errors):
                 f.write(f"### Error {i+1}\n")
                 f.write(f"**Loan ID:** {error['loan_id']}\n")
-                f.write(f"**Question:** {error['question']}\n")
+                f.write(f"**Question:** {error.get('rephrased_question') or error['question']}\n")
                 f.write(
                     f"**Expected:** {error['true_answer']} ({error['answer_type']})\n"
                 )
@@ -1332,8 +1381,8 @@ def main():
         "--model_type",
         type=str,
         default="baseline",
-        choices=["solo", "baseline", "experimental"],
-        help="Type of agent to use: solo, baseline, or experimental",
+        choices=["solo", "baseline", "experimental", "reflection"],
+        help="Type of agent to use: solo, baseline, experimental, or reflection",
     )
     parser.add_argument("--downsample_size", type=int, help="Number of samples to use")
     parser.add_argument(

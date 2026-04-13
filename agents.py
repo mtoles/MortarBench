@@ -260,6 +260,20 @@ class BaselineAgent(Agent):
         # For solo, raw_answer and cleaned_answer are the same
         return raw_answer, cleaned_answer, clean_in_tok, clean_out_tok
     
+    def process_dollar_amounts(self, question, raw_answer, loan_id):
+        """Process dollar_amounts answer type for baseline agent (simple cleanup pass)."""
+        from eval import CLEANUP_MODEL_ID, cleaning_answer_instruction
+        cleanup_prompt = (
+            f"Question: {question}\n\nUnformatted answer: {raw_answer}\n\n"
+            f"{cleaning_answer_instruction['dollar_amounts']}"
+        )
+        cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
+            model_id=CLEANUP_MODEL_ID,
+            messages=[{"role": "user", "content": cleanup_prompt}],
+            loan_id=loan_id,
+        )
+        return raw_answer, cleaned_answer.strip(), clean_in_tok, clean_out_tok
+
     def process_account_id_list(self, question, raw_answer, loan_id, accounts_json, cleaning_answer_instruction_str, account_last4_values):
         """Process account_id_list answer type for baseline agent."""
         from eval import CLEANUP_MODEL_ID, normalize_account_answer
