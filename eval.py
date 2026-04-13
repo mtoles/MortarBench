@@ -115,11 +115,21 @@ answer_type_map = {
 def load_plaid_bank_statement(test_case_number):
     """Load the plaid_with_ids file for a given test case number."""
     # Check for generated data first
-    generated_dir = "generated_data"
+    # generated_dir = "generated_data"
+    # if os.path.exists(generated_dir):
+    #     files = sorted([f for f in os.listdir(generated_dir) if f.startswith("dataset_") and f.endswith(".json")])
+    #     if files:
+    #         # Cycle through generated files if fewer than test cases
+    #         file_index = (int(test_case_number) - 1) % len(files)
+    #         file_path = os.path.join(generated_dir, files[file_index])
+    #         print(f"Loading generated dataset for TC {test_case_number}: {file_path}")
+    #         with open(file_path, "r") as f:
+    #             return json.load(f)
+
+    generated_dir = "generated_data_business_test"
     if os.path.exists(generated_dir):
-        files = sorted([f for f in os.listdir(generated_dir) if f.startswith("dataset_") and f.endswith(".json")])
+        files = sorted([f for f in os.listdir(generated_dir) if f.startswith("plaid_") and f.endswith(".json")])
         if files:
-            # Cycle through generated files if fewer than test cases
             file_index = (int(test_case_number) - 1) % len(files)
             file_path = os.path.join(generated_dir, files[file_index])
             print(f"Loading generated dataset for TC {test_case_number}: {file_path}")
