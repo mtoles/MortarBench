@@ -17,3 +17,11 @@ pip install -r requirements.txt
 ```bash
 bash eval.sh
 ```
+
+## Official Test Set
+
+The official test dataset is created with the command
+
+```bash
+python generate_test_cases.py --output test_cases_official --limit 200
+```
