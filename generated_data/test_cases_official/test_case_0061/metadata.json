@@ -1,0 +1,18 @@
+{
+  "test_case_id": 61,
+  "test_case_number": 7,
+  "question": "Does the account account reflect any large cash deposits or show a pattern of cash deposits that appears excessive?\n",
+  "rephrased_question": "Which list of transactions, if any, correspond to cash deposits?",
+  "answer_type": "id_list",
+  "label": "has_any",
+  "mutation_type": "transaction",
+  "mutation_key": "cash_deposits",
+  "ground_truth_answer": "[]",
+  "need_bank_statement": true,
+  "need_ulad": false,
+  "bank_statement_path": "bank_statement.json",
+  "bank_statement_b_path": null,
+  "ulad_path": null,
+  "gid": 60,
+  "old_id": "7-2"
+}
