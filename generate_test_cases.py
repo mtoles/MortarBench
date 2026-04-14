@@ -15,6 +15,7 @@ import copy
 import random
 import pandas as pd
 from typing import Dict, Any, Optional
+import data_mutator
 from data_mutator import DataMutator
 import argparse
 
@@ -323,14 +324,19 @@ def detect_mutation(question: str, rephrased: str) -> Optional[Dict]:
     return None
 
 
-def execute_mutation(mutator: DataMutator, spec: Dict, answer_type: str):
+def execute_mutation(mutator: DataMutator, spec: Dict, answer_type: str, positive: bool = True):
     """
     Execute a mutation and return a normalised 3-tuple (bank, ulad, answer).
     Bank-only mutations pad ulad with a deep copy of the base.
     After mutation, rebuilds bank statement metadata (Transactions,
     BankStatementAccounts, BankStatements, AggregateFigures) so the
     output matches the format produced by dataset_generator.py.
+
+    Polarity is controlled via data_mutator.BOOLEAN_FIXED_VALUE, which
+    _resolve_boolean() checks before falling back to random.
     """
+    data_mutator.BOOLEAN_FIXED_VALUE = "Yes" if positive else "No"
+
     mtype = spec["type"]
 
     if mtype == "transaction":
@@ -351,21 +357,17 @@ def execute_mutation(mutator: DataMutator, spec: Dict, answer_type: str):
 
     elif mtype == "ulad":
         fn = getattr(mutator, spec["fn"])
-        # Try to call with answer_type parameter
         try:
             result = fn(answer_type=answer_type)
         except TypeError:
-            # Function doesn't support answer_type parameter
             result = fn()
 
     elif mtype == "two_borrower":
         fn = getattr(mutator, spec["fn"])
-        # Two-borrower functions return (bank_a, bank_b, ulad, answer)
         result = fn(answer_type=answer_type)
 
     elif mtype == "auto_loan":
         fn = getattr(mutator, spec["fn"])
-        # Auto loan functions return (borrower_bank_12m, third_party_bank_12m, ulad, answer)
         result = fn(answer_type=answer_type)
 
     else:
@@ -406,6 +408,7 @@ def generate_test_case(
     mutator: DataMutator,
     output_dir: str,
     test_case_id: int,
+    positive: bool = True,
 ) -> Optional[Dict[str, Any]]:
     """Generate one test case directory and return its metadata dict."""
     question = row["question"]
@@ -430,7 +433,7 @@ def generate_test_case(
     try:
         # Use answer_type from CSV (both questions.csv and unique_questions.csv have this column)
         answer_type_param = row['answer_type']
-        result = execute_mutation(mutator, spec, answer_type_param)
+        result = execute_mutation(mutator, spec, answer_type_param, positive=positive)
         
         # Handle different return formats
         if spec["type"] in ["two_borrower", "auto_loan"]:
@@ -541,9 +544,11 @@ def main():
     if args.limit:
         df = df.head(args.limit)
 
-    # Save the questions CSV used for generation alongside the test cases
-    df.reset_index(drop=True).to_csv(os.path.join(output_dir, "questions.csv"), index=False)
-    print(f"Saved {len(df)} questions to {output_dir}/questions.csv")
+    # Duplicate each row (positive + negative) so the CSV aligns with test case numbering
+    df_expanded = df.loc[df.index.repeat(2)].reset_index(drop=True)
+    df_expanded["polarity"] = ["positive", "negative"] * len(df)
+    df_expanded.to_csv(os.path.join(output_dir, "questions.csv"), index=False)
+    print(f"Saved {len(df_expanded)} rows ({len(df)} questions × 2 polarities) to {output_dir}/questions.csv")
 
     print(f"Processing {len(df)} questions...")
     print(f"  Bank statement : {args.bank_statement}")
@@ -553,21 +558,26 @@ def main():
     mutator = DataMutator(args.bank_statement, args.ulad, args.bank_statement_2, args.ulad_2)
 
     results, success, skipped = [], 0, 0
+    tc_id = 0
 
-    for idx, row in df.iterrows():
-        tc_id = idx + 1
-        print(f"\n[{tc_id}/{len(df)}] {row['test_case_number']} - {row['rephrased_question'][:70]}...")
+    for _, row in df.iterrows():
+        for positive in (True, False):
+            tc_id += 1
+            polarity = "positive" if positive else "negative"
+            print(f"\n[{tc_id}/{len(df) * 2}] {row['test_case_number']} ({polarity}) - {row['rephrased_question'][:60]}...")
 
-        meta = generate_test_case(row, mutator, output_dir, tc_id)
-        if meta:
-            results.append(meta)
-            success += 1
-            print(f"  → saved to test_case_{tc_id:04d}/")
-        else:
-            skipped += 1
+            meta = generate_test_case(row, mutator, output_dir, tc_id, positive=positive)
+            if meta:
+                meta["polarity"] = polarity
+                results.append(meta)
+                success += 1
+                print(f"  → saved to test_case_{tc_id:04d}/")
+            else:
+                skipped += 1
 
     summary = {
         "total_questions": len(df),
+        "total_test_cases": len(df) * 2,
         "successful": success,
         "skipped": skipped,
         "test_cases": results,
@@ -577,7 +587,8 @@ def main():
 
     print(f"\n{'='*60}")
     print(f"Generation complete!")
-    print(f"  Total     : {len(df)}")
+    print(f"  Questions : {len(df)}")
+    print(f"  Test cases: {len(df) * 2} ({len(df)} × 2 polarities)")
     print(f"  Successful: {success}")
     print(f"  Skipped   : {skipped}")
     print(f"  Output    : {output_dir}/")

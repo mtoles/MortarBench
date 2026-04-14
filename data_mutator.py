@@ -1238,7 +1238,10 @@ class DataMutator:
         self._remove_transactions_by_tag(bank, config["tag"])
 
         if num_transactions is None:
-            num_transactions = random.randint(*config["default_count_range"])
+            if _resolve_boolean():
+                num_transactions = random.randint(*config["default_count_range"])
+            else:
+                num_transactions = 0
 
         added = []
 
@@ -1318,7 +1321,7 @@ class DataMutator:
             ]
 
         if has_account is None:
-            has_account = random.random() < 0.5
+            has_account = _resolve_boolean()
 
         if not has_account:
             if answer_type == "boolean":
@@ -1581,9 +1584,12 @@ class DataMutator:
         cs_keywords = ["child support", "alimony", "dc oag", "njfspc", "wage garnishment"]
         self._remove_transactions_by_description(bank, cs_keywords)
 
+        added = []
+        if not _resolve_boolean():
+            return bank, ulad, self._format_transaction_list(added, answer_type)
+
         keyword = random.choice(config["keywords"])
         amount = round(random.uniform(*config["amount_range"]), 2)
-        added = []
 
         for i in range(config["num_payments"]):
             date_transacted, date_posted = self._get_random_date(90 - i * 30, max(0, 60 - i * 30))
@@ -1627,7 +1633,10 @@ class DataMutator:
         ulad = copy.deepcopy(self.base_ulad)
 
         if num_liability_types is None:
-            num_liability_types = random.randint(*config["num_liability_types"])
+            if _resolve_boolean():
+                num_liability_types = random.randint(*config["num_liability_types"])
+            else:
+                num_liability_types = 0
 
         # Remove any existing transactions that might conflict with our undisclosed liabilities
         self._remove_transactions_by_description(bank, ["klarna", "afterpay", "affirm", "venmo payment", "dc oag", "njfspc"])
@@ -1797,14 +1806,19 @@ class DataMutator:
         bank = copy.deepcopy(self.base_bank_statement)
         ulad = copy.deepcopy(self.base_ulad)
 
-        if joint_name is None:
-            joint_name = random.choice(config["joint_names"])
-
         # Remove any pre-existing joint accounts
         bank["override_accounts"] = [
             a for a in bank["override_accounts"]
             if len(a.get("identity", {}).get("names", [])) <= 1
         ]
+
+        if not _resolve_boolean():
+            if answer_type == "id_list_account":
+                return bank, ulad, "[]"
+            return bank, ulad, "None"
+
+        if joint_name is None:
+            joint_name = random.choice(config["joint_names"])
 
         dataset_id = bank["seed"].split("-")[-1]
         account_num = f"{random.randint(10000000, 99999999)}"
@@ -1906,13 +1920,16 @@ class DataMutator:
         bank = copy.deepcopy(self.base_bank_statement)
         ulad = copy.deepcopy(self.base_ulad)
 
+        self._remove_transactions_by_description(bank, ["PAYROLL", "ACH CREDIT PAYROLL"])
+
+        if not _resolve_boolean():
+            return bank, ulad, self._format_transaction_list([], answer_type)
+
         ulad_employer = self._get_employer_name(ulad) or random.choice(config["ulad_employers"])
         self._set_employer_name(ulad, ulad_employer)
 
         bank_employers = [e for e in config["bank_employers"] if e != ulad_employer]
         bank_employer = random.choice(bank_employers)
-
-        self._remove_transactions_by_description(bank, ["PAYROLL", "ACH CREDIT PAYROLL"])
 
         payroll_amount = round(random.uniform(2000, 5000), 2)
         added = []
@@ -1951,6 +1968,9 @@ class DataMutator:
         ulad = copy.deepcopy(self.base_ulad)
 
         self._remove_transactions_by_tag(bank, "undisclosed income source")
+
+        if not _resolve_boolean():
+            return bank, ulad, self._format_transaction_list([], answer_type)
 
         income_source = random.choice(config["income_sources"])
         base_amount = round(random.uniform(*config["amount_range"]), 2)
@@ -2246,7 +2266,7 @@ class DataMutator:
         bank["_monthly_statements"] = True
 
         if include_business is None:
-            include_business = random.random() < config["include_business_probability"]
+            include_business = _resolve_boolean()
 
         # Remove existing payroll / income transactions
         self._remove_transactions_by_description(bank, ["PAYROLL", "ACH CREDIT PAYROLL", "SSA US TREASURY"])
