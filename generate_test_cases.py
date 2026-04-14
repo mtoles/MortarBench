@@ -17,7 +17,29 @@ import pandas as pd
 from typing import Dict, Any, Optional
 import data_mutator
 from data_mutator import DataMutator
+from dataset_generator import PlaidGenerator
+from ulad_generator import UladGenerator
 import argparse
+
+
+def generate_profile(ulad_template="data/ulad_template.json", months=3, user_name="John Homeowner", statement_type="personal"):
+    """Generate a fresh random bank statement + ULAD profile (as dicts)."""
+    plaid_gen = PlaidGenerator(num_months=months, user_name=user_name, statement_type=statement_type)
+    bank_data = plaid_gen.generate_single_dataset()
+    ulad_gen = UladGenerator(ulad_template, bank_data, ".")
+    ulad_data = ulad_gen.generate_ulad()
+    return bank_data, ulad_data
+
+
+def mutator_from_dicts(bank, ulad, bank_2=None, ulad_2=None):
+    """Create a DataMutator from in-memory dicts instead of file paths."""
+    m = object.__new__(DataMutator)
+    m.base_bank_statement = bank
+    m.base_ulad = ulad
+    m.base_bank_statement_2 = bank_2
+    m.base_ulad_2 = ulad_2
+    m.transaction_counter = 1000
+    return m
 
 
 # ==================== MUTATION RULES ====================
@@ -516,10 +538,6 @@ def main():
     args = parser.parse_args()
 
     dataset_dir = os.path.join("generated_data", args.dataset_path)
-    args.bank_statement = os.path.join(dataset_dir, "bank_statement.json")
-    args.ulad = os.path.join(dataset_dir, "ulad.json")
-    args.bank_statement_2 = os.path.join(dataset_dir, "bank_statement_2.json")
-    args.ulad_2 = os.path.join(dataset_dir, "ulad_2.json")
     output_dir = os.path.join(dataset_dir, "test_cases")
 
     if args.seed is not None:
@@ -550,17 +568,17 @@ def main():
     df_expanded.to_csv(os.path.join(output_dir, "questions.csv"), index=False)
     print(f"Saved {len(df_expanded)} rows ({len(df)} questions × 2 polarities) to {output_dir}/questions.csv")
 
-    print(f"Processing {len(df)} questions...")
-    print(f"  Bank statement : {args.bank_statement}")
-    print(f"  ULAD           : {args.ulad}")
-    print(f"  Bank statement 2: {args.bank_statement_2}")
-
-    mutator = DataMutator(args.bank_statement, args.ulad, args.bank_statement_2, args.ulad_2)
+    print(f"Processing {len(df)} questions (unique profile per question)...")
 
     results, success, skipped = [], 0, 0
     tc_id = 0
 
     for _, row in df.iterrows():
+        # Generate a unique profile for this question
+        bank, ulad = generate_profile()
+        bank_2, ulad_2 = generate_profile()
+        mutator = mutator_from_dicts(bank, ulad, bank_2, ulad_2)
+
         for positive in (True, False):
             tc_id += 1
             polarity = "positive" if positive else "negative"

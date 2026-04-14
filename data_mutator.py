@@ -1239,7 +1239,8 @@ class DataMutator:
 
         if num_transactions is None:
             if _resolve_boolean():
-                num_transactions = random.randint(*config["default_count_range"])
+                low, high = config["default_count_range"]
+                num_transactions = random.randint(max(low, 1), high)
             else:
                 num_transactions = 0
 
