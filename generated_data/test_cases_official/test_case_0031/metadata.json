@@ -1,0 +1,18 @@
+{
+  "test_case_id": 31,
+  "test_case_number": 4,
+  "question": "Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?",
+  "rephrased_question": "Do the payroll deposit entries match with the primary borrower's employer names stated in employment history?",
+  "answer_type": "boolean",
+  "label": "consistency",
+  "mutation_type": "ulad",
+  "mutation_key": "mutate_employer_payroll_consistency",
+  "ground_truth_answer": "No",
+  "need_bank_statement": true,
+  "need_ulad": true,
+  "bank_statement_path": "bank_statement.json",
+  "bank_statement_b_path": null,
+  "ulad_path": "ulad.json",
+  "gid": 30,
+  "old_id": "4-2"
+}

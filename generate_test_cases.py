@@ -525,7 +525,7 @@ def main():
                         help="Max test cases to generate (for quick testing)")
     parser.add_argument("--tags", nargs="+", default=None,
                         help="Only process questions containing these keywords")
-    parser.add_argument("--seed", type=str, default=None,
+    parser.add_argument("--seed", type=str, default=0,
                         help="Random seed for reproducibility")
     args = parser.parse_args()
 

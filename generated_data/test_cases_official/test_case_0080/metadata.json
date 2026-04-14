@@ -1,0 +1,18 @@
+{
+  "test_case_id": 80,
+  "test_case_number": 6,
+  "question": "Verify that the payroll deposits on the bank statements exactly match the net pay amounts on any of the borrower\u2019s corresponding pay stubs provided.\n",
+  "rephrased_question": "Do the payroll deposits on the bank statements exactly match the net pay amounts on any of the borrower\u2019s corresponding pay stubs? Answer yes or no.",
+  "answer_type": "boolean",
+  "label": "transaction_consistency",
+  "mutation_type": "ulad",
+  "mutation_key": "mutate_payroll_paystub_consistency",
+  "ground_truth_answer": "Yes",
+  "need_bank_statement": true,
+  "need_ulad": false,
+  "bank_statement_path": "bank_statement.json",
+  "bank_statement_b_path": null,
+  "ulad_path": null,
+  "gid": 79,
+  "old_id": "6-10"
+}
