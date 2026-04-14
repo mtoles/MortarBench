@@ -626,7 +626,7 @@ def main():
     parser = argparse.ArgumentParser(description="Generate Plaid-like datasets for Mortgage Benchmark.")
     parser.add_argument("--ulad-template", type=str, default="data/ulad_template.json", help="Input template file")
     parser.add_argument("-n", "--number", type=int, default=1, help="Number of datasets to generate")
-    parser.add_argument("-o", "--output", type=str, default="generated_data", help="Output directory")
+    parser.add_argument("--dataset_path", type=str, default="default", help="Dataset name under generated_data/ (e.g. 'default', 'test_cases_official')")
     parser.add_argument("-m", "--months", type=int, default=3, help="Number of months of statements to generate")
     parser.add_argument("-u", "--user_name", type=str, default="John Homeowner", help="Borrower's name")
     parser.add_argument("-t", "--statement_type", type=str, choices=["personal", "business"], default="personal", help="whether the dataset is for personal statement or business")
@@ -638,8 +638,8 @@ def main():
         try:
             num_input = input("Enter the number of datasets to generate (default 1): ").strip()
             args_number = int(num_input) if num_input else 1
-            output_input = input("Enter output directory (default 'generated_data'): ").strip()
-            args_output = output_input if output_input else "generated_data"
+            output_input = input("Enter dataset name under generated_data/ (default 'default'): ").strip()
+            args_output = os.path.join("generated_data", output_input) if output_input else os.path.join("generated_data", "default")
             months_input = input("Enter the number of months of statements to generate (default 3): ").strip()
             args_months = int(months_input) if months_input else 3
             user_input = input("Enter the borrower's name (default 'John Homeowner'): ").strip()
@@ -649,14 +649,14 @@ def main():
         except ValueError:
             print("Invalid input entered. Using defaults.")
             args_number = 1
-            args_output = "generated_data"
+            args_output = os.path.join("generated_data", "default")
             args_months = 3
             args_user_name = "John Homeowner"
             args_statement_type = "personal"
     else:
         args = parser.parse_args()
         args_number = args.number
-        args_output = args.output
+        args_output = os.path.join("generated_data", args.dataset_path)
         args_months = args.months
         args_user_name = args.user_name
         args_statement_type = args.statement_type
@@ -671,16 +671,15 @@ def main():
         ulad_generator = UladGenerator(ulad_template, plaid_data, args_output)
         ulad_data = ulad_generator.generate_ulad()
 
-        plaid_filename = f"plaid_{plaid_data['seed']}.json"
-        plaid_filepath = os.path.join(args_output, plaid_filename)
-        ulad_filename = f"ulad_{plaid_data['seed']}.json"
-        ulad_filepath = os.path.join(args_output, ulad_filename)
-        
-        with open(plaid_filepath, 'w') as f:
+        suffix = "" if i == 0 else f"_{i + 1}"
+        bank_filepath = os.path.join(args_output, f"bank_statement{suffix}.json")
+        ulad_filepath = os.path.join(args_output, f"ulad{suffix}.json")
+
+        with open(bank_filepath, 'w') as f:
             json.dump(plaid_data, f, indent=2)
         with open(ulad_filepath, 'w') as f:
             json.dump(ulad_data, f, indent=2)
-        print(f"Generated {plaid_filepath} and {ulad_filepath}")
+        print(f"Generated {bank_filepath} and {ulad_filepath}")
 
 if __name__ == "__main__":
     main()

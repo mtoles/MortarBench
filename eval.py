@@ -652,11 +652,11 @@ def preprocess_data(
 
 
 def load_dataset(
-    csv_path="data/questions_unique_generated.csv",
     test_cases_dir="generated_data/test_cases_official",
     question_col="question",
 ):
     """Load the benchmark dataset using generated test cases and unique questions."""
+    csv_path = os.path.join(test_cases_dir, "questions.csv")
     df = pd.read_csv(csv_path)
     dataset = []
 
@@ -848,7 +848,7 @@ def evaluate_model(
         is_pii = bool(pii_raw) if not pd.isna(pii_raw) else False
         ulad_du = row["ulad_du"]
 
-        print(f"is_pii: {is_pii}")
+        # print(f"is_pii: {is_pii}")
 
         model_answer_instruction_str = model_answer_instruction[answer_type]
         cleaning_answer_instruction_str = cleaning_answer_instruction[answer_type]
@@ -1428,11 +1428,17 @@ def main():
         default=None,
         help="Run evaluation only on these row indexes (0-based). Can pass multiple indexes, e.g., --row_indexes 0 5 10",
     )
+    parser.add_argument(
+        "--dataset_path",
+        type=str,
+        default="test_cases_official",
+        help="Dataset name under generated_data/ (e.g. 'default', 'test_cases_official')",
+    )
 
     args = parser.parse_args()
 
     now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    output_dir = f"results/{args.results_dir}/{args.question_col.replace(' ', '_')}/{now}"
+    output_dir = f"results/{args.results_dir}/{args.question_col.replace(' ', '_')}/{args.model_id}/{args.model_type}/{now}"
     os.makedirs(output_dir, exist_ok=True)
 
     print(f"\n{'='*50}")
@@ -1440,7 +1446,9 @@ def main():
     print(f"{'='*50}")
 
     print(f"Loading dataset...")
-    dataset = load_dataset(question_col=args.question_col)
+    dataset_dir = os.path.join("generated_data", args.dataset_path)
+    test_cases_dir = os.path.join(dataset_dir, "test_cases")
+    dataset = load_dataset(test_cases_dir=test_cases_dir, question_col=args.question_col)
     print(f"Loaded {len(dataset)} samples")
 
     if len(dataset) == 0:

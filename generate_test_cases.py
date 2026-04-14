@@ -502,25 +502,8 @@ def generate_test_case(
 def main():
     parser = argparse.ArgumentParser(description="Generate test cases from questions.csv")
     parser.add_argument("--questions", default="data/questions.csv")
-    parser.add_argument(
-        "--bank-statement",
-        default="generated_data/bank_statement.json",
-    )
-    parser.add_argument(
-        "--ulad",
-        default="generated_data/ulad.json",
-    )
-    parser.add_argument(
-        "--bank-statement-2",
-        default="generated_data/bank_statement_2.json",
-        help="Second bank statement for two-borrower scenarios"
-    )
-    parser.add_argument(
-        "--ulad-2",
-        default="generated_data/ulad_2.json",
-        help="Second ULAD for two-borrower scenarios"
-    )
-    parser.add_argument("--output", default="test_cases")
+    parser.add_argument("--dataset_path", default="default",
+                        help="Dataset name under generated_data/ (e.g. 'default', 'test_cases_official')")
     parser.add_argument("--limit", type=int, default=None,
                         help="Max test cases to generate (for quick testing)")
     parser.add_argument("--tags", nargs="+", default=None,
@@ -529,10 +512,17 @@ def main():
                         help="Random seed for reproducibility")
     args = parser.parse_args()
 
+    dataset_dir = os.path.join("generated_data", args.dataset_path)
+    args.bank_statement = os.path.join(dataset_dir, "bank_statement.json")
+    args.ulad = os.path.join(dataset_dir, "ulad.json")
+    args.bank_statement_2 = os.path.join(dataset_dir, "bank_statement_2.json")
+    args.ulad_2 = os.path.join(dataset_dir, "ulad_2.json")
+    output_dir = os.path.join(dataset_dir, "test_cases")
+
     if args.seed is not None:
         random.seed(args.seed)
 
-    os.makedirs(args.output, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
 
     print(f"Loading questions from {args.questions}...")
     df = pd.read_csv(args.questions)
@@ -551,6 +541,10 @@ def main():
     if args.limit:
         df = df.head(args.limit)
 
+    # Save the questions CSV used for generation alongside the test cases
+    df.reset_index(drop=True).to_csv(os.path.join(output_dir, "questions.csv"), index=False)
+    print(f"Saved {len(df)} questions to {output_dir}/questions.csv")
+
     print(f"Processing {len(df)} questions...")
     print(f"  Bank statement : {args.bank_statement}")
     print(f"  ULAD           : {args.ulad}")
@@ -564,7 +558,7 @@ def main():
         tc_id = idx + 1
         print(f"\n[{tc_id}/{len(df)}] {row['test_case_number']} - {row['rephrased_question'][:70]}...")
 
-        meta = generate_test_case(row, mutator, args.output, tc_id)
+        meta = generate_test_case(row, mutator, output_dir, tc_id)
         if meta:
             results.append(meta)
             success += 1
@@ -578,7 +572,7 @@ def main():
         "skipped": skipped,
         "test_cases": results,
     }
-    with open(os.path.join(args.output, "summary.json"), "w") as f:
+    with open(os.path.join(output_dir, "summary.json"), "w") as f:
         json.dump(summary, f, indent=2)
 
     print(f"\n{'='*60}")
@@ -586,7 +580,7 @@ def main():
     print(f"  Total     : {len(df)}")
     print(f"  Successful: {success}")
     print(f"  Skipped   : {skipped}")
-    print(f"  Output    : {args.output}/")
+    print(f"  Output    : {output_dir}/")
     print(f"{'='*60}")
 
 
