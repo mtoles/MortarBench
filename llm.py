@@ -195,8 +195,7 @@ def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) ->
 
         # Extract tools from kwargs if provided
         tools = kwargs.get("tools", None)
-        # return _cached_llm_call(model_id, messages, tools)
-        return _uncached_llm_call(model_id, messages, tools) # disabling cache to test multiple trials
+        return _cached_llm_call(model_id, messages, tools)
 
 
 def clear_messages(loan_id):
