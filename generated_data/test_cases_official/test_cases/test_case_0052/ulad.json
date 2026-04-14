@@ -1,0 +1,414 @@
+{
+  "MESSAGE": {
+    "ABOUT_VERSIONS": {
+      "ABOUT_VERSION": {
+        "AboutVersionIdentifier": "DU Spec 1.8.5",
+        "CreatedDatetime": "2025-09-02T15:22:26.622922152Z"
+      }
+    },
+    "DEAL_SETS": {
+      "DEAL_SET": {
+        "DEALS": {
+          "DEAL": {
+            "ASSETS": {
+              "ASSET": [
+                {
+                  "ASSET_DETAIL": {
+                    "AssetAccountIdentifier": "74741911",
+                    "AssetCashOrMarketValueAmount": "15914.1",
+                    "AssetType": "CheckingAccount"
+                  },
+                  "ASSET_HOLDER": {
+                    "NAME": {
+                      "FullName": "Capital One"
+                    }
+                  },
+                  "_SequenceNumber": "1",
+                  "_xlink:label": "ASSET_1"
+                },
+                {
+                  "ASSET_DETAIL": {
+                    "AssetAccountIdentifier": "18323072",
+                    "AssetCashOrMarketValueAmount": "562.13",
+                    "AssetType": "CheckingAccount"
+                  },
+                  "ASSET_HOLDER": {
+                    "NAME": {
+                      "FullName": "Capital One"
+                    }
+                  },
+                  "_SequenceNumber": "3",
+                  "_xlink:label": "ASSET_3"
+                },
+                {
+                  "ASSET_DETAIL": {
+                    "AssetAccountIdentifier": "64123822",
+                    "AssetCashOrMarketValueAmount": "529.76",
+                    "AssetType": "CheckingAccount"
+                  },
+                  "ASSET_HOLDER": {
+                    "NAME": {
+                      "FullName": "Capital One"
+                    }
+                  },
+                  "_SequenceNumber": "4",
+                  "_xlink:label": "ASSET_4"
+                }
+              ]
+            },
+            "COLLATERALS": {
+              "COLLATERAL": {
+                "SUBJECT_PROPERTY": {
+                  "ADDRESS": {
+                    "AddressLineText": "1011 Brookside Ave",
+                    "CityName": "Asbury Park",
+                    "CountryCode": "US",
+                    "PostalCode": "07712",
+                    "StateCode": "NJ"
+                  },
+                  "LOCATION_IDENTIFIER": {
+                    "FIPS_INFORMATION": {
+                      "FIPSCountyCode": "025",
+                      "FIPSStateNumericCode": "34"
+                    }
+                  },
+                  "PROPERTY_DETAIL": {
+                    "AttachmentType": "Detached",
+                    "CommunityPropertyStateIndicator": "false",
+                    "ConstructionMethodType": "SiteBuilt",
+                    "FHASecondaryResidenceIndicator": "false",
+                    "FinancedUnitCount": "1",
+                    "PropertyEstateType": "FeeSimple",
+                    "PropertyEstimatedValueAmount": "1000000.00",
+                    "PropertyExistingCleanEnergyLienIndicator": "false",
+                    "PropertyInProjectIndicator": "false",
+                    "PropertyMixedUsageIndicator": "false",
+                    "PUDIndicator": "false"
+                  },
+                  "PROPERTY_VALUATIONS": {
+                    "PROPERTY_VALUATION": {
+                      "PROPERTY_VALUATION_DETAIL": {
+                        "PropertyValuationAmount": "1000000.00"
+                      }
+                    }
+                  },
+                  "SALES_CONTRACTS": {
+                    "SALES_CONTRACT": {
+                      "SALES_CONTRACT_DETAIL": {
+                        "SalesContractAmount": "1000000.00"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "LIABILITIES": {
+              "LIABILITY": [
+                {
+                  "LIABILITY_DETAIL": {
+                    "LiabilityAccountIdentifier": "74741911",
+                    "LiabilityExclusionIndicator": "false",
+                    "LiabilityMonthlyPaymentAmount": "977.0",
+                    "LiabilityPayoffStatusIndicator": "false",
+                    "LiabilityRemainingTermMonthsCount": "4",
+                    "LiabilityType": "secured loan",
+                    "LiabilityUnpaidBalanceAmount": "3908.0"
+                  },
+                  "LIABILITY_HOLDER": {
+                    "NAME": {
+                      "FullName": "Mountain Bank"
+                    }
+                  },
+                  "_SequenceNumber": "1",
+                  "_xlink:label": "LIABILITY_1"
+                }
+              ]
+            },
+            "LOANS": {
+              "LOAN": [
+                {
+                  "AFFORDABLE_LENDING": "",
+                  "CLOSING_INFORMATION": {
+                    "CLOSING_ADJUSTMENT_ITEMS": "",
+                    "CLOSING_INFORMATION_DETAIL": ""
+                  },
+                  "DOCUMENT_SPECIFIC_DATA_SETS": {
+                    "DOCUMENT_SPECIFIC_DATA_SET": {
+                      "URLA": {
+                        "URLA_DETAIL": ""
+                      }
+                    }
+                  },
+                  "HOUSING_EXPENSES": "",
+                  "LOAN_DETAIL": {
+                    "BalloonIndicator": "false",
+                    "BelowMarketSubordinateFinancingIndicator": "false",
+                    "BorrowerCount": "1",
+                    "BuydownTemporarySubsidyFundingIndicator": "false",
+                    "ConstructionLoanIndicator": "false",
+                    "EnergyRelatedImprovementsIndicator": "false",
+                    "InterestOnlyIndicator": "false",
+                    "NegativeAmortizationIndicator": "false",
+                    "PrepaymentPenaltyIndicator": "false",
+                    "RenovationLoanIndicator": "false",
+                    "TotalMortgagedPropertiesCount": "1"
+                  },
+                  "LOAN_IDENTIFIERS": {
+                    "LOAN_IDENTIFIER": {
+                      "LoanIdentifier": "74741911",
+                      "LoanIdentifierType": "UniversalLoan"
+                    }
+                  },
+                  "ORIGINATION_SYSTEMS": {
+                    "ORIGINATION_SYSTEM": {
+                      "LoanOriginationSystemName": "TidalWave SOLO",
+                      "LoanOriginationSystemVendorIdentifier": "TidalWave",
+                      "LoanOriginationSystemVersionIdentifier": "1.0"
+                    }
+                  },
+                  "PURCHASE_CREDITS": {
+                    "PURCHASE_CREDIT": {
+                      "PurchaseCreditAmount": "1603.64",
+                      "PurchaseCreditType": "EarnestMoney"
+                    }
+                  },
+                  "TERMS_OF_LOAN": {
+                    "BaseLoanAmount": "1911.999462722038",
+                    "LienPriorityType": "FirstLien",
+                    "LoanPurposeType": "Purchase",
+                    "MortgageType": "Conventional",
+                    "NoteRatePercent": "0.000"
+                  },
+                  "_SequenceNumber": "1",
+                  "_LoanRoleType": "SubjectLoan",
+                  "_xlink:label": "LOAN_1"
+                }
+              ]
+            },
+            "PARTIES": {
+              "PARTY": [
+                {
+                  "INDIVIDUAL": {
+                    "CONTACT_POINTS": {
+                      "CONTACT_POINT": [
+                        {
+                          "CONTACT_POINT_TELEPHONE": {
+                            "ContactPointTelephoneValue": "9999999999"
+                          },
+                          "CONTACT_POINT_DETAIL": {
+                            "ContactPointRoleType": "Mobile"
+                          }
+                        },
+                        {
+                          "CONTACT_POINT_EMAIL": {
+                            "ContactPointEmailValue": "john.homeowner@testmail.com"
+                          }
+                        }
+                      ]
+                    },
+                    "NAME": {
+                      "FirstName": "John",
+                      "LastName": "Homeowner"
+                    }
+                  },
+                  "ROLES": {
+                    "ROLE": {
+                      "BORROWER": {
+                        "BORROWER_DETAIL": {
+                          "BorrowerBirthDate": "2000-01-01",
+                          "CommunityPropertyStateResidentIndicator": "false",
+                          "DependentCount": "0",
+                          "MaritalStatusType": "Unmarried"
+                        },
+                        "CURRENT_INCOME": {
+                          "CURRENT_INCOME_ITEMS": {
+                            "CURRENT_INCOME_ITEM": {
+                              "CURRENT_INCOME_ITEM_DETAIL": {
+                                "CurrentIncomeMonthlyTotalAmount": "6678",
+                                "EmploymentIncomeIndicator": "true",
+                                "IncomeType": "Base"
+                              },
+                              "_SequenceNumber": "1",
+                              "_xlink:label": "CURRENT_INCOME_ITEM_1_1"
+                            }
+                          }
+                        },
+                        "DECLARATION": {
+                          "DECLARATION_DETAIL": {
+                            "BankruptcyIndicator": "false",
+                            "CitizenshipResidencyType": "USCitizen",
+                            "HomeownerPastThreeYearsType": "No",
+                            "IntentToOccupyType": "Yes",
+                            "OutstandingJudgmentsIndicator": "false",
+                            "PartyToLawsuitIndicator": "false",
+                            "PresentlyDelinquentIndicator": "false",
+                            "PriorPropertyDeedInLieuConveyedIndicator": "false",
+                            "PriorPropertyForeclosureCompletedIndicator": "false",
+                            "PriorPropertyShortSaleCompletedIndicator": "false",
+                            "PropertyProposedCleanEnergyLienIndicator": "false",
+                            "UndisclosedBorrowedFundsIndicator": "false",
+                            "UndisclosedComakerOfNoteIndicator": "false",
+                            "UndisclosedCreditApplicationIndicator": "false",
+                            "UndisclosedMortgageApplicationIndicator": "false",
+                            "EXTENSION": {
+                              "OTHER": {
+                                "DECLARATION_DETAIL_EXTENSION": {
+                                  "SpecialBorrowerSellerRelationshipIndicator": {
+                                    "__prefix": "ULAD",
+                                    "__text": "false"
+                                  },
+                                  "__prefix": "ULAD"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "DEPENDENTS": "",
+                        "EMPLOYERS": {
+                          "EMPLOYER": {
+                            "LEGAL_ENTITY": {
+                              "LEGAL_ENTITY_DETAIL": {
+                                "FullName": "NY MTA"
+                              }
+                            },
+                            "EMPLOYMENT": {
+                              "EmploymentBorrowerSelfEmployedIndicator": "false",
+                              "EmploymentClassificationType": "Secondary",
+                              "EmploymentPositionDescription": "Worker",
+                              "EmploymentStartDate": "2000-01-01",
+                              "EmploymentStatusType": "Current",
+                              "EmploymentTimeInLineOfWorkMonthsCount": "120",
+                              "SpecialBorrowerEmployerRelationshipIndicator": "false",
+                              "EXTENSION": {
+                                "OTHER": {
+                                  "EMPLOYMENT_EXTENSION": {
+                                    "ForeignIncomeIndicator": {
+                                      "__prefix": "DU",
+                                      "__text": "false"
+                                    },
+                                    "SeasonalIncomeIndicator": {
+                                      "__prefix": "DU",
+                                      "__text": "false"
+                                    },
+                                    "__prefix": "DU"
+                                  }
+                                }
+                              }
+                            },
+                            "_SequenceNumber": "1",
+                            "_xlink:label": "EMPLOYER_1_1"
+                          }
+                        },
+                        "GOVERNMENT_BORROWER": "",
+                        "GOVERNMENT_MONITORING": {
+                          "GOVERNMENT_MONITORING_DETAIL": {
+                            "HMDAEthnicityCollectedBasedOnVisualObservationOrSurnameIndicator": "false",
+                            "HMDAEthnicityRefusalIndicator": "false",
+                            "HMDAGenderCollectedBasedOnVisualObservationOrNameIndicator": "false",
+                            "HMDAGenderRefusalIndicator": "false",
+                            "HMDARaceCollectedBasedOnVisualObservationOrSurnameIndicator": "false",
+                            "HMDARaceRefusalIndicator": "false",
+                            "EXTENSION": {
+                              "OTHER": {
+                                "GOVERNMENT_MONITORING_DETAIL_EXTENSION": {
+                                  "__prefix": "ULAD"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "RESIDENCES": {
+                          "RESIDENCE": {
+                            "ADDRESS": {
+                              "AddressLineText": "175 13th St",
+                              "CityName": "Washington",
+                              "CountryCode": "US",
+                              "PostalCode": "20013",
+                              "StateCode": "DC"
+                            },
+                            "LANDLORD": {
+                              "LANDLORD_DETAIL": {
+                                "MonthlyRentAmount": "3000.00"
+                              }
+                            },
+                            "RESIDENCE_DETAIL": {
+                              "BorrowerResidencyBasisType": "Rent",
+                              "BorrowerResidencyDurationMonthsCount": "120",
+                              "BorrowerResidencyType": "Current"
+                            }
+                          }
+                        }
+                      },
+                      "ROLE_DETAIL": {
+                        "PartyRoleType": "Borrower"
+                      },
+                      "_SequenceNumber": 1,
+                      "_xlink:label": "BORROWER_1"
+                    }
+                  },
+                  "TAXPAYER_IDENTIFIERS": {
+                    "TAXPAYER_IDENTIFIER": {
+                      "TaxpayerIdentifierType": "SocialSecurityNumber",
+                      "TaxpayerIdentifierValue": "991919991"
+                    }
+                  }
+                },
+                {
+                  "INDIVIDUAL": {
+                    "NAME": ""
+                  },
+                  "ROLES": {
+                    "ROLE": {
+                      "PROPERTY_OWNER": {
+                        "PropertyOwnerStatusType": "Proposed"
+                      },
+                      "ROLE_DETAIL": {
+                        "PartyRoleType": "PropertyOwner"
+                      },
+                      "_SequenceNumber": "1",
+                      "_xlink:label": "PROPERTY_OWNER_1"
+                    }
+                  }
+                }
+              ]
+            },
+            "RELATIONSHIPS": {
+              "RELATIONSHIP": [
+                {
+                  "_SequenceNumber": "1",
+                  "_xlink:arcrole": "urn:fdc:mismo.org:2009:residential/ASSET_IsAssociatedWith_ROLE",
+                  "_xlink:from": "ASSET_1",
+                  "_xlink:to": "BORROWER_1"
+                },
+                {
+                  "_SequenceNumber": "2",
+                  "_xlink:arcrole": "urn:fdc:mismo.org:2009:residential/ASSET_IsAssociatedWith_ROLE",
+                  "_xlink:from": "ASSET_3",
+                  "_xlink:to": "BORROWER_1"
+                },
+                {
+                  "_SequenceNumber": "3",
+                  "_xlink:arcrole": "urn:fdc:mismo.org:2009:residential/ASSET_IsAssociatedWith_ROLE",
+                  "_xlink:from": "ASSET_4",
+                  "_xlink:to": "BORROWER_1"
+                },
+                {
+                  "_SequenceNumber": "4",
+                  "_xlink:arcrole": "urn:fdc:mismo.org:2009:residential/LIABILITY_IsAssociatedWith_ROLE",
+                  "_xlink:from": "LIABILITY_1",
+                  "_xlink:to": "BORROWER_1"
+                }
+              ]
+            },
+            "SERVICES": ""
+          }
+        }
+      }
+    },
+    "_xmlns": "http://www.mismo.org/residential/2009/schemas",
+    "_xmlns:ULAD": "http://www.datamodelextension.org/Schema/ULAD",
+    "_xmlns:DU": "http://www.datamodelextension.org/Schema/DU",
+    "_xmlns:xlink": "http://www.w3.org/1999/xlink",
+    "_MISMOReferenceModelIdentifier": "3.4.032420160128"
+  }
+}

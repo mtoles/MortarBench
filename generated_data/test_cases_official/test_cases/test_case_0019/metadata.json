@@ -1,0 +1,18 @@
+{
+  "test_case_id": 19,
+  "test_case_number": 1,
+  "question": "Which deposits on the bank statement, if any, appear to originate from a cryptocurrency source?",
+  "rephrased_question": "Which list of transactions, if any, correspond to deposits that appear to originate from a cryptocurrency source?",
+  "answer_type": "id_list",
+  "label": "has_any",
+  "mutation_type": "transaction",
+  "mutation_key": "crypto_deposits",
+  "ground_truth_answer": "['plaid-f181f22f-01001', 'plaid-f181f22f-01002']",
+  "need_bank_statement": true,
+  "need_ulad": false,
+  "bank_statement_path": "bank_statement.json",
+  "bank_statement_b_path": null,
+  "ulad_path": null,
+  "gid": 9,
+  "old_id": "1-10"
+}

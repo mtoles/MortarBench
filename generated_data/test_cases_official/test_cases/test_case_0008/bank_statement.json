@@ -1,0 +1,1399 @@
+{
+  "seed": "generated-test-40392fb3",
+  "statement_type": "personal",
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "savings",
+      "starting_balance": 684.29,
+      "currency": "USD",
+      "numbers": {
+        "account": "53930720"
+      },
+      "transactions": [
+        {
+          "description": "Sou-sou",
+          "amount": 160.98,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00024",
+          "tag": "private savings club",
+          "date_transacted": "2026-02-12",
+          "date_posted": "2026-02-13"
+        },
+        {
+          "description": "Loan Proceeds",
+          "amount": 597.18,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00025",
+          "tag": "secured loan",
+          "date_transacted": "2026-03-02",
+          "date_posted": "2026-03-03"
+        }
+      ],
+      "identity": {
+        "names": [
+          "John Homeowner"
+        ],
+        "emails": [
+          {
+            "data": "john.homeowner@testmail.com",
+            "primary": true,
+            "type": "primary"
+          }
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "country": "US",
+              "city": "Washington",
+              "street": "175 13th St",
+              "postal_code": "20013",
+              "region": "DC"
+            }
+          }
+        ]
+      },
+      "end_balance": 1442.45
+    },
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 289.81,
+      "currency": "USD",
+      "numbers": {
+        "account": "37716529"
+      },
+      "transactions": [
+        {
+          "description": "Personal Loan",
+          "amount": 1983.84,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00016",
+          "tag": "unexplained deposits",
+          "date_transacted": "2026-04-05",
+          "date_posted": "2026-04-06"
+        },
+        {
+          "description": "Afterpay",
+          "amount": -43.62,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00004",
+          "tag": "BNPL transactions",
+          "date_transacted": "2026-04-04",
+          "date_posted": "2026-04-05"
+        },
+        {
+          "description": "Purchase at Binance",
+          "amount": -34.4,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00007",
+          "tag": "withdrawal",
+          "date_transacted": "2026-03-29",
+          "date_posted": "2026-03-30"
+        },
+        {
+          "description": "Earnest Money Deposit",
+          "amount": -1819.68,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00015",
+          "tag": "withdrawal",
+          "date_transacted": "2026-03-29",
+          "date_posted": "2026-03-30"
+        },
+        {
+          "description": "Speedy Cash",
+          "amount": 235.62,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00011",
+          "tag": "payday loan or high-interest lending source",
+          "date_transacted": "2026-03-25",
+          "date_posted": "2026-03-26"
+        },
+        {
+          "description": "Transfer from Alice Homeowner",
+          "amount": 500,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00022",
+          "tag": "additional account holder",
+          "date_transacted": "2026-03-20",
+          "date_posted": "2026-03-21"
+        },
+        {
+          "description": "Deutsche Bank",
+          "amount": 139.56,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00012",
+          "tag": "foreign origin",
+          "date_transacted": "2026-03-19",
+          "date_posted": "2026-03-20"
+        },
+        {
+          "date_transacted": "2026-03-15",
+          "date_posted": "2026-03-16",
+          "amount": 1990.01,
+          "description": "ACH CREDIT PAYROLL - Global Tech",
+          "currency": "USD",
+          "tag": "general transaction",
+          "transaction_id": "plaid-40392fb3-00001"
+        },
+        {
+          "description": "Venmo Cash Out",
+          "amount": 109.03999999999999,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00019",
+          "tag": "undisclosed income source",
+          "date_transacted": "2026-03-05",
+          "date_posted": "2026-03-06"
+        },
+        {
+          "description": "Cash Deposit",
+          "amount": 1193.03,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00014",
+          "tag": "excessive cash deposits",
+          "date_transacted": "2026-03-01",
+          "date_posted": "2026-03-02"
+        },
+        {
+          "description": "Wire Transfer",
+          "amount": 3209.26,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00013",
+          "tag": "large deposits",
+          "date_transacted": "2026-02-24",
+          "date_posted": "2026-02-25"
+        },
+        {
+          "description": "DC OAG",
+          "amount": -121.46,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00006",
+          "tag": "general transaction",
+          "date_transacted": "2026-02-19",
+          "date_posted": "2026-02-20"
+        },
+        {
+          "date_transacted": "2026-02-13",
+          "date_posted": "2026-02-14",
+          "amount": 1990.01,
+          "description": "ACH CREDIT PAYROLL - Global Tech",
+          "currency": "USD",
+          "tag": "general transaction",
+          "transaction_id": "plaid-40392fb3-00002"
+        },
+        {
+          "description": "ACH CREDIT PAYROLL - City Hospital",
+          "amount": 651.74,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00021",
+          "tag": "undisclosed income source",
+          "date_transacted": "2026-02-05",
+          "date_posted": "2026-02-06"
+        },
+        {
+          "description": "Deposit from Crypto.com",
+          "amount": 38.44,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00008",
+          "tag": "deposit from cryptocurrency source",
+          "date_transacted": "2026-02-04",
+          "date_posted": "2026-02-05"
+        },
+        {
+          "description": "Gift from Relative",
+          "amount": 959.13,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00020",
+          "tag": "large deposits",
+          "date_transacted": "2026-02-02",
+          "date_posted": "2026-02-03"
+        },
+        {
+          "description": "NSF Fee",
+          "amount": -35.0,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00009",
+          "tag": "overdraft or NSF",
+          "date_transacted": "2026-01-31",
+          "date_posted": "2026-02-01"
+        },
+        {
+          "description": "Venmo Cash Out",
+          "amount": 111.61,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00018",
+          "tag": "undisclosed income source",
+          "date_transacted": "2026-01-30",
+          "date_posted": "2026-01-31"
+        },
+        {
+          "description": "Check Deposit (No Image)",
+          "amount": 1200,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00023",
+          "tag": "general transaction",
+          "date_transacted": "2026-01-23",
+          "date_posted": "2026-01-24"
+        },
+        {
+          "description": "Venmo Cash Out",
+          "amount": 103.94999999999999,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00017",
+          "tag": "undisclosed income source",
+          "date_transacted": "2026-01-17",
+          "date_posted": "2026-01-18"
+        },
+        {
+          "description": "Payment to Navient",
+          "amount": -77.25,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00010",
+          "tag": "general transaction",
+          "date_transacted": "2026-01-15",
+          "date_posted": "2026-01-16"
+        },
+        {
+          "date_transacted": "2026-01-14",
+          "date_posted": "2026-01-15",
+          "amount": 1990.01,
+          "description": "ACH CREDIT PAYROLL - Global Tech",
+          "currency": "USD",
+          "tag": "general transaction",
+          "transaction_id": "plaid-40392fb3-00003"
+        }
+      ],
+      "identity": {
+        "names": [
+          "John Homeowner"
+        ],
+        "emails": [
+          {
+            "data": "john.homeowner@testmail.com",
+            "primary": true,
+            "type": "primary"
+          }
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "country": "US",
+              "city": "Washington",
+              "street": "175 13th St",
+              "postal_code": "20013",
+              "region": "DC"
+            }
+          }
+        ]
+      },
+      "end_balance": 13771.89
+    },
+    {
+      "type": "investment",
+      "subtype": "401k",
+      "starting_balance": 3874.01,
+      "currency": "USD",
+      "numbers": {
+        "account": "86436732"
+      },
+      "transactions": [
+        {
+          "description": "Contribution",
+          "amount": 500,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00026",
+          "tag": "retirement assets",
+          "date_transacted": "2026-04-13",
+          "date_posted": "2026-04-14"
+        }
+      ],
+      "identity": {
+        "names": [
+          "John Homeowner"
+        ],
+        "emails": [
+          {
+            "data": "john.homeowner@testmail.com",
+            "primary": true,
+            "type": "primary"
+          }
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "country": "US",
+              "city": "Washington",
+              "street": "175 13th St",
+              "postal_code": "20013",
+              "region": "DC"
+            }
+          }
+        ]
+      },
+      "tags": [
+        "retirement accounts"
+      ],
+      "end_balance": 4374.01
+    },
+    {
+      "type": "depository",
+      "subtype": "money market",
+      "official_name": "Custodial Account for Jr",
+      "starting_balance": 109.46,
+      "currency": "USD",
+      "numbers": {
+        "account": "41365283"
+      },
+      "transactions": [
+        {
+          "description": "Transfer In",
+          "amount": 50,
+          "currency": "USD",
+          "transaction_id": "plaid-40392fb3-00027",
+          "tag": "custodial account",
+          "date_transacted": "2026-03-04",
+          "date_posted": "2026-03-05"
+        }
+      ],
+      "identity": {
+        "names": [
+          "John Homeowner"
+        ],
+        "emails": [
+          {
+            "data": "john.homeowner@testmail.com",
+            "primary": true,
+            "type": "primary"
+          }
+        ],
+        "addresses": [
+          {
+            "primary": true,
+            "data": {
+              "country": "US",
+              "city": "Washington",
+              "street": "175 13th St",
+              "postal_code": "20013",
+              "region": "DC"
+            }
+          }
+        ]
+      },
+      "end_balance": 159.46
+    },
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "class": "business",
+      "official_name": "John's Business LLC",
+      "starting_balance": 631.93,
+      "currency": "USD",
+      "numbers": {
+        "account": "94421522"
+      },
+      "transactions": [],
+      "identity": {
+        "names": [
+          "John's Business LLC"
+        ],
+        "emails": [
+          {
+            "data": "john@business.com",
+            "primary": true,
+            "type": "work"
+          }
+        ],
+        "addresses": [
+          {
+            "data": {
+              "city": "Washington",
+              "country": "US",
+              "postal_code": "20013",
+              "region": "DC",
+              "street": "123 Biz St"
+            },
+            "primary": true
+          }
+        ]
+      },
+      "tags": [
+        "business account"
+      ],
+      "end_balance": 631.93
+    }
+  ],
+  "SearchParams": {
+    "SortField": "Date",
+    "SortOrder": "desc",
+    "Size": 1000000
+  },
+  "Transactions": [
+    {
+      "Date": "2026-02-12",
+      "ParsedDate": "2026-02-12T00:00:00Z",
+      "Type": "credit",
+      "Description": "Sou-sou",
+      "Amount": 160.98,
+      "Category": "private savings club",
+      "TransactionID": "plaid-40392fb3-00024",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-53930720",
+      "BankStatementAccountID": "acc-53930720",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 79406,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-53930720",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-03-02",
+      "ParsedDate": "2026-03-02T00:00:00Z",
+      "Type": "credit",
+      "Description": "Loan Proceeds",
+      "Amount": 597.18,
+      "Category": "secured loan",
+      "TransactionID": "plaid-40392fb3-00025",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-53930720",
+      "BankStatementAccountID": "acc-53930720",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 32263,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-53930720",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-04-05",
+      "ParsedDate": "2026-04-05T00:00:00Z",
+      "Type": "credit",
+      "Description": "Personal Loan",
+      "Amount": 1983.84,
+      "Category": "unexplained deposits",
+      "TransactionID": "plaid-40392fb3-00016",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 85980,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-04-04",
+      "ParsedDate": "2026-04-04T00:00:00Z",
+      "Type": "debit",
+      "Description": "Afterpay",
+      "Amount": 43.62,
+      "Category": "BNPL transactions",
+      "TransactionID": "plaid-40392fb3-00004",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 24424,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-03-29",
+      "ParsedDate": "2026-03-29T00:00:00Z",
+      "Type": "debit",
+      "Description": "Purchase at Binance",
+      "Amount": 34.4,
+      "Category": "withdrawal",
+      "TransactionID": "plaid-40392fb3-00007",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 76050,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-03-29",
+      "ParsedDate": "2026-03-29T00:00:00Z",
+      "Type": "debit",
+      "Description": "Earnest Money Deposit",
+      "Amount": 1819.68,
+      "Category": "withdrawal",
+      "TransactionID": "plaid-40392fb3-00015",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 92854,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-03-25",
+      "ParsedDate": "2026-03-25T00:00:00Z",
+      "Type": "credit",
+      "Description": "Speedy Cash",
+      "Amount": 235.62,
+      "Category": "payday loan or high-interest lending source",
+      "TransactionID": "plaid-40392fb3-00011",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 81227,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-03-20",
+      "ParsedDate": "2026-03-20T00:00:00Z",
+      "Type": "credit",
+      "Description": "Transfer from Alice Homeowner",
+      "Amount": 500,
+      "Category": "additional account holder",
+      "TransactionID": "plaid-40392fb3-00022",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 89304,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-03-19",
+      "ParsedDate": "2026-03-19T00:00:00Z",
+      "Type": "credit",
+      "Description": "Deutsche Bank",
+      "Amount": 139.56,
+      "Category": "foreign origin",
+      "TransactionID": "plaid-40392fb3-00012",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 60423,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-03-15",
+      "ParsedDate": "2026-03-15T00:00:00Z",
+      "Type": "credit",
+      "Description": "ACH CREDIT PAYROLL - Global Tech",
+      "Amount": 1990.01,
+      "Category": "general transaction",
+      "TransactionID": "plaid-40392fb3-00001",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 66968,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-03-05",
+      "ParsedDate": "2026-03-05T00:00:00Z",
+      "Type": "credit",
+      "Description": "Venmo Cash Out",
+      "Amount": 109.03999999999999,
+      "Category": "undisclosed income source",
+      "TransactionID": "plaid-40392fb3-00019",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 44833,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-03-01",
+      "ParsedDate": "2026-03-01T00:00:00Z",
+      "Type": "credit",
+      "Description": "Cash Deposit",
+      "Amount": 1193.03,
+      "Category": "excessive cash deposits",
+      "TransactionID": "plaid-40392fb3-00014",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 50815,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-02-24",
+      "ParsedDate": "2026-02-24T00:00:00Z",
+      "Type": "credit",
+      "Description": "Wire Transfer",
+      "Amount": 3209.26,
+      "Category": "large deposits",
+      "TransactionID": "plaid-40392fb3-00013",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 47350,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-02-19",
+      "ParsedDate": "2026-02-19T00:00:00Z",
+      "Type": "debit",
+      "Description": "DC OAG",
+      "Amount": 121.46,
+      "Category": "general transaction",
+      "TransactionID": "plaid-40392fb3-00006",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 11787,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-02-13",
+      "ParsedDate": "2026-02-13T00:00:00Z",
+      "Type": "credit",
+      "Description": "ACH CREDIT PAYROLL - Global Tech",
+      "Amount": 1990.01,
+      "Category": "general transaction",
+      "TransactionID": "plaid-40392fb3-00002",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 66191,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-02-05",
+      "ParsedDate": "2026-02-05T00:00:00Z",
+      "Type": "credit",
+      "Description": "ACH CREDIT PAYROLL - City Hospital",
+      "Amount": 651.74,
+      "Category": "undisclosed income source",
+      "TransactionID": "plaid-40392fb3-00021",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 46757,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-02-04",
+      "ParsedDate": "2026-02-04T00:00:00Z",
+      "Type": "credit",
+      "Description": "Deposit from Crypto.com",
+      "Amount": 38.44,
+      "Category": "deposit from cryptocurrency source",
+      "TransactionID": "plaid-40392fb3-00008",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 43841,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-02-02",
+      "ParsedDate": "2026-02-02T00:00:00Z",
+      "Type": "credit",
+      "Description": "Gift from Relative",
+      "Amount": 959.13,
+      "Category": "large deposits",
+      "TransactionID": "plaid-40392fb3-00020",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 80499,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-01-31",
+      "ParsedDate": "2026-01-31T00:00:00Z",
+      "Type": "debit",
+      "Description": "NSF Fee",
+      "Amount": 35.0,
+      "Category": "overdraft or NSF",
+      "TransactionID": "plaid-40392fb3-00009",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 79109,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-01-30",
+      "ParsedDate": "2026-01-30T00:00:00Z",
+      "Type": "credit",
+      "Description": "Venmo Cash Out",
+      "Amount": 111.61,
+      "Category": "undisclosed income source",
+      "TransactionID": "plaid-40392fb3-00018",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 82687,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-01-23",
+      "ParsedDate": "2026-01-23T00:00:00Z",
+      "Type": "credit",
+      "Description": "Check Deposit (No Image)",
+      "Amount": 1200,
+      "Category": "general transaction",
+      "TransactionID": "plaid-40392fb3-00023",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 51671,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-01-17",
+      "ParsedDate": "2026-01-17T00:00:00Z",
+      "Type": "credit",
+      "Description": "Venmo Cash Out",
+      "Amount": 103.94999999999999,
+      "Category": "undisclosed income source",
+      "TransactionID": "plaid-40392fb3-00017",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 54861,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-01-15",
+      "ParsedDate": "2026-01-15T00:00:00Z",
+      "Type": "debit",
+      "Description": "Payment to Navient",
+      "Amount": 77.25,
+      "Category": "general transaction",
+      "TransactionID": "plaid-40392fb3-00010",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 34902,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-01-14",
+      "ParsedDate": "2026-01-14T00:00:00Z",
+      "Type": "credit",
+      "Description": "ACH CREDIT PAYROLL - Global Tech",
+      "Amount": 1990.01,
+      "Category": "general transaction",
+      "TransactionID": "plaid-40392fb3-00003",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-37716529",
+      "BankStatementAccountID": "acc-37716529",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 66583,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-04-13",
+      "ParsedDate": "2026-04-13T00:00:00Z",
+      "Type": "credit",
+      "Description": "Contribution",
+      "Amount": 500,
+      "Category": "retirement assets",
+      "TransactionID": "plaid-40392fb3-00026",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-86436732",
+      "BankStatementAccountID": "acc-86436732",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 10776,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-86436732",
+      "ClientID": "generated-client"
+    },
+    {
+      "Date": "2026-03-04",
+      "ParsedDate": "2026-03-04T00:00:00Z",
+      "Type": "credit",
+      "Description": "Transfer In",
+      "Amount": 50,
+      "Category": "custodial account",
+      "TransactionID": "plaid-40392fb3-00027",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementID": "stmt-41365283",
+      "BankStatementAccountID": "acc-41365283",
+      "PageNumber": 1,
+      "BoundingBox": {
+        "X0": 0,
+        "X1": 0,
+        "Y0": 0,
+        "Y1": 0
+      },
+      "TaggedAt": "2026-04-14T00:00:00Z",
+      "ID": 30359,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-41365283",
+      "ClientID": "generated-client"
+    }
+  ],
+  "BankStatementAccounts": [
+    {
+      "AccountNumber": "xxxx0720",
+      "AccountType": "savings",
+      "BankName": "Generated Bank",
+      "BankFullAddress": "",
+      "ClientNames": [
+        "John Homeowner"
+      ],
+      "ClientName": "",
+      "StartBalance": 684.29,
+      "EndBalance": 1442.45,
+      "TotalCreditAmount": 758.16,
+      "TotalDebitAmount": 0,
+      "BankStatementAccountID": "acc-53930720",
+      "ID": 950,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-53930720",
+      "ClientID": "generated-client"
+    },
+    {
+      "AccountNumber": "xxxx6529",
+      "AccountType": "checking",
+      "BankName": "Generated Bank",
+      "BankFullAddress": "",
+      "ClientNames": [
+        "John Homeowner"
+      ],
+      "ClientName": "",
+      "StartBalance": 289.81,
+      "EndBalance": 13771.89,
+      "TotalCreditAmount": 16405.25,
+      "TotalDebitAmount": -2131.41,
+      "BankStatementAccountID": "acc-37716529",
+      "ID": 164,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "AccountNumber": "xxxx6732",
+      "AccountType": "401k",
+      "BankName": "Generated Bank",
+      "BankFullAddress": "",
+      "ClientNames": [
+        "John Homeowner"
+      ],
+      "ClientName": "",
+      "StartBalance": 3874.01,
+      "EndBalance": 4374.01,
+      "TotalCreditAmount": 500,
+      "TotalDebitAmount": 0,
+      "BankStatementAccountID": "acc-86436732",
+      "ID": 910,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-86436732",
+      "ClientID": "generated-client"
+    },
+    {
+      "AccountNumber": "xxxx5283",
+      "AccountType": "money market",
+      "BankName": "Generated Bank",
+      "BankFullAddress": "",
+      "ClientNames": [
+        "John Homeowner"
+      ],
+      "ClientName": "",
+      "StartBalance": 109.46,
+      "EndBalance": 159.46,
+      "TotalCreditAmount": 50,
+      "TotalDebitAmount": 0,
+      "BankStatementAccountID": "acc-41365283",
+      "ID": 868,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-41365283",
+      "ClientID": "generated-client"
+    },
+    {
+      "AccountNumber": "xxxx1522",
+      "AccountType": "checking",
+      "BankName": "Generated Bank",
+      "BankFullAddress": "",
+      "ClientNames": [
+        "John's Business LLC"
+      ],
+      "ClientName": "",
+      "StartBalance": 631.93,
+      "EndBalance": 631.93,
+      "TotalCreditAmount": 0,
+      "TotalDebitAmount": 0,
+      "BankStatementAccountID": "acc-94421522",
+      "ID": 903,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-94421522",
+      "ClientID": "generated-client"
+    }
+  ],
+  "BankStatements": [
+    {
+      "BankName": "Generated Bank",
+      "BankFullAddress": "",
+      "ClientNames": [
+        "John Homeowner"
+      ],
+      "ClientFullAddress": "175 13th St Washington DC",
+      "ClientName": "",
+      "StatementDate": "2026-04-13",
+      "StartDate": "2026-01-14",
+      "EndDate": "2026-04-13",
+      "StartBalance": 684.29,
+      "EndBalance": 1442.45,
+      "TotalCreditAmount": 758.16,
+      "TotalDebitAmount": 0,
+      "BankStatementID": "stmt-53930720",
+      "BorrowerID": "",
+      "BorrowerItemID": "",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementAccountID": "acc-53930720",
+      "IsPossibleDuplicate": false,
+      "ID": 3848,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-53930720",
+      "ClientID": "generated-client"
+    },
+    {
+      "BankName": "Generated Bank",
+      "BankFullAddress": "",
+      "ClientNames": [
+        "John Homeowner"
+      ],
+      "ClientFullAddress": "175 13th St Washington DC",
+      "ClientName": "",
+      "StatementDate": "2026-04-13",
+      "StartDate": "2026-01-14",
+      "EndDate": "2026-04-13",
+      "StartBalance": 289.81,
+      "EndBalance": 13771.89,
+      "TotalCreditAmount": 16405.25,
+      "TotalDebitAmount": -2131.41,
+      "BankStatementID": "stmt-37716529",
+      "BorrowerID": "",
+      "BorrowerItemID": "",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementAccountID": "acc-37716529",
+      "IsPossibleDuplicate": false,
+      "ID": 3578,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-37716529",
+      "ClientID": "generated-client"
+    },
+    {
+      "BankName": "Generated Bank",
+      "BankFullAddress": "",
+      "ClientNames": [
+        "John Homeowner"
+      ],
+      "ClientFullAddress": "175 13th St Washington DC",
+      "ClientName": "",
+      "StatementDate": "2026-04-13",
+      "StartDate": "2026-01-14",
+      "EndDate": "2026-04-13",
+      "StartBalance": 3874.01,
+      "EndBalance": 4374.01,
+      "TotalCreditAmount": 500,
+      "TotalDebitAmount": 0,
+      "BankStatementID": "stmt-86436732",
+      "BorrowerID": "",
+      "BorrowerItemID": "",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementAccountID": "acc-86436732",
+      "IsPossibleDuplicate": false,
+      "ID": 3321,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-86436732",
+      "ClientID": "generated-client"
+    },
+    {
+      "BankName": "Generated Bank",
+      "BankFullAddress": "",
+      "ClientNames": [
+        "John Homeowner"
+      ],
+      "ClientFullAddress": "175 13th St Washington DC",
+      "ClientName": "",
+      "StatementDate": "2026-04-13",
+      "StartDate": "2026-01-14",
+      "EndDate": "2026-04-13",
+      "StartBalance": 109.46,
+      "EndBalance": 159.46,
+      "TotalCreditAmount": 50,
+      "TotalDebitAmount": 0,
+      "BankStatementID": "stmt-41365283",
+      "BorrowerID": "",
+      "BorrowerItemID": "",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementAccountID": "acc-41365283",
+      "IsPossibleDuplicate": false,
+      "ID": 9377,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-41365283",
+      "ClientID": "generated-client"
+    },
+    {
+      "BankName": "Generated Bank",
+      "BankFullAddress": "",
+      "ClientNames": [
+        "John's Business LLC"
+      ],
+      "ClientFullAddress": "123 Biz St Washington DC",
+      "ClientName": "",
+      "StatementDate": "2026-04-13",
+      "StartDate": "2026-01-14",
+      "EndDate": "2026-04-13",
+      "StartBalance": 631.93,
+      "EndBalance": 631.93,
+      "TotalCreditAmount": 0,
+      "TotalDebitAmount": 0,
+      "BankStatementID": "stmt-94421522",
+      "BorrowerID": "",
+      "BorrowerItemID": "",
+      "DocumentID": "doc-40392fb3",
+      "VirtualDocumentID": "vdoc-40392fb3",
+      "BankStatementAccountID": "acc-94421522",
+      "IsPossibleDuplicate": false,
+      "ID": 7293,
+      "CreatedAt": "2026-04-14T00:00:00Z",
+      "UpdatedAt": "2026-04-14T00:00:00Z",
+      "LoanID": "generated-loan",
+      "AccountID": "acc-94421522",
+      "ClientID": "generated-client"
+    }
+  ],
+  "AggregateFigures": {
+    "Overall": {
+      "TotalAmount": 15582.0,
+      "CreditAmount": 17713.41,
+      "DebitAmount": -2131.41,
+      "Count": 26
+    }
+  }
+}

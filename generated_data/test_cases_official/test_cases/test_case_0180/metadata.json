@@ -1,0 +1,18 @@
+{
+  "test_case_id": 180,
+  "test_case_number": 10,
+  "question": "Do the rental income deposits shown on the bank statements align with the gross rental income reported for the property(ies) listed on the loan application (both subject and REO)? ",
+  "rephrased_question": "Are there any deposits that match the properties monthly gross rental income?\n",
+  "answer_type": "id_list",
+  "label": "transaction_consistency",
+  "mutation_type": "ulad",
+  "mutation_key": "mutate_rental_income_consistency",
+  "ground_truth_answer": "Mismatch: Bank shows rental deposits of $4,500.00/month but application reports gross rental income of $3,500.00/month.",
+  "need_bank_statement": true,
+  "need_ulad": true,
+  "bank_statement_path": "bank_statement.json",
+  "bank_statement_b_path": null,
+  "ulad_path": "ulad.json",
+  "gid": 89,
+  "old_id": "10-9"
+}

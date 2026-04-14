@@ -1,0 +1,18 @@
+{
+  "test_case_id": 133,
+  "test_case_number": 7,
+  "question": "Is there a consistent pattern of deposits on the asset statement that could represent an undisclosed other income source?",
+  "rephrased_question": "Are there any recurring deposits that could be an income source?\n",
+  "answer_type": "boolean",
+  "label": "has_any, transaction_consistency",
+  "mutation_type": "ulad",
+  "mutation_key": "mutate_undisclosed_income_source",
+  "ground_truth_answer": "Yes",
+  "need_bank_statement": true,
+  "need_ulad": true,
+  "bank_statement_path": "bank_statement.json",
+  "bank_statement_b_path": null,
+  "ulad_path": "ulad.json",
+  "gid": 66,
+  "old_id": "7-8"
+}

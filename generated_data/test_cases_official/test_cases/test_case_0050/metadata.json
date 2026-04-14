@@ -1,0 +1,18 @@
+{
+  "test_case_id": 50,
+  "test_case_number": 3,
+  "question": "Compare the borrower\u2019s address on the account statement with the current address on the loan application. Note any discrepancy.",
+  "rephrased_question": "Does the borrower\u2019s address on the account statement match the current address on the loan application? Answer yes or no.",
+  "answer_type": "boolean",
+  "label": "statement_integrity",
+  "mutation_type": "ulad",
+  "mutation_key": "mutate_address_match",
+  "ground_truth_answer": "No",
+  "need_bank_statement": true,
+  "need_ulad": true,
+  "bank_statement_path": "bank_statement.json",
+  "bank_statement_b_path": null,
+  "ulad_path": "ulad.json",
+  "gid": 24,
+  "old_id": "3-5"
+}

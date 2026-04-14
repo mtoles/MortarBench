@@ -1,0 +1,18 @@
+{
+  "test_case_id": 85,
+  "test_case_number": 5,
+  "question": "Is there evidence of rental payment(s) being made from the account?",
+  "rephrased_question": "Which list of transactions, if any, correspond to rental payments?",
+  "answer_type": "id_list",
+  "label": "has_any",
+  "mutation_type": "transaction",
+  "mutation_key": "rental_payments",
+  "ground_truth_answer": "['plaid-f60afd39-01001', 'plaid-f60afd39-01002']",
+  "need_bank_statement": true,
+  "need_ulad": false,
+  "bank_statement_path": "bank_statement.json",
+  "bank_statement_b_path": null,
+  "ulad_path": null,
+  "gid": 42,
+  "old_id": "5-4"
+}

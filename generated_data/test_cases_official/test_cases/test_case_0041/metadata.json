@@ -1,0 +1,18 @@
+{
+  "test_case_id": 41,
+  "test_case_number": 3,
+  "question": "Scan the provided bank statements for any recurring payments or debit transactions made to known BNPL providers.",
+  "rephrased_question": "Which list of transactions, if any, correspond to recurring payments or debit transactions made to known BNPL providers?",
+  "answer_type": "id_list",
+  "label": "has_any",
+  "mutation_type": "transaction",
+  "mutation_key": "bnpl",
+  "ground_truth_answer": "['plaid-1b7cbbe5-01001', 'plaid-1b7cbbe5-01002']",
+  "need_bank_statement": true,
+  "need_ulad": false,
+  "bank_statement_path": "bank_statement.json",
+  "bank_statement_b_path": null,
+  "ulad_path": null,
+  "gid": 20,
+  "old_id": "3-1"
+}

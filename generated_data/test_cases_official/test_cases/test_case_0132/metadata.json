@@ -1,0 +1,18 @@
+{
+  "test_case_id": 132,
+  "test_case_number": 7,
+  "question": "Is there an unexplained deposit in a bank's transaction history that could be a sign of unsecured borrowed funds, not including cash deposits?",
+  "rephrased_question": "Which list of transactions, if any, correspond to unexplained deposits that could be a sign of unsecured borrowed funds, not including cash deposits?",
+  "answer_type": "id_list",
+  "label": "has_any",
+  "mutation_type": "transaction",
+  "mutation_key": "cash_deposits",
+  "ground_truth_answer": "[]",
+  "need_bank_statement": true,
+  "need_ulad": false,
+  "bank_statement_path": "bank_statement.json",
+  "bank_statement_b_path": null,
+  "ulad_path": null,
+  "gid": 65,
+  "old_id": "7-7"
+}
