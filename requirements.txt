@@ -8,3 +8,10 @@ requests
 python-dotenv
 google-generativeai
 flask
+langchain
+langchain-community
+langchain-huggingface
+faiss-cpu
+sentence-transformers
+pymupdf
+python-dotenv
