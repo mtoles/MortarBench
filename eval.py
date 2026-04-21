@@ -887,7 +887,7 @@ def evaluate_model(
 
         # Provide source documents to the reflection agent for grounded verification
         if isinstance(agent, ReflectionAgent):
-            agent.set_context(bank_statement, ulad_du)
+            agent.set_context(bank_statement, ulad_du, question)
 
         predicted_answers = []
         raw_answers = []

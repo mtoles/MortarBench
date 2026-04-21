@@ -25,6 +25,7 @@ import math
 import os
 import re
 import subprocess
+import threading
 from typing import List, Dict
 
 from anthropic import Anthropic
@@ -33,8 +34,20 @@ from dotenv import load_dotenv
 
 from agents import BaselineAgent
 from llm import call_llm_wrapper
+from rag_pipeline import build_retrievers
 
 load_dotenv(override=True)
+
+_SHARED_RETRIEVER = None
+_RETRIEVER_LOCK = threading.Lock()
+
+def get_shared_retriever():
+    global _SHARED_RETRIEVER
+    if _SHARED_RETRIEVER is None:
+        with _RETRIEVER_LOCK:
+            if _SHARED_RETRIEVER is None:
+                _SHARED_RETRIEVER = build_retrievers([], force_rebuild=False)
+    return _SHARED_RETRIEVER
 
 # ---------------------------------------------------------------------------
 # Python tool definition (Anthropic schema; converted for OpenAI where needed)
@@ -285,12 +298,13 @@ class ReflectionAgent(BaselineAgent):
         )
         self._bank_statement_str: str = ""
         self._ulad_du_str: str = ""
+        self._rag_context_str: str = ""
 
     # ------------------------------------------------------------------
     # Context setter — must be called before process_* methods
     # ------------------------------------------------------------------
 
-    def set_context(self, bank_statement_str, ulad_du_str) -> None:
+    def set_context(self, bank_statement_str, ulad_du_str, question_str=None) -> None:
         """Store source documents for use during reflection and numerical reasoning."""
 
         def _to_str(val):
@@ -304,6 +318,15 @@ class ReflectionAgent(BaselineAgent):
 
         self._bank_statement_str = _to_str(bank_statement_str)
         self._ulad_du_str = _to_str(ulad_du_str)
+        self._rag_context_str = ""
+        
+        if question_str:
+            retriever = get_shared_retriever()
+            retrieved_docs = retriever.invoke(question_str)
+            self._rag_context_str = "\n\n".join([
+                f"Content:\n{d.page_content}\nSource: {d.metadata.get('source', 'Unknown')} - Page: {d.metadata.get('page', 'Unknown')}" 
+                for d in retrieved_docs
+            ])
 
     # ------------------------------------------------------------------
     # Reflection pass
@@ -322,6 +345,8 @@ class ReflectionAgent(BaselineAgent):
             f"Bank Statement:\n{self._bank_statement_str}\n\n"
             f"ULAD DU:\n{self._ulad_du_str}"
         )
+        if self._rag_context_str:
+            source_doc += f"\n\nFannie Mae Selling Guide (RAG Context):\n{self._rag_context_str}"
 
         if answer_type == "boolean":
             check_instruction = (
@@ -424,6 +449,8 @@ class ReflectionAgent(BaselineAgent):
             f"Bank Statement:\n{self._bank_statement_str}\n\n"
             f"ULAD DU:\n{self._ulad_du_str}"
         )
+        if self._rag_context_str:
+            source_excerpt += f"\n\nFannie Mae Selling Guide (RAG Context):\n{self._rag_context_str}"
         compute_prompt = (
             f"Question: {question}\n\n"
             f"Preliminary analysis:\n{reflected}\n\n"

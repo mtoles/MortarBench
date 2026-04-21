@@ -110,3 +110,25 @@ You can also append this to a query:
 ```bash
 python rag_pipeline.py --rebuild --query "What are the rules on employment verification?"
 ```
+
+### D. Evaluate Loans using the RAG Reflection Agent
+
+The RAG pipeline is deeply integrated with the `ReflectionAgent` to provide strict factual grounding when analyzing loan cases against the Fannie Mae Selling Guide. The agent performs initial checks using standard prompt logic, then retrieves context from the FAISS RAG database, and performs a reflective audit on its own preliminary answer.
+
+To test the RAG Reflection agent on a specific example in the benchmark:
+
+```bash
+python eval.py --model_id gpt-5 --model_type reflection --trials 1 --row_indexes 0 --use_domain_expertise
+```
+
+*(To run the entire benchmarking set, omit the `--row_indexes 0` argument).*
+
+---
+
+## 5. Reflection Agent Integration Architecture
+
+To effectively scale the RAG pipeline to bulk loan evaluation (`eval.py`) without encountering memory bottlenecks from launching multiple asynchronous embeddings models, a singleton architecture is seamlessly utilized:
+
+1. **Singleton Retriever (`get_shared_retriever`)**: The `reflection_agent.py` script initializes the underlying embedding model (`BAAI/bge-large-en-v1.5`) and loads the FAISS index once globally. Concurrent evaluator threads safely share this memory footprint across parallel processes.
+2. **Pre-emptive Context Retrieval (`set_context`)**: Instead of fetching RAG data repetitively inside the loop, the query is processed by the RAG index exactly once securely upon loan question initialization, keeping computational overhead aggressively optimized.
+3. **Reflective Self-Correction**: The precise chunks outputted from FAISS are strictly embedded directly into the `source_doc` constraint of the subsequent AI pass, explicitly commanding the LLM to overrule any logical errors in its initial reasoning by specifically citing the mandated Fannie Mae Selling Guide regulations.
