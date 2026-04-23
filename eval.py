@@ -783,6 +783,7 @@ def evaluate_model(
     downsample_size=None,
     offset=0,
     trials=None,
+    use_rag=False,
 ):
     """Evaluate a model on the dataset."""
     domain_expertise_str = (
@@ -887,7 +888,7 @@ def evaluate_model(
 
         # Provide source documents to the reflection agent for grounded verification
         if isinstance(agent, ReflectionAgent):
-            agent.set_context(bank_statement, ulad_du, question)
+            agent.set_context(bank_statement, ulad_du, question if use_rag else None)
 
         predicted_answers = []
         raw_answers = []
@@ -1418,6 +1419,11 @@ def main():
         "--use_domain_expertise", action="store_true", help="Use domain expertise"
     )
     parser.add_argument(
+        "--use_rag",
+        action="store_true",
+        help="Use RAG to retrieve Fannie Mae Selling Guide context (reflection agent only)",
+    )
+    parser.add_argument(
         "--excel_path",
         type=str,
         default="data/Labeled Questions and Answers.xlsx",
@@ -1532,6 +1538,7 @@ def main():
         args.downsample_size,
         args.offset,
         args.trials,
+        use_rag=args.use_rag,
     )
 
     # Calculate exact match accuracy for display
