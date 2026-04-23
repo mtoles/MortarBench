@@ -34,7 +34,7 @@ from dotenv import load_dotenv
 
 from agents import BaselineAgent
 from llm import call_llm_wrapper
-from rag_pipeline import build_retrievers
+from rag_pipeline import build_retrievers, load_and_split_documents, FAISS_INDEX_PATH, PDF_PATH
 
 load_dotenv(override=True)
 
@@ -46,7 +46,17 @@ def get_shared_retriever():
     if _SHARED_RETRIEVER is None:
         with _RETRIEVER_LOCK:
             if _SHARED_RETRIEVER is None:
-                _SHARED_RETRIEVER = build_retrievers([], force_rebuild=False)
+                if os.path.exists(FAISS_INDEX_PATH):
+                    splits = []
+                else:
+                    if not os.path.exists(PDF_PATH):
+                        raise FileNotFoundError(
+                            f"RAG requires either a prebuilt FAISS index at '{FAISS_INDEX_PATH}' "
+                            f"or the source PDF at '{PDF_PATH}' to build one. Neither was found. "
+                            f"Place the Selling Guide PDF at '{PDF_PATH}' or disable RAG with --use_rag off."
+                        )
+                    splits = load_and_split_documents(PDF_PATH)
+                _SHARED_RETRIEVER = build_retrievers(splits, force_rebuild=False)
     return _SHARED_RETRIEVER
 
 # ---------------------------------------------------------------------------
