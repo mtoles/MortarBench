@@ -45,7 +45,6 @@ class SoloAgent(Agent):
     
     def process_boolean(self, question, raw_answer, loan_id):
         """Process boolean answer type for solo agent."""
-        from eval import CLEANUP_MODEL_ID
         cleaned_answer_prompt = (
             f"Question: {question}\n\nUnformatted answer: {raw_answer}\n\n"
             "The answer given should be either yes or no. "
@@ -53,7 +52,7 @@ class SoloAgent(Agent):
             "Ignore any boilerplate (e.g., 'analysis report is outdated' or suggestion/help sections); they are not part of the answer."
         )
         cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=CLEANUP_MODEL_ID,
+            model_id=self.model_id,
             messages=[{"role": "user", "content": cleaned_answer_prompt}],
             loan_id=loan_id,
         )
@@ -62,7 +61,7 @@ class SoloAgent(Agent):
     
     def process_txn_id_list(self, question, raw_answer, loan_id, transactions_json, cleaning_answer_instruction_str, plaid_transactions_flat):
         """Process txn_id_list answer type for solo agent."""
-        from eval import CLEANUP_MODEL_ID, normalize_transaction_answer
+        from eval import normalize_transaction_answer
         solo_answer_parts = raw_answer.split("==========\n")
         solo_text_answer = (
             solo_answer_parts[0].strip()
@@ -95,7 +94,7 @@ class SoloAgent(Agent):
             answer_instruction=cleaning_answer_instruction_str,
         )
         cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=CLEANUP_MODEL_ID,
+            model_id=self.model_id,
             messages=[{"role": "user", "content": cleaned_answer_prompt}],
             loan_id=loan_id,
         )
@@ -120,7 +119,7 @@ class SoloAgent(Agent):
     
     def process_account_id_list(self, question, raw_answer, loan_id, accounts_json, cleaning_answer_instruction_str, account_last4_values):
         """Process account_id_list answer type for solo agent."""
-        from eval import CLEANUP_MODEL_ID, normalize_account_answer
+        from eval import normalize_account_answer
         solo_answer_parts = raw_answer.split("==========\n")
         solo_text_answer = (
             solo_answer_parts[0].strip()
@@ -153,7 +152,7 @@ class SoloAgent(Agent):
             answer_instruction=cleaning_answer_instruction_str,
         )
         cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=CLEANUP_MODEL_ID,
+            model_id=self.model_id,
             messages=[{"role": "user", "content": cleaned_answer_prompt}],
             loan_id=loan_id,
         )
@@ -177,13 +176,38 @@ class SoloAgent(Agent):
 
 class BaselineAgent(Agent):
     """Agent for baseline/generic models (non-solo)."""
-    
+
     def __init__(self, model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, prompt_template):
         super().__init__(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func)
         self.prompt_template = prompt_template
-    
+        self._rag_context_str = ""
+        self._use_rag_in_initial_prompt = False
+
+    def set_rag_context(self, question_str):
+        """Retrieve Fannie Mae Selling Guide chunks for `question_str` and enable
+        injecting them into the initial prompt. Matches the retrieval + formatting
+        used by ReflectionAgent."""
+        # Lazy import to avoid circular dependency with reflection_agent.
+        from reflection_agent import get_shared_retriever
+
+        self._use_rag_in_initial_prompt = True
+        if not question_str:
+            self._rag_context_str = ""
+            return
+        retriever = get_shared_retriever()
+        retrieved_docs = retriever.invoke(question_str)
+        self._rag_context_str = "\n\n".join([
+            f"Content:\n{d.page_content}\nSource: {d.metadata.get('source', 'Unknown')} - Page: {d.metadata.get('page', 'Unknown')}"
+            for d in retrieved_docs
+        ])
+
     def get_initial_prompt(self, question, bank_statement, ulad_du, domain_expertise_str, answer_instruction_str):
         """Baseline models use the full prompt template."""
+        if self._use_rag_in_initial_prompt and self._rag_context_str:
+            bank_statement = (
+                f"{bank_statement}\n\n"
+                f"Fannie Mae Selling Guide (RAG Context):\n{self._rag_context_str}"
+            )
         return self.prompt_template.format(
             question=question,
             context=bank_statement,
@@ -194,7 +218,6 @@ class BaselineAgent(Agent):
     
     def process_boolean(self, question, raw_answer, loan_id):
         """Process boolean answer type for baseline agent."""
-        from eval import CLEANUP_MODEL_ID
         cleaned_answer_prompt = (
             f"Question: {question}\n\nUnformatted answer: {raw_answer}\n\n"
             "The answer given should be either yes or no. "
@@ -202,7 +225,7 @@ class BaselineAgent(Agent):
             "Ignore any boilerplate (e.g., 'analysis report is outdated' or suggestion/help sections); they are not part of the answer."
         )
         cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=CLEANUP_MODEL_ID,
+            model_id=self.model_id,
             messages=[{"role": "user", "content": cleaned_answer_prompt}],
             loan_id=loan_id,
         )
@@ -211,7 +234,7 @@ class BaselineAgent(Agent):
     
     def process_txn_id_list(self, question, raw_answer, loan_id, transactions_json, cleaning_answer_instruction_str, plaid_transactions_flat):
         """Process txn_id_list answer type for baseline agent."""
-        from eval import CLEANUP_MODEL_ID, normalize_transaction_answer
+        from eval import normalize_transaction_answer
         solo_text_answer = raw_answer
         txn_info_display = transactions_json
         solo_txn_info_for_mapping = None
@@ -237,7 +260,7 @@ class BaselineAgent(Agent):
             answer_instruction=cleaning_answer_instruction_str,
         )
         cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=CLEANUP_MODEL_ID,
+            model_id=self.model_id,
             messages=[{"role": "user", "content": cleaned_answer_prompt}],
             loan_id=loan_id,
         )
@@ -262,13 +285,13 @@ class BaselineAgent(Agent):
     
     def process_dollar_amounts(self, question, raw_answer, loan_id):
         """Process dollar_amounts answer type for baseline agent (simple cleanup pass)."""
-        from eval import CLEANUP_MODEL_ID, cleaning_answer_instruction
+        from eval import cleaning_answer_instruction
         cleanup_prompt = (
             f"Question: {question}\n\nUnformatted answer: {raw_answer}\n\n"
             f"{cleaning_answer_instruction['dollar_amounts']}"
         )
         cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=CLEANUP_MODEL_ID,
+            model_id=self.model_id,
             messages=[{"role": "user", "content": cleanup_prompt}],
             loan_id=loan_id,
         )
@@ -276,7 +299,7 @@ class BaselineAgent(Agent):
 
     def process_account_id_list(self, question, raw_answer, loan_id, accounts_json, cleaning_answer_instruction_str, account_last4_values):
         """Process account_id_list answer type for baseline agent."""
-        from eval import CLEANUP_MODEL_ID, normalize_account_answer
+        from eval import normalize_account_answer
         solo_text_answer = raw_answer
         txn_info = accounts_json
 
@@ -300,7 +323,7 @@ class BaselineAgent(Agent):
             answer_instruction=cleaning_answer_instruction_str,
         )
         cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=CLEANUP_MODEL_ID,
+            model_id=self.model_id,
             messages=[{"role": "user", "content": cleaned_answer_prompt}],
             loan_id=loan_id,
         )
@@ -343,7 +366,6 @@ class ExperimentalAgent(Agent):
     
     def process_boolean(self, question, raw_answer, loan_id):
         """Process boolean answer type for experimental agent."""
-        from eval import CLEANUP_MODEL_ID
         answer_prompt = (
             f"Question: {question}\n\nUnformatted answer: {raw_answer}\n\n"
             "The answer given should be either yes or no. "
@@ -351,7 +373,7 @@ class ExperimentalAgent(Agent):
             "Ignore any boilerplate (e.g., 'analysis report is outdated' or suggestion/help sections); they are not part of the answer."
         )
         processed_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=CLEANUP_MODEL_ID,
+            model_id=self.model_id,
             messages=[{"role": "user", "content": answer_prompt}],
             loan_id=loan_id,
         )
@@ -364,7 +386,7 @@ class ExperimentalAgent(Agent):
     
     def process_txn_id_list(self, question, raw_answer, loan_id, transactions_json, cleaning_answer_instruction_str, plaid_transactions_flat):
         """Process txn_id_list answer type for experimental agent."""
-        from eval import CLEANUP_MODEL_ID, normalize_transaction_answer
+        from eval import normalize_transaction_answer
         solo_text_answer = raw_answer
         txn_info_display = transactions_json
         solo_txn_info_for_mapping = None
@@ -391,7 +413,7 @@ class ExperimentalAgent(Agent):
             answer_instruction=cleaning_answer_instruction_str,
         )
         processed_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=CLEANUP_MODEL_ID,
+            model_id=self.model_id,
             messages=[{"role": "user", "content": answer_prompt}],
             loan_id=loan_id,
         )
@@ -405,7 +427,7 @@ class ExperimentalAgent(Agent):
             "Then generate a corrected output (or identical output if no corrections are needed). "
         )
         txn_check_answer, txn_check_in_tok, txn_check_out_tok = call_llm_wrapper(
-            model_id=CLEANUP_MODEL_ID,
+            model_id=self.model_id,
             messages=[
                 {"role": "user", "content": answer_prompt},
                 {"role": "assistant", "content": processed_answer},
@@ -440,7 +462,7 @@ class ExperimentalAgent(Agent):
     
     def process_account_id_list(self, question, raw_answer, loan_id, accounts_json, cleaning_answer_instruction_str, account_last4_values):
         """Process account_id_list answer type for experimental agent."""
-        from eval import CLEANUP_MODEL_ID, normalize_account_answer
+        from eval import normalize_account_answer
         solo_text_answer = raw_answer
         txn_info = accounts_json
 
@@ -465,7 +487,7 @@ class ExperimentalAgent(Agent):
             answer_instruction=cleaning_answer_instruction_str,
         )
         processed_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=CLEANUP_MODEL_ID,
+            model_id=self.model_id,
             messages=[{"role": "user", "content": answer_prompt}],
             loan_id=loan_id,
         )

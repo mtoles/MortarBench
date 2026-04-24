@@ -84,8 +84,6 @@ model_answer_instruction = {
     "dollar_amount": "Think step by step about which dollar amounts are relevant to the question and why. Then identify and list each relevant amount from the documents, stating what it represents. Do not calculate totals yourself.",
 }
 
-CLEANUP_MODEL_ID = "gpt-5"
-
 cleaning_answer_instruction = {
     "txn_id_list": 'Return ONLY a valid JSON list of matching TransactionID values, e.g. `["plaid-2-00037", "plaid-2-00049"]`, or [] if there are no IDs.',
     "boolean": "Return only yes or no. DO NOT output any other text.",
@@ -889,6 +887,8 @@ def evaluate_model(
         # Provide source documents to the reflection agent for grounded verification
         if isinstance(agent, ReflectionAgent):
             agent.set_context(bank_statement, ulad_du, question if use_rag else None)
+        elif use_rag and isinstance(agent, BaselineAgent):
+            agent.set_rag_context(question)
 
         predicted_answers = []
         raw_answers = []
