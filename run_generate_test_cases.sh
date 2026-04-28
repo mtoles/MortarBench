@@ -23,7 +23,7 @@ cd "$SCRIPT_DIR"
 # ── Defaults ──────────────────────────────────────────────────────────────
 SKIP_GENERATE=false
 SEED=""
-QUESTIONS="data/questions_unique_generated.csv"
+QUESTIONS="data/questions.csv"
 OUTPUT_DIR="generated_data/test_cases_unique"
 GEN_DIR="generated_data"
 BANK_STMT="$GEN_DIR/bank_statement.json"

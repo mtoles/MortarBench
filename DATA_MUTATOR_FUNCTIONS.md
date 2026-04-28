@@ -1,6 +1,6 @@
 # data_mutator.py Function Reference
 
-Each row below maps a question from `data/questions_unique_generated.csv` to the mutation function that synthesizes its test data.
+Each row below maps a question from `data/questions.csv` to the mutation function that synthesizes its test data.
 
 ---
 

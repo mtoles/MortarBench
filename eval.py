@@ -57,6 +57,8 @@ MODEL_PRICING = {
     "gpt-5": {"input": 1.25, "output": 10.00},
     "claude-opus-4-1-20250805": {"input": 15.00, "output": 75.00},
     "claude-sonnet-4-5": {"input": 3.00, "output": 15.00},
+    "claude-sonnet-4-6": {"input": 3.00, "output": 15.00},
+    "claude-opus-4-7": {"input": 5.00, "output": 25.00},
     "claude-3-7-sonnet-20250219": {"input": 3.00, "output": 15.00},  # Using Sonnet 4 pricing
     "solo": {"input": 0.0, "output": 0.0},  # No cost for solo
     "gemini-2.5-flash": {"input": 0.30, "output": 2.50},
@@ -68,10 +70,10 @@ domain_expertise = (
     "A large deposit is defined as exceeding 50% of the borrower's total monthly qualifying income. "
     "Eligible income is calculated from the bank statement transactions, NOT from the ULAD DU's declared "
     "income fields (e.g. CurrentIncomeMonthlyTotalAmount). "
-    "To compute eligible income, filter transactions by their 'tag' field (not by description text): "
-    "qualifying deposits have tag 'payroll' or 'ssa_income'; "
-    "debt obligations have tag 'auto_loan', 'mortgage', or 'child_support'. "
-    "All other tags (e.g. 'general transaction', 'mortgage payments', 'cash', 'crypto') are excluded. "
+    # "To compute eligible income, filter transactions by their 'tag' field (not by description text): "
+    # "qualifying deposits have tag 'payroll' or 'ssa_income'; "
+    # "debt obligations have tag 'auto_loan', 'mortgage', or 'child_support'. "
+    # "All other tags (e.g. 'general transaction', 'mortgage payments', 'cash', 'crypto') are excluded. "
     "Eligible income = sum(qualifying deposits) − sum(obligation payments)."
 )
 
