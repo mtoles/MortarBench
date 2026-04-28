@@ -527,15 +527,16 @@ def generate_test_case(
 def main():
     parser = argparse.ArgumentParser(description="Generate test cases from questions.csv")
     parser.add_argument("--questions", default="data/questions.csv")
-    parser.add_argument("--dataset_path", default="default",
-                        help="Dataset name under generated_data/ (e.g. 'default', 'test_cases_official')")
+    parser.add_argument("--dataset_path", default="test_cases_official",
+                        help="Dataset name under generated_data/ (e.g. 'default', 'test_cases_official'). "
+                             "Must match eval.py --dataset_path.")
     parser.add_argument("--limit", type=int, default=None,
                         help="Max test cases to generate (for quick testing)")
     parser.add_argument("--tags", nargs="+", default=None,
                         help="Only process questions containing these keywords")
     parser.add_argument("--seed", type=str, default=0,
                         help="Random seed for reproducibility")
-    parser.add_argument("--cases_per_question", type=int, default=2,
+    parser.add_argument("--cases_per_question", type=int, default=4,
                         help="How many independent profile pairs to generate per question. "
                              "Each pair yields both polarities, so total cases = 2 * cases_per_question.")
     args = parser.parse_args()
