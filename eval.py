@@ -1456,7 +1456,7 @@ def main():
     parser.add_argument(
         "--question_col",
         type=str,
-        default="Question",
+        default="rephrased_question",
         choices=["Question", "Rephrased Question", "question", "rephrased_question"],
     )
     parser.add_argument(
