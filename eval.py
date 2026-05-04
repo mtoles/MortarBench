@@ -31,24 +31,27 @@ Usage:
 See --help for full list of command-line options.
 """
 
-import ast
-import datetime
-import os
-from dotenv import load_dotenv
-load_dotenv(override=True)
-import json
 import argparse
+import ast
+import concurrent.futures
+import datetime
+import json
+import os
 import random
 import re
-from collections import defaultdict
-import pandas as pd
-import concurrent.futures
 import threading
 import time
+from collections import defaultdict
 from decimal import Decimal, InvalidOperation
+
+import pandas as pd
+from dotenv import load_dotenv
+
+from agents import BaselineAgent, ExperimentalAgent, SoloAgent
 from llm import call_llm_wrapper, clear_messages
-from agents import SoloAgent, BaselineAgent, ExperimentalAgent
 from reflection_agent import ReflectionAgent, normalize_dollar_answer
+
+load_dotenv(override=True)
 
 
 # Pricing per million tokens (as of November 2025)
@@ -77,7 +80,21 @@ domain_expertise = (
     "Eligible income = sum(qualifying deposits) − sum(obligation payments)."
 )
 
-prompt = "{question}\n\nBank Statement: {context}\n\nULAD DU: {ulad_du}\n\nAnswer the question. {domain_expertise}Do not think out loud. {answer_instruction}."
+def build_prompt(question, bank_statement, ulad_du, use_domain_expertise, answer_instruction, extra_context=""):
+    """Construct the model prompt."""
+    parts = [
+        question,
+        f"Bank Statement: {bank_statement}",
+        f"ULAD DU: {ulad_du}",
+    ]
+    if extra_context:
+        parts.append(extra_context)
+    closing = "Answer the question."
+    if use_domain_expertise:
+        closing += f" Domain Expertise: {domain_expertise}"
+    closing += f" Do not think out loud. {answer_instruction}."
+    parts.append(closing)
+    return "\n\n".join(parts)
 
 model_answer_instruction = {
     "txn_id_list": "Describe the relevant transactions in text (titles/amounts/dates); do not guess or output transaction IDs.",
@@ -687,12 +704,8 @@ def load_dataset(
             with open(bank_path, "r") as f:
                 bank_statement = json.load(f)
                 
-        ulad_du = None
-        if os.path.exists(ulad_path):
-            with open(ulad_path, "r") as f:
-                ulad_du_obj = json.load(f)
-                # Keep it as formatted JSON string for the prompt
-                ulad_du = json.dumps(ulad_du_obj, indent=2)
+        with open(ulad_path, "r") as f:
+            ulad_du = json.dumps(json.load(f), indent=2)
 
         metadata_path = os.path.join(tc_dir, "metadata.json")
         gt_answer = row["revised_answer"]
@@ -764,16 +777,16 @@ def get_answer_type(answer):
     raise ValueError(f"Unknown answer type: {answer}")
 
 
-def create_agent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, prompt_template, model_type="baseline"):
+def create_agent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, model_type="baseline"):
     """Factory function to create the appropriate agent based on model_type."""
+    args = (model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func)
     if model_type == "solo":
-        return SoloAgent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func)
-    elif model_type == "experimental":
-        return ExperimentalAgent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, prompt_template)
-    elif model_type == "reflection":
-        return ReflectionAgent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, prompt_template)
-    else:
-        return BaselineAgent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, prompt_template)
+        return SoloAgent(*args)
+    if model_type == "experimental":
+        return ExperimentalAgent(*args)
+    if model_type == "reflection":
+        return ReflectionAgent(*args)
+    return BaselineAgent(*args)
 
 def evaluate_model(
     model_id,
@@ -786,10 +799,6 @@ def evaluate_model(
     use_rag=False,
 ):
     """Evaluate a model on the dataset."""
-    domain_expertise_str = (
-        f"Domain Expertise: {domain_expertise}\n\n" if use_domain_expertise else ""
-    )
-
     # Apply offset first
     if offset > 0:
         df = df.iloc[offset:].reset_index(drop=True)
@@ -879,8 +888,8 @@ def evaluate_model(
 
         # Create agent instance for this loan
         agent = create_agent(
-            model_id, loan_id, cleared_loans, cleared_loans_lock, 
-            wait_for_loan_gap, prompt, model_type=model_type
+            model_id, loan_id, cleared_loans, cleared_loans_lock,
+            wait_for_loan_gap, model_type=model_type,
         )
         
         # Setup loan (clears messages, enforces spacing for solo)
@@ -903,7 +912,7 @@ def evaluate_model(
             try:
                 # First call: model produces a textual answer (no IDs expected)
                 formatted_prompt = agent.get_initial_prompt(
-                    question, bank_statement, ulad_du, domain_expertise_str, model_answer_instruction_str
+                    question, bank_statement, ulad_du, use_domain_expertise, model_answer_instruction_str
                 )
                 raw_answer, input_tok, output_tok = call_llm_wrapper(
                     model_id=model_id,

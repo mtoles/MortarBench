@@ -296,7 +296,6 @@ class ReflectionAgent(BaselineAgent):
         cleared_loans,
         cleared_loans_lock,
         wait_for_loan_gap_func,
-        prompt_template,
     ):
         super().__init__(
             model_id,
@@ -304,11 +303,9 @@ class ReflectionAgent(BaselineAgent):
             cleared_loans,
             cleared_loans_lock,
             wait_for_loan_gap_func,
-            prompt_template,
         )
         self._bank_statement_str: str = ""
         self._ulad_du_str: str = ""
-        self._rag_context_str: str = ""
 
     # ------------------------------------------------------------------
     # Context setter — must be called before process_* methods
