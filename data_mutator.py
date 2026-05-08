@@ -15,6 +15,7 @@ import json
 import random
 import copy
 import calendar
+from collections import Counter
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional
 import pandas as pd
@@ -490,6 +491,76 @@ class DataMutator:
             end = max(0, start - days_between + 10)
             dates.append(self._get_random_date(start, end))
         return dates
+
+    def _detect_monthly_income(self, bank: Dict) -> float:
+        """Estimate monthly income from the most-frequent recurring payroll deposit."""
+        amounts = []
+        for account in bank["override_accounts"]:
+            if "transactions" not in account:
+                continue
+            for txn in account["transactions"]:
+                # Match by description since the primary payroll uses the "general
+                # transaction" tag, not a payroll-specific tag.
+                if txn["amount"] > 0 and "PAYROLL" in txn["description"].upper():
+                    amounts.append(round(float(txn["amount"]), 2))
+        if not amounts:
+            return 0.0
+        counts = Counter(amounts)
+        # Mode of payroll amounts: filters out the one-off undisclosed-employment paycheck.
+        return max(counts.items(), key=lambda kv: (kv[1], kv[0]))[0]
+
+    def _split_payroll_to_weekly(self, bank: Dict, monthly_amount: float) -> None:
+        """Replace each monthly payroll deposit at monthly_amount with 4 weekly
+        deposits of monthly_amount/4, so individual paychecks fall below the
+        50%-of-monthly-income threshold without changing total income."""
+        if monthly_amount <= 0:
+            return
+        weekly_amount = round(monthly_amount / 4, 2)
+        dataset_id = bank["seed"].split("-")[-1]
+        for account in bank["override_accounts"]:
+            if "transactions" not in account:
+                continue
+            new_txns = []
+            for txn in account["transactions"]:
+                # Only split the recurring primary payroll; one-off undisclosed-employment
+                # paychecks have a different amount and are left as-is.
+                if ("PAYROLL" in txn["description"].upper()
+                        and abs(txn["amount"] - monthly_amount) < 0.01):
+                    base_date = datetime.strptime(txn["date_transacted"], "%Y-%m-%d")
+                    for week in range(4):
+                        new_dt = base_date + timedelta(days=7 * week)
+                        new_txns.append({
+                            **txn,
+                            "amount": weekly_amount,
+                            "date_transacted": new_dt.strftime("%Y-%m-%d"),
+                            "date_posted": (new_dt + timedelta(days=1)).strftime("%Y-%m-%d"),
+                            "transaction_id": self._generate_txn_id(dataset_id),
+                        })
+                else:
+                    new_txns.append(txn)
+            account["transactions"] = new_txns
+
+    def _clamp_large_deposits(self, bank: Dict, monthly_income: float) -> None:
+        """Reduce every non-payroll deposit above 0.5 * monthly_income to a random
+        value strictly less than that threshold. Identified payroll deposits are
+        excluded so that the bank statement remains internally consistent (the
+        Selling Guide also excludes clearly identified payroll from large-deposit
+        review)."""
+        if monthly_income <= 0:
+            return
+        threshold = 0.5 * monthly_income
+        floor = min(50.0, threshold * 0.1)
+        # 0.99x keeps the new amount strictly below the threshold even after rounding.
+        ceiling = threshold * 0.99
+        for account in bank["override_accounts"]:
+            if "transactions" not in account:
+                continue
+            for txn in account["transactions"]:
+                # Skip payroll: clamping it would shift the monthly-income baseline.
+                if "PAYROLL" in txn["description"].upper():
+                    continue
+                if txn["amount"] > threshold:
+                    txn["amount"] = round(random.uniform(floor, ceiling), 2)
 
     def _remove_transactions_by_tag(self, bank: Dict, tag: str) -> List[Dict]:
         removed = []
@@ -1237,6 +1308,14 @@ class DataMutator:
         bank = copy.deepcopy(self.base_bank_statement)
         self._remove_transactions_by_tag(bank, config["tag"])
 
+        # Tag-based removal alone leaves payroll/loan/crypto deposits that exceed
+        # the 50%-of-monthly-income threshold the question actually tests against.
+        monthly_income = 0.0
+        if transaction_type == "large_deposits":
+            monthly_income = self._detect_monthly_income(bank)
+            self._split_payroll_to_weekly(bank, monthly_income)
+            self._clamp_large_deposits(bank, monthly_income)
+
         if num_transactions is None:
             if _resolve_boolean():
                 low, high = config["default_count_range"]
@@ -1261,7 +1340,10 @@ class DataMutator:
         for i in range(num_transactions):
             cur_keyword = keyword if keyword else random.choice(config["keywords"])
 
-            if config.get("amount_discrete"):
+            # Scale to monthly income so injected deposits are guaranteed above the threshold.
+            if transaction_type == "large_deposits" and monthly_income > 0:
+                amount = round(random.uniform(0.5 * monthly_income + 1, 3 * monthly_income), 2)
+            elif config.get("amount_discrete"):
                 amount = float(random.choice(config["amount_discrete"]))
             elif config.get("recurring"):
                 amount = base_amount + round(random.uniform(-50, 50), 2)

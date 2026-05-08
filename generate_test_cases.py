@@ -526,15 +526,19 @@ def generate_test_case(
 
 def main():
     parser = argparse.ArgumentParser(description="Generate test cases from questions.csv")
-    parser.add_argument("--questions", default="data/questions.csv")
-    parser.add_argument("--dataset_path", default="default",
-                        help="Dataset name under generated_data/ (e.g. 'default', 'test_cases_official')")
+    parser.add_argument("--questions", default="data/questions_unique_generated.csv")
+    parser.add_argument("--dataset_path", default="test_cases_official",
+                        help="Dataset name under generated_data/ (e.g. 'default', 'test_cases_official'). "
+                             "Must match eval.py --dataset_path.")
     parser.add_argument("--limit", type=int, default=None,
                         help="Max test cases to generate (for quick testing)")
     parser.add_argument("--tags", nargs="+", default=None,
                         help="Only process questions containing these keywords")
     parser.add_argument("--seed", type=str, default=0,
                         help="Random seed for reproducibility")
+    parser.add_argument("--cases_per_question", type=int, default=4,
+                        help="How many independent profile pairs to generate per question. "
+                             "Each pair yields both polarities, so total cases = 2 * cases_per_question.")
     args = parser.parse_args()
 
     dataset_dir = os.path.join("generated_data", args.dataset_path)
@@ -562,40 +566,49 @@ def main():
     if args.limit:
         df = df.head(args.limit)
 
-    # Duplicate each row (positive + negative) so the CSV aligns with test case numbering
-    df_expanded = df.loc[df.index.repeat(2)].reset_index(drop=True)
-    df_expanded["polarity"] = ["positive", "negative"] * len(df)
-    df_expanded.to_csv(os.path.join(output_dir, "questions.csv"), index=False)
-    print(f"Saved {len(df_expanded)} rows ({len(df)} questions × 2 polarities) to {output_dir}/questions.csv")
+    cases_per_q = args.cases_per_question
+    rows_per_q = 2 * cases_per_q
+    total_cases = len(df) * rows_per_q
 
-    print(f"Processing {len(df)} questions (unique profile per question)...")
+    # Duplicate each row (cases_per_question × 2 polarities) so the CSV aligns with test case numbering
+    df_expanded = df.loc[df.index.repeat(rows_per_q)].reset_index(drop=True)
+    df_expanded["polarity"] = ["positive", "negative"] * (len(df) * cases_per_q)
+    df_expanded.to_csv(os.path.join(output_dir, "questions.csv"), index=False)
+    print(f"Saved {len(df_expanded)} rows ({len(df)} questions × {cases_per_q} profile pairs × 2 polarities) "
+          f"to {output_dir}/questions.csv")
+
+    print(f"Processing {len(df)} questions ({cases_per_q} unique profile pairs per question)...")
 
     results, success, skipped = [], 0, 0
     tc_id = 0
 
     for _, row in df.iterrows():
-        # Generate a unique profile for this question
-        bank, ulad = generate_profile()
-        bank_2, ulad_2 = generate_profile()
-        mutator = mutator_from_dicts(bank, ulad, bank_2, ulad_2)
+        for case_idx in range(cases_per_q):
+            # Generate a unique profile for this (question, case) pair
+            bank, ulad = generate_profile()
+            bank_2, ulad_2 = generate_profile()
+            mutator = mutator_from_dicts(bank, ulad, bank_2, ulad_2)
 
-        for positive in (True, False):
-            tc_id += 1
-            polarity = "positive" if positive else "negative"
-            print(f"\n[{tc_id}/{len(df) * 2}] {row['test_case_number']} ({polarity}) - {row['rephrased_question'][:60]}...")
+            for positive in (True, False):
+                tc_id += 1
+                polarity = "positive" if positive else "negative"
+                print(f"\n[{tc_id}/{total_cases}] {row['test_case_number']} "
+                      f"(case {case_idx + 1}/{cases_per_q}, {polarity}) - {row['rephrased_question'][:60]}...")
 
-            meta = generate_test_case(row, mutator, output_dir, tc_id, positive=positive)
-            if meta:
-                meta["polarity"] = polarity
-                results.append(meta)
-                success += 1
-                print(f"  → saved to test_case_{tc_id:04d}/")
-            else:
-                skipped += 1
+                meta = generate_test_case(row, mutator, output_dir, tc_id, positive=positive)
+                if meta:
+                    meta["polarity"] = polarity
+                    meta["case_index"] = case_idx
+                    results.append(meta)
+                    success += 1
+                    print(f"  → saved to test_case_{tc_id:04d}/")
+                else:
+                    skipped += 1
 
     summary = {
         "total_questions": len(df),
-        "total_test_cases": len(df) * 2,
+        "cases_per_question": cases_per_q,
+        "total_test_cases": total_cases,
         "successful": success,
         "skipped": skipped,
         "test_cases": results,
@@ -606,7 +619,7 @@ def main():
     print(f"\n{'='*60}")
     print(f"Generation complete!")
     print(f"  Questions : {len(df)}")
-    print(f"  Test cases: {len(df) * 2} ({len(df)} × 2 polarities)")
+    print(f"  Test cases: {total_cases} ({len(df)} × {cases_per_q} profile pairs × 2 polarities)")
     print(f"  Successful: {success}")
     print(f"  Skipped   : {skipped}")
     print(f"  Output    : {output_dir}/")

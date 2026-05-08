@@ -29,7 +29,7 @@ End-to-end process to generate the test cases:
 1. **Step 1** — Runs `dataset_generator.py` twice to produce:
    - `generated_data/bank_statement.json` + `generated_data/ulad.json` (primary borrower)
    - `generated_data/bank_statement_2.json` + `generated_data/ulad_2.json` (second borrower, for two-borrower scenarios)
-2. **Step 2** — Runs `generate_test_cases.py` with `data/questions_unique_generated.csv` to produce mutated test cases in `generated_data/test_cases_unique/`.
+2. **Step 2** — Runs `generate_test_cases.py` with `data/questions.csv` to produce mutated test cases in `generated_data/test_cases_unique/`.
 
 To regenerate more synthetic data, simply run the script again (optionally with a different `--seed`).
 
@@ -154,7 +154,7 @@ These return only a bank statement and an answer (no ULAD changes).
 
 # Generate ALL test cases from unique questions
 python generate_test_cases.py \
-  --questions data/questions_unique_generated.csv \
+  --questions data/questions.csv \
   --bank-statement generated_data/bank_statement.json \
   --ulad generated_data/ulad.json \
   --bank-statement-2 generated_data/bank_statement_2.json \
