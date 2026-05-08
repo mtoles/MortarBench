@@ -1845,7 +1845,7 @@ class DataMutator:
                     ] = f"{rental_amount:.2f}"
 
         # Remove any existing rental-income deposits (positive amounts tagged rental)
-        self._remove_transactions_by_description(bank, ["ZELLE PAYMENT FROM", "RENTAL INCOME DEPOSIT"])
+        self._remove_transactions_by_description(bank, ["RENTAL"])
 
         deposit_amount = rental_amount if match else rental_amount + random.choice([-500, 500, 1000, -1000])
         deposit_amount = max(100, deposit_amount)
@@ -1854,7 +1854,7 @@ class DataMutator:
         for i in range(2):
             date_transacted, date_posted = self._get_random_date(90 - i * 30, max(0, 60 - i * 30))
             txn = {
-                "description": f"ZELLE PAYMENT FROM {payer.upper()}",
+                "description": f"RENTAL INCOME FROM {payer.upper()}",
                 "amount": deposit_amount,
                 "currency": "USD",
                 "transaction_id": "",
