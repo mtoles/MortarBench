@@ -204,6 +204,24 @@ TRANSACTION_CONFIGS = {
         "default_count_range": (1, 3),
         "date_spacing": "monthly",
     },
+    "regular_recurring_debits": {
+        "tag": "regular recurring debits",
+        "keywords": ["Netflix", "Spotify", "AT&T", "Comcast", "Gym Membership", "Electric Company", "Water Bill"],
+        "description_template": "ACH DEBIT - {keyword}",
+        "amount_range": (15, 250),
+        "amount_sign": "negative",
+        "default_count_range": (0, 4),
+        "date_spacing": "monthly",
+    },
+    "regular_deposits": {
+        "tag": "regular deposits",
+        "keywords": ["DIRECT DEPOSIT - EMPLOYER", "PAYROLL DIRECT DEPOSIT", "ACH CREDIT - TRANSFER IN", "CHECK DEPOSIT"],
+        "description_template": "{keyword}",
+        "amount_range": (500, 5000),
+        "amount_sign": "positive",
+        "default_count_range": (0, 3),
+        "date_spacing": None,
+    },
 }
 
 # ==================== ACCOUNT CONFIGS ====================
@@ -1466,7 +1484,7 @@ class DataMutator:
 
     # ==================== ULAD MUTATION FUNCTIONS ====================
 
-    def mutate_employer_payroll_consistency(self, match: bool = None, answer_type: str = "boolean") -> Tuple[Dict, Dict, str]:
+    def mutate_employer_payroll_consistency(self, match: bool = None, answer_type: str = "id_list") -> Tuple[Dict, Dict, str]:
         """
         Set payroll deposits in bank from a specific employer; set ULAD employer to
         match (consistent) or differ (mismatch).
@@ -1496,6 +1514,7 @@ class DataMutator:
 
         # Add payroll deposits
         payroll_amount = round(random.uniform(*config["payroll_range"]), 2)
+        added = []
         for i in range(config["num_payroll"]):
             date_transacted, date_posted = self._get_random_date(90 - i * 30, max(0, 60 - i * 30))
             txn = {
@@ -1508,9 +1527,15 @@ class DataMutator:
                 "date_posted": date_posted,
             }
             self._add_transaction_to_checking(bank, txn)
+            added.append(txn)
 
         if answer_type == "boolean":
             answer = "Yes" if match else "No"
+        elif answer_type == "id_list":
+            if match:
+                answer = str([txn.get("transaction_id", "") for txn in added])
+            else:
+                answer = "[]"
         else:
             if match:
                 answer = (f"Yes - payroll deposits from \"{bank_employer}\" match the employer "
@@ -1785,7 +1810,7 @@ class DataMutator:
         answer = self._format_transaction_list(added, answer_type)
         return bank, ulad, answer
 
-    def mutate_rental_income_consistency(self, match: bool = None, answer_type: str = "boolean") -> Tuple[Dict, Dict, str]:
+    def mutate_rental_income_consistency(self, match: bool = None, answer_type: str = "id_list") -> Tuple[Dict, Dict, str]:
         """
         Add a REO property to ULAD with a set gross rental income amount, then add
         rental income deposits to the bank statement that match (or differ).
@@ -1867,6 +1892,11 @@ class DataMutator:
 
         if answer_type == "boolean":
             answer = "Yes" if match else "No"
+        elif answer_type == "id_list":
+            if match:
+                answer = str([txn.get("transaction_id", "") for txn in added])
+            else:
+                answer = "[]"
         else:
             if match:
                 answer = (f"Yes - rental income deposits of ${deposit_amount:,.2f}/month align with "
@@ -2079,7 +2109,7 @@ class DataMutator:
         answer = self._format_transaction_list(added, answer_type)
         return bank, ulad, answer
 
-    def mutate_missing_transactions(self, has_missing: bool = None, answer_type: str = "boolean") -> Tuple[Dict, str]:
+    def mutate_missing_transactions(self, has_missing: bool = None, answer_type: str = "id_list_account") -> Tuple[Dict, str]:
         """
         Create a scenario where starting balance + transactions don't equal ending balance,
         indicating missing transactions in the bank statement.
@@ -2131,8 +2161,12 @@ class DataMutator:
 
         if answer_type == "boolean":
             answer = "Yes" if has_missing else "No"
-        elif answer_type == "id_list":
-            answer = "[]"
+        elif answer_type in ["id_list_account", "id_list"]:
+            if has_missing:
+                acc_num = primary_account.get("numbers", {}).get("account", "0000")
+                answer = str([acc_num])
+            else:
+                answer = "[]"
         else:
             if has_missing:
                 answer = (f"Yes - Balance discrepancy detected.\n"
@@ -2188,7 +2222,7 @@ class DataMutator:
         return bank, answer
 
     def mutate_recurring_income_match(self, match: bool = None, disclosed: bool = True,
-                                     answer_type: str = "boolean") -> Tuple[Dict, Dict, str]:
+                                     answer_type: str = "id_list") -> Tuple[Dict, Dict, str]:
         """
         Add recurring income deposits (alimony, child support, SSA) to the bank
         statement and optionally declare corresponding income on the ULAD.
@@ -2254,13 +2288,18 @@ class DataMutator:
                 answer = "No"  # undisclosed means no match by definition
             else:
                 answer = "Yes" if match else "No"
+        elif answer_type == "id_list":
+            if match and disclosed:
+                answer = self._format_transaction_list(added, answer_type)
+            else:
+                answer = "[]"
         else:
             answer = self._format_transaction_list(added, answer_type)
 
         return bank, ulad, answer
 
     def mutate_recurring_expense_match(self, match: bool = None, disclosed: bool = True,
-                                      answer_type: str = "boolean") -> Tuple[Dict, Dict, str]:
+                                      answer_type: str = "id_list") -> Tuple[Dict, Dict, str]:
         """
         Add recurring expense debits (alimony, child support, SSA repayment) to the
         bank statement and optionally declare corresponding liabilities on the ULAD.
@@ -2328,13 +2367,18 @@ class DataMutator:
                 answer = "No"
             else:
                 answer = "Yes" if match else "No"
+        elif answer_type == "id_list":
+            if match and disclosed:
+                answer = self._format_transaction_list(added, answer_type)
+            else:
+                answer = "[]"
         else:
             answer = self._format_transaction_list(added, answer_type)
 
         return bank, ulad, answer
 
     def mutate_eligible_income(self, include_business: bool = None,
-                               answer_type: str = "dollar_amount") -> Tuple[Dict, Dict, str]:
+                               answer_type: str = "id_list") -> Tuple[Dict, Dict, str]:
         """
         Generate 12 months of personal bank statement data (and optionally 24 months
         of business data) with qualifying deposits and obligations, then compute
@@ -2356,6 +2400,7 @@ class DataMutator:
 
         total_qualifying = 0.0
         total_obligations = 0.0
+        non_qualifying_added = []
         employer = random.choice(config["employers"])
         creditor = random.choice(config["creditors"])
         crypto = random.choice(config["crypto_sources"])
@@ -2413,11 +2458,14 @@ class DataMutator:
                     "date_posted": date_posted,
                 }
                 self._add_transaction_to_checking(bank, txn)
+                non_qualifying_added.append(txn)
                 # Non-qualifying — NOT added to total_qualifying
 
         eligible = round(total_qualifying - total_obligations, 2)
 
-        if answer_type == "dollar_amount":
+        if answer_type == "id_list":
+            answer = str([txn.get("transaction_id", "") for txn in non_qualifying_added])
+        elif answer_type == "dollar_amount":
             answer = f"${eligible:,.2f}"
         elif answer_type == "boolean":
             answer = "Yes" if eligible > 0 else "No"
@@ -2426,7 +2474,7 @@ class DataMutator:
 
         return bank, ulad, answer
 
-    def mutate_large_deposit_corresponding_debit(self, match: bool = None, answer_type: str = "boolean") -> Tuple[Dict, Dict, Dict, str]:
+    def mutate_large_deposit_corresponding_debit(self, match: bool = None, answer_type: str = "id_list") -> Tuple[Dict, Dict, Dict, str]:
         """
         Create a scenario with two borrowers where a large deposit in one borrower's account
         has (or doesn't have) a corresponding debit in the other borrower's account within
@@ -2526,7 +2574,8 @@ class DataMutator:
             answer = "Yes" if match else "No"
         elif answer_type == "id_list":
             if match and debit_txn:
-                answer = str([debit_txn.get("transaction_id", "")])
+                # Return the deposit transaction ID — the question asks which deposits are documented
+                answer = str([deposit_txn.get("transaction_id", "")])
             else:
                 answer = "[]"
         else:
@@ -2541,6 +2590,42 @@ class DataMutator:
                          f"Deposit: {deposit_txn['date_transacted']} - {borrower_a_name} received ${deposit_amount:,.2f}\n"
                          f"No matching debit transaction found in {borrower_b_name}'s account within the {config['time_window_days']}-day time window.")
         
+        return bank_a, bank_b, ulad, answer
+
+    def mutate_undocumented_large_deposit(self, answer_type: str = "id_list") -> Tuple[Dict, Dict, Dict, str]:
+        """
+        Inverted variant of mutate_large_deposit_corresponding_debit.
+
+        Positive case (is_undocumented=True): the large deposit has NO corresponding debit
+            → the deposit is undocumented → answer = [deposit_id]
+        Negative case (is_undocumented=False): the large deposit HAS a corresponding debit
+            → the deposit is documented → answer = []
+        """
+        is_undocumented = _resolve_boolean()
+        # Pass the inverted boolean so the base function creates the scenario we need
+        bank_a, bank_b, ulad, _ = self.mutate_large_deposit_corresponding_debit(
+            match=not is_undocumented,
+            answer_type=answer_type,
+        )
+
+        if answer_type == "id_list":
+            if is_undocumented:
+                deposit_id = ""
+                for account in bank_a.get("override_accounts", []):
+                    for txn in account.get("transactions", []):
+                        if txn.get("tag") == "large deposits":
+                            deposit_id = txn.get("transaction_id", "")
+                            break
+                    if deposit_id:
+                        break
+                answer = str([deposit_id]) if deposit_id else "[]"
+            else:
+                answer = "[]"
+        elif answer_type == "boolean":
+            answer = "Yes" if is_undocumented else "No"
+        else:
+            answer = str(is_undocumented)
+
         return bank_a, bank_b, ulad, answer
 
     def mutate_auto_loan_third_party_payment(self, third_party_pays: bool = None, answer_type: str = "boolean") -> Tuple[Dict, Dict, Dict, str]:
@@ -2699,6 +2784,204 @@ class DataMutator:
                          f"Creditor: {creditor}")
         
         return borrower_bank, third_party_bank, ulad, answer
+
+    def mutate_statement_staleness(self, stale: bool = None, answer_type: str = "boolean") -> Tuple[Dict, str]:
+        """
+        Create a scenario where account statement end dates are either stale (more than
+        45 days before the loan application date, treated as today) or fresh (within 45 days).
+
+        When stale=True, all transaction dates are shifted backward so that the newest
+        transaction falls 46-75 days in the past, making the derived statement EndDate stale.
+
+        Returns:
+            (mutated_bank_statement, answer_string)
+        """
+        bank = copy.deepcopy(self.base_bank_statement)
+        stale = _resolve_boolean(stale)
+
+        if stale:
+            offset_days = random.randint(46, 75)
+            for account in bank["override_accounts"]:
+                new_txns = []
+                for txn in account.get("transactions", []):
+                    try:
+                        d = datetime.strptime(txn["date_transacted"], "%Y-%m-%d")
+                        dp = datetime.strptime(txn["date_posted"], "%Y-%m-%d")
+                        new_txns.append({
+                            **txn,
+                            "date_transacted": (d - timedelta(days=offset_days)).strftime("%Y-%m-%d"),
+                            "date_posted": (dp - timedelta(days=offset_days)).strftime("%Y-%m-%d"),
+                        })
+                    except (ValueError, KeyError):
+                        new_txns.append(txn)
+                account["transactions"] = new_txns
+        # else: base data already has recent transactions (end date within 45 days)
+
+        answer = "Yes" if stale else "No"
+        return bank, answer
+
+    def mutate_unexplained_large_deposits(self, answer_type: str = "id_list") -> Tuple[Dict, str]:
+        """
+        Add large deposits to the bank statement: some explained (payroll bonus, tax
+        refund, internal transfer) and, depending on polarity, some unexplained.
+        The answer is the transaction IDs of the unexplained deposits only.
+
+        Returns:
+            (mutated_bank_statement, answer_string)
+        """
+        bank = copy.deepcopy(self.base_bank_statement)
+
+        monthly_income = self._detect_monthly_income(bank)
+        self._split_payroll_to_weekly(bank, monthly_income)
+        self._clamp_large_deposits(bank, monthly_income)
+        self._remove_transactions_by_tag(bank, "large deposits")
+
+        threshold = max(0.5 * monthly_income, 1000.0) if monthly_income > 0 else 5000.0
+
+        explained_items = [
+            ("PAYROLL BONUS - {employer}", ["Acme Corp", "Global Tech", "State University"]),
+            ("TAX REFUND - IRS", [None]),
+            ("ACH CREDIT - TRANSFER FROM OWN SAVINGS", [None]),
+        ]
+        unexplained_descs = [
+            "WIRE IN CREDIT - UNKNOWN SOURCE",
+            "ACH CREDIT - UNNAMED SENDER",
+            "WIRE TRANSFER IN",
+        ]
+
+        # Always add 1-2 explained large deposits for context
+        num_explained = random.randint(1, 2)
+        for i in range(num_explained):
+            template, names = random.choice(explained_items)
+            employer = random.choice(names)
+            desc = template.format(employer=employer) if employer else template
+            amount = round(random.uniform(threshold * 1.1, threshold * 3), 2)
+            date_t, date_p = self._get_random_date(90 - i * 20, max(0, 70 - i * 20))
+            txn = {
+                "description": desc,
+                "amount": amount,
+                "currency": "USD",
+                "transaction_id": "",
+                "tag": "explained large deposit",
+                "date_transacted": date_t,
+                "date_posted": date_p,
+            }
+            self._add_transaction_to_checking(bank, txn)
+
+        added_unexplained = []
+        if _resolve_boolean():
+            for i in range(random.randint(1, 3)):
+                desc = random.choice(unexplained_descs)
+                amount = round(random.uniform(threshold * 1.1, threshold * 4), 2)
+                date_t, date_p = self._get_random_date(85 - i * 20, max(0, 65 - i * 20))
+                txn = {
+                    "description": desc,
+                    "amount": amount,
+                    "currency": "USD",
+                    "transaction_id": "",
+                    "tag": "unexplained large deposit",
+                    "date_transacted": date_t,
+                    "date_posted": date_p,
+                }
+                self._add_transaction_to_checking(bank, txn)
+                added_unexplained.append(txn)
+
+        return bank, self._format_transaction_list(added_unexplained, answer_type)
+
+    def mutate_multiple_employer_payroll(self, multi_employer: bool = None, answer_type: str = "boolean") -> Tuple[Dict, str]:
+        """
+        Create a scenario where payroll deposits over the two-year window come from
+        multiple employers (Yes) or a single employer (No).
+
+        Returns:
+            (mutated_bank_statement, answer_string)
+        """
+        bank = copy.deepcopy(self.base_bank_statement)
+        multi_employer = _resolve_boolean(multi_employer)
+
+        self._remove_transactions_by_description(bank, ["PAYROLL", "ACH CREDIT PAYROLL"])
+
+        employers = ["Acme Corp", "Global Tech", "State University", "NY MTA", "City Hospital"]
+
+        if multi_employer:
+            selected = random.sample(employers, random.randint(2, 3))
+            for emp_idx, employer in enumerate(selected):
+                amount = round(random.uniform(2000, 5000), 2)
+                for month_offset in range(2):
+                    start = 90 - emp_idx * 15 - month_offset * 30
+                    end = max(0, start - 20)
+                    date_t, date_p = self._get_random_date(start, end)
+                    txn = {
+                        "description": f"ACH CREDIT PAYROLL - {employer}",
+                        "amount": round(amount + random.uniform(-50, 50), 2),
+                        "currency": "USD",
+                        "transaction_id": "",
+                        "tag": "general transaction",
+                        "date_transacted": date_t,
+                        "date_posted": date_p,
+                    }
+                    self._add_transaction_to_checking(bank, txn)
+        else:
+            employer = random.choice(employers)
+            amount = round(random.uniform(2000, 5000), 2)
+            for i in range(3):
+                date_t, date_p = self._get_random_date(90 - i * 30, max(0, 60 - i * 30))
+                txn = {
+                    "description": f"ACH CREDIT PAYROLL - {employer}",
+                    "amount": round(amount + random.uniform(-50, 50), 2),
+                    "currency": "USD",
+                    "transaction_id": "",
+                    "tag": "general transaction",
+                    "date_transacted": date_t,
+                    "date_posted": date_p,
+                }
+                self._add_transaction_to_checking(bank, txn)
+
+        answer = "Yes" if multi_employer else "No"
+        return bank, answer
+
+    def mutate_employment_gap(self, gap: bool = None, answer_type: str = "boolean") -> Tuple[Dict, str]:
+        """
+        Generate 12 months of payroll deposits with either a gap greater than one
+        month (gap=True) or a continuous monthly pattern (gap=False).
+
+        When gap=True, two consecutive months are skipped, creating a >30-day
+        window with no payroll, which represents an employment gap.
+
+        Returns:
+            (mutated_bank_statement, answer_string)
+        """
+        bank = copy.deepcopy(self.base_bank_statement)
+        gap = _resolve_boolean(gap)
+
+        self._remove_transactions_by_description(bank, ["PAYROLL", "ACH CREDIT PAYROLL"])
+
+        employer = random.choice(["Acme Corp", "Global Tech", "State University"])
+        base_amount = round(random.uniform(2000, 5000), 2)
+
+        skip_start = random.randint(2, 7) if gap else -1
+        skip_end = skip_start + 1  # two-month gap → > one month
+
+        for month_offset in range(12):
+            if gap and skip_start <= month_offset <= skip_end:
+                continue  # Leave these months without payroll
+            days_ago = month_offset * 30 + random.randint(5, 15)
+            date_obj = datetime.now() - timedelta(days=days_ago)
+            date_t = date_obj.strftime("%Y-%m-%d")
+            date_p = (date_obj + timedelta(days=1)).strftime("%Y-%m-%d")
+            txn = {
+                "description": f"ACH CREDIT PAYROLL - {employer}",
+                "amount": round(base_amount + random.uniform(-50, 50), 2),
+                "currency": "USD",
+                "transaction_id": "",
+                "tag": "general transaction",
+                "date_transacted": date_t,
+                "date_posted": date_p,
+            }
+            self._add_transaction_to_checking(bank, txn)
+
+        answer = "Yes" if gap else "No"
+        return bank, answer
 
     # NOTE: mutate_credit_card_full_balance_payment and its helpers (_add_credit_card_to_ulad,
     # _calculate_bank_statement_months) have been commented out per PR review - row 30 deleted.

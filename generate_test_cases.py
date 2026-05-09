@@ -63,6 +63,9 @@ MUTATION_RULES = [
     ("payroll deposits in the bank statements are consistent with the income and employment",
      {"type": "ulad", "fn": "mutate_employer_payroll_consistency"}),
 
+    ("match any employer listed for the primary borrower",
+     {"type": "ulad", "fn": "mutate_employer_payroll_consistency"}),
+
     ("payroll deposits from an employer not listed on the loan application",
      {"type": "ulad", "fn": "mutate_payroll_undisclosed_employer"}),
 
@@ -99,6 +102,12 @@ MUTATION_RULES = [
     ("recurring payments for child support",
      {"type": "ulad", "fn": "mutate_child_support_disclosure"}),
 
+    ("recurring debits indicate liabilities not listed on the loan application",
+     {"type": "ulad", "fn": "mutate_undisclosed_liabilities"}),
+
+    ("recurring debits on the bank statements indicate any liabilities not listed",
+     {"type": "ulad", "fn": "mutate_undisclosed_liabilities"}),
+
     ("recurring debt payments that were not disclosed on the loan application",
      {"type": "ulad", "fn": "mutate_undisclosed_liabilities"}),
 
@@ -129,6 +138,9 @@ MUTATION_RULES = [
     ("deposits match the properties monthly gross rental income",
      {"type": "ulad", "fn": "mutate_rental_income_consistency"}),
 
+    ("rental income deposits, if any, support the gross rental income",
+     {"type": "ulad", "fn": "mutate_rental_income_consistency"}),
+
     ("joint accounts where one or more account holders are not listed as borrowers",
      {"type": "ulad", "fn": "mutate_joint_account_holder"}),
 
@@ -154,6 +166,9 @@ MUTATION_RULES = [
     ("recurring deposits match the claimed",
      {"type": "ulad", "fn": "mutate_recurring_income_match"}),
 
+    ("recurring deposits, if any, match the claimed",
+     {"type": "ulad", "fn": "mutate_recurring_income_match"}),
+
     ("recurring debit match the claimed alimony",
      {"type": "ulad", "fn": "mutate_recurring_expense_match"}),
 
@@ -163,7 +178,13 @@ MUTATION_RULES = [
     ("recurring debits match the claimed",
      {"type": "ulad", "fn": "mutate_recurring_expense_match"}),
 
+    ("recurring debits, if any, match the claimed",
+     {"type": "ulad", "fn": "mutate_recurring_expense_match"}),
+
     # ── Eligible income ──────────────────────────────────────────────────
+    ("do not support employment income sources disclosed",
+     {"type": "ulad", "fn": "mutate_eligible_income"}),
+
     ("eligible income",
      {"type": "ulad", "fn": "mutate_eligible_income"}),
 
@@ -171,6 +192,10 @@ MUTATION_RULES = [
      {"type": "ulad", "fn": "mutate_eligible_income"}),
 
     # ── Two-borrower mutations ─────────────────────────────────────────────
+    # Inverted (not-documented) rules must come first to win the first-match
+    ("large deposits, if any, are not documented",
+     {"type": "two_borrower", "fn": "mutate_undocumented_large_deposit"}),
+
     ("large deposit documented by a corresponding debit from the other borrower",
      {"type": "two_borrower", "fn": "mutate_large_deposit_corresponding_debit"}),
 
@@ -178,6 +203,9 @@ MUTATION_RULES = [
      {"type": "two_borrower", "fn": "mutate_large_deposit_corresponding_debit"}),
 
     ("is the large deposit documented",
+     {"type": "two_borrower", "fn": "mutate_large_deposit_corresponding_debit"}),
+
+    ("large deposits, if any, are documented",
      {"type": "two_borrower", "fn": "mutate_large_deposit_corresponding_debit"}),
 
     # ── Auto loan third party payment mutations ────────────────────────────
@@ -197,6 +225,35 @@ MUTATION_RULES = [
     # ("pays the full balance each month",
     #  {"type": "ulad", "fn": "mutate_credit_card_full_balance_payment"}),
 
+    # ── Statement staleness (end date > 45 days before application date) ─────
+    ("end date more than 45 days before the initial loan application date",
+     {"type": "bank_special", "fn": "mutate_statement_staleness"}),
+
+    ("account statement's end date more than 45 days",
+     {"type": "bank_special", "fn": "mutate_statement_staleness"}),
+
+    # ── Unexplained large deposits (after excluding payroll/tax refunds) ─────
+    # Must precede the generic "large deposit" rule to win first-match.
+    ("unexplained after excluding payroll, tax refunds",
+     {"type": "bank_special", "fn": "mutate_unexplained_large_deposits"}),
+
+    ("large deposits remain unexplained after excluding payroll",
+     {"type": "bank_special", "fn": "mutate_unexplained_large_deposits"}),
+
+    # ── Multiple-employer payroll (two-year window) ────────────────────────
+    ("payroll deposits from multiple employers",
+     {"type": "bank_special", "fn": "mutate_multiple_employer_payroll"}),
+
+    ("multiple employers during the most recent two-year employment history",
+     {"type": "bank_special", "fn": "mutate_multiple_employer_payroll"}),
+
+    # ── Employment gap in last 12 months (payroll-based) ──────────────────
+    ("employment gap greater than one month in the most recent 12 months",
+     {"type": "bank_special", "fn": "mutate_employment_gap"}),
+
+    ("employment gap greater than one month",
+     {"type": "bank_special", "fn": "mutate_employment_gap"}),
+
     # ── Bank-only special mutations ────────────────────────────────────────
     ("missing transactions",
      {"type": "bank_special", "fn": "mutate_missing_transactions"}),
@@ -207,6 +264,9 @@ MUTATION_RULES = [
     ("are there any missing transactions",
      {"type": "bank_special", "fn": "mutate_missing_transactions"}),
 
+    ("missing or non-consecutive bank statement records",
+     {"type": "bank_special", "fn": "mutate_missing_transactions"}),
+
     ("missing date",
      {"type": "bank_special", "fn": "mutate_missing_date"}),
 
@@ -214,6 +274,13 @@ MUTATION_RULES = [
      {"type": "bank_special", "fn": "mutate_missing_date"}),
 
     # ── Bank-transaction mutations ─────────────────────────────────────────
+    # Negation variants must come before the generic BNPL / secured-loan keywords
+    ("not made to known bnpl providers",
+     {"type": "transaction", "mutation_type": "regular_recurring_debits"}),
+
+    ("are not made to known bnpl",
+     {"type": "transaction", "mutation_type": "regular_recurring_debits"}),
+
     ("bnpl",
      {"type": "transaction", "mutation_type": "bnpl"}),
 
@@ -273,6 +340,12 @@ MUTATION_RULES = [
 
     ("deposits that could be of foreign origin",
      {"type": "transaction", "mutation_type": "foreign_deposits"}),
+
+    ("doesn't appear to be from a secured loan",
+     {"type": "transaction", "mutation_type": "regular_deposits"}),
+
+    ("does not appear to be from a secured loan",
+     {"type": "transaction", "mutation_type": "regular_deposits"}),
 
     ("secured loan",
      {"type": "transaction", "mutation_type": "secured_loan_deposits"}),

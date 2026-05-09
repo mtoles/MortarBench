@@ -104,6 +104,8 @@ End-to-end shell script that runs the full pipeline (template generation + test 
 | `additional_account_holder` | `additional account holder` | Transfer from joint holder |
 | `mortgage_payments` | `mortgage payments` | ACH DEBIT mortgage payment |
 | `savings_club` | `private savings club` | Community savings club funds |
+| `regular_recurring_debits` | `regular recurring debits` | Non-BNPL recurring monthly debits (Netflix, utilities, etc.) — used as negation answer for BNPL questions |
+| `regular_deposits` | `regular deposits` | Generic non-secured-loan deposits (payroll, ACH, check) — used as negation answer for secured-loan questions |
 
 ### Bank Account Mutations (`mutate_account`)
 
@@ -117,12 +119,12 @@ End-to-end shell script that runs the full pipeline (template generation + test 
 
 | Method | What it mutates | Default answer_type |
 |--------|----------------|-------------|
-| `mutate_employer_payroll_consistency` | ULAD employer + bank payroll deposits | `boolean` |
+| `mutate_employer_payroll_consistency` | ULAD employer + bank payroll deposits | `id_list` |
 | `mutate_address_match` | Bank identity address vs ULAD residence address | `boolean` |
 | `mutate_gift_deposit` | ULAD PURCHASE_CREDITS gift amount + matching bank deposit | `id_list` |
 | `mutate_child_support_disclosure` | Bank: recurring child-support payments not in ULAD | `id_list` |
 | `mutate_undisclosed_liabilities` | Bank: recurring BNPL / alimony / Venmo rent payments **present on the bank statement but intentionally absent from ULAD LIABILITIES** | `id_list` |
-| `mutate_rental_income_consistency` | ULAD REO rental income + bank deposits | `boolean` |
+| `mutate_rental_income_consistency` | ULAD REO rental income + bank deposits | `id_list` |
 | `mutate_joint_account_holder` | Bank: joint account with non-borrower; ULAD: single borrower | `id_list_account` |
 | `mutate_payroll_paystub_consistency` | Bank payroll deposits vs hypothetical paystub amount | `boolean` |
 | `mutate_payroll_undisclosed_employer` | ULAD employer A, bank payroll from employer B | `id_list` |
@@ -130,7 +132,8 @@ End-to-end shell script that runs the full pipeline (template generation + test 
 | `mutate_recurring_income_match` | ULAD income items (alimony, child support, Social Security, etc.) + matching or mismatching recurring deposits to bank; supports `disclosed=False` | `boolean` |
 | `mutate_recurring_expense_match` | ULAD EXPENSES (alimony, child support, SSA) + matching or mismatching recurring debits to bank; supports `disclosed=False` | `boolean` |
 | `mutate_eligible_income` | 12 months of categorized transactions (qualifying deposits, non-qualifying deposits, obligations); answer = qualifying minus obligations | `dollar_amount` |
-| `mutate_large_deposit_corresponding_debit` | **Two-bank-statement + ULAD**: large deposit in Borrower A's account and (optional) matching debit in Borrower B's account within a 3-day window | `boolean` / `id_list` / detailed |
+| `mutate_large_deposit_corresponding_debit` | **Two-bank-statement + ULAD**: large deposit in Borrower A's account and (optional) matching debit in Borrower B's account within a 3-day window | `id_list` |
+| `mutate_undocumented_large_deposit` | **Two-bank-statement + ULAD**: inverted variant of above — positive case means the large deposit has *no* corresponding debit (undocumented); negative case means it does (documented) | `id_list` |
 | `mutate_auto_loan_third_party_payment` | **Two-bank-statement + ULAD**: auto loan liability in ULAD; third party pays the auto loan for >=12 months in their own (non-joint) account | `boolean` / `id_list` / detailed |
 
 ### Bank-Only Special Mutations
@@ -139,8 +142,12 @@ These return only a bank statement and an answer (no ULAD changes).
 
 | Method | What it mutates | Default answer_type |
 |--------|----------------|-------------|
-| `mutate_missing_transactions` | Adjusts ending balance so that `starting_balance + sum(transactions) != end_balance`, creating an apparent gap / missing transactions | `boolean` / detailed |
+| `mutate_missing_transactions` | Adjusts ending balance so that `starting_balance + sum(transactions) != end_balance`, creating an apparent gap / missing transactions | `id_list_account` |
 | `mutate_missing_date` | Enables monthly `BankStatements`, then removes one middle month's statement to create a gap in date coverage | `boolean` / detailed |
+| `mutate_statement_staleness` | Shifts all transaction dates backward so the derived statement EndDate falls >45 days before the loan application date (stale) or leaves dates unchanged (fresh) | `boolean` |
+| `mutate_unexplained_large_deposits` | Adds explained large deposits (payroll bonus, tax refund) plus, in the positive case, unexplained large deposits; answer = IDs of unexplained deposits only | `id_list` |
+| `mutate_multiple_employer_payroll` | Generates payroll deposits from multiple employers (Yes) or a single employer (No) across a two-year window | `boolean` |
+| `mutate_employment_gap` | Generates 12 months of payroll with a >1-month gap (two consecutive months skipped, Yes) or a continuous monthly pattern (No) | `boolean` |
 
 **Note:** All ULAD functions now accept an `answer_type` parameter to control output format.
 
