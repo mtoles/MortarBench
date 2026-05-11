@@ -477,13 +477,12 @@ def generate_test_case(
 
     bank_rel_path = None
     bank_b_rel_path = None
-    ulad_rel_path = None
 
     if need_bank:
         bank_rel_path = "bank_statement.json"
         with open(os.path.join(tc_dir, bank_rel_path), "w") as f:
             json.dump(mutated_bank, f, indent=2)
-        
+
         # Write second bank statement if it exists (two-borrower or auto loan case)
         if mutated_bank_b is not None:
             if spec["type"] == "auto_loan":
@@ -493,10 +492,9 @@ def generate_test_case(
             with open(os.path.join(tc_dir, bank_b_rel_path), "w") as f:
                 json.dump(mutated_bank_b, f, indent=2)
 
-    if need_ulad:
-        ulad_rel_path = "ulad.json"
-        with open(os.path.join(tc_dir, ulad_rel_path), "w") as f:
-            json.dump(mutated_ulad, f, indent=2)
+    ulad_rel_path = "ulad.json"
+    with open(os.path.join(tc_dir, ulad_rel_path), "w") as f:
+        json.dump(mutated_ulad, f, indent=2)
 
     mutation_key = spec.get("mutation_type") or spec.get("fn")
     metadata = {
