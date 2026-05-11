@@ -6,7 +6,7 @@ from llm import call_llm_wrapper, clear_messages
 
 class Agent:
     """Base class for model agents."""
-    
+
     def __init__(self, model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func):
         self.model_id = model_id
         self.loan_id = loan_id
@@ -14,14 +14,15 @@ class Agent:
         self.cleared_loans_lock = cleared_loans_lock
         self.wait_for_loan_gap_func = wait_for_loan_gap_func
         self.solo_answers = []
-    
+
     def setup_loan(self):
         """Setup called once per loan before processing questions."""
         pass
-    
-    def get_initial_prompt(self, question, bank_statement, ulad_du, domain_expertise_str, answer_instruction_str):
-        """Get the initial prompt for the model."""
-        raise NotImplementedError
+
+    def get_initial_prompt(self, question, bank_statement, ulad_du, use_domain_expertise, answer_instruction):
+        """Default: full prompt with bank statement + (optional) ULAD."""
+        from eval import build_prompt
+        return build_prompt(question, bank_statement, ulad_du, use_domain_expertise, answer_instruction)
 
 
 class SoloAgent(Agent):
@@ -39,7 +40,7 @@ class SoloAgent(Agent):
                 self.cleared_loans.add(self.loan_id)
         self.wait_for_loan_gap_func(self.loan_id)
     
-    def get_initial_prompt(self, question, bank_statement=None, ulad_du=None, domain_expertise_str=None, answer_instruction_str=None):
+    def get_initial_prompt(self, question, *args, **kwargs):
         """Solo uses just the question."""
         return question
     
@@ -177,44 +178,33 @@ class SoloAgent(Agent):
 class BaselineAgent(Agent):
     """Agent for baseline/generic models (non-solo)."""
 
-    def __init__(self, model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, prompt_template):
+    def __init__(self, model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func):
         super().__init__(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func)
-        self.prompt_template = prompt_template
         self._rag_context_str = ""
-        self._use_rag_in_initial_prompt = False
 
     def set_rag_context(self, question_str):
-        """Retrieve Fannie Mae Selling Guide chunks for `question_str` and enable
-        injecting them into the initial prompt. Matches the retrieval + formatting
-        used by ReflectionAgent."""
+        """Retrieve Fannie Mae Selling Guide chunks for `question_str` and inject
+        them into the initial prompt. Matches the retrieval + formatting used by
+        ReflectionAgent."""
         # Lazy import to avoid circular dependency with reflection_agent.
         from reflection_agent import get_shared_retriever
 
-        self._use_rag_in_initial_prompt = True
         if not question_str:
             self._rag_context_str = ""
             return
-        retriever = get_shared_retriever()
-        retrieved_docs = retriever.invoke(question_str)
+        retrieved_docs = get_shared_retriever().invoke(question_str)
         self._rag_context_str = "\n\n".join([
             f"Content:\n{d.page_content}\nSource: {d.metadata.get('source', 'Unknown')} - Page: {d.metadata.get('page', 'Unknown')}"
             for d in retrieved_docs
         ])
 
-    def get_initial_prompt(self, question, bank_statement, ulad_du, domain_expertise_str, answer_instruction_str):
-        """Baseline models use the full prompt template."""
-        if self._use_rag_in_initial_prompt and self._rag_context_str:
-            bank_statement = (
-                f"{bank_statement}\n\n"
-                f"Fannie Mae Selling Guide (RAG Context):\n{self._rag_context_str}"
-            )
-        return self.prompt_template.format(
-            question=question,
-            context=bank_statement,
-            ulad_du=ulad_du,
-            domain_expertise=domain_expertise_str,
-            answer_instruction=answer_instruction_str,
+    def get_initial_prompt(self, question, bank_statement, ulad_du, use_domain_expertise, answer_instruction):
+        from eval import build_prompt
+        extra = (
+            f"Fannie Mae Selling Guide (RAG Context):\n{self._rag_context_str}"
+            if self._rag_context_str else ""
         )
+        return build_prompt(question, bank_statement, ulad_du, use_domain_expertise, answer_instruction, extra_context=extra)
     
     def process_boolean(self, question, raw_answer, loan_id):
         """Process boolean answer type for baseline agent."""
@@ -348,22 +338,8 @@ class BaselineAgent(Agent):
 
 
 class ExperimentalAgent(Agent):
-    """Agent for baseline/generic models (non-solo)."""
-    
-    def __init__(self, model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, prompt_template):
-        super().__init__(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func)
-        self.prompt_template = prompt_template
-    
-    def get_initial_prompt(self, question, bank_statement, ulad_du, domain_expertise_str, answer_instruction_str):
-        """Baseline models use the full prompt template."""
-        return self.prompt_template.format(
-            question=question,
-            context=bank_statement,
-            ulad_du=ulad_du,
-            domain_expertise=domain_expertise_str,
-            answer_instruction=answer_instruction_str,
-        )
-    
+    """Agent for experimental two-pass processing. Inherits the base prompt builder."""
+
     def process_boolean(self, question, raw_answer, loan_id):
         """Process boolean answer type for experimental agent."""
         answer_prompt = (
