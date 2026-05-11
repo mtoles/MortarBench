@@ -19,10 +19,13 @@ class Agent:
         """Setup called once per loan before processing questions."""
         pass
 
-    def get_initial_prompt(self, question, bank_statement, ulad_du, use_domain_expertise, answer_instruction):
+    def get_initial_prompt(self, question, bank_statement, ulad_du, use_domain_expertise, answer_instruction, bank_statement_b=None):
         """Default: full prompt with bank statement + (optional) ULAD."""
         from eval import build_prompt
-        return build_prompt(question, bank_statement, ulad_du, use_domain_expertise, answer_instruction)
+        return build_prompt(
+            question, bank_statement, ulad_du, use_domain_expertise, answer_instruction,
+            bank_statement_b=bank_statement_b,
+        )
 
 
 class SoloAgent(Agent):
@@ -198,13 +201,16 @@ class BaselineAgent(Agent):
             for d in retrieved_docs
         ])
 
-    def get_initial_prompt(self, question, bank_statement, ulad_du, use_domain_expertise, answer_instruction):
+    def get_initial_prompt(self, question, bank_statement, ulad_du, use_domain_expertise, answer_instruction, bank_statement_b=None):
         from eval import build_prompt
         extra = (
             f"Fannie Mae Selling Guide (RAG Context):\n{self._rag_context_str}"
             if self._rag_context_str else ""
         )
-        return build_prompt(question, bank_statement, ulad_du, use_domain_expertise, answer_instruction, extra_context=extra)
+        return build_prompt(
+            question, bank_statement, ulad_du, use_domain_expertise, answer_instruction,
+            extra_context=extra, bank_statement_b=bank_statement_b,
+        )
     
     def process_boolean(self, question, raw_answer, loan_id):
         """Process boolean answer type for baseline agent."""
