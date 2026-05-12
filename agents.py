@@ -211,6 +211,7 @@ class BaselineAgent(Agent):
             question, bank_statement, ulad_du, use_domain_expertise, answer_instruction,
             extra_context=extra, bank_statement_b=bank_statement_b,
         )
+        return build_prompt(question, bank_statement, ulad_du, use_domain_expertise, answer_instruction, extra_context=extra)
     
     def process_boolean(self, question, raw_answer, loan_id):
         """Process boolean answer type for baseline agent."""

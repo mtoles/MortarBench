@@ -705,7 +705,6 @@ def load_dataset(
         if os.path.exists(bank_path):
             with open(bank_path, "r") as f:
                 bank_statement = json.load(f)
-
         with open(ulad_path, "r") as f:
             ulad_du = json.dumps(json.load(f), indent=2)
 
