@@ -80,13 +80,15 @@ domain_expertise = (
     "Eligible income = sum(qualifying deposits) − sum(obligation payments)."
 )
 
-def build_prompt(question, bank_statement, ulad_du, use_domain_expertise, answer_instruction, extra_context=""):
+def build_prompt(question, bank_statement, ulad_du, use_domain_expertise, answer_instruction, extra_context="", bank_statement_b=None):
     """Construct the model prompt."""
-    parts = [
-        question,
-        f"Bank Statement: {bank_statement}",
-        f"ULAD DU: {ulad_du}",
-    ]
+    parts = [question]
+    if bank_statement_b:
+        parts.append(f"Bank Statement 1: {bank_statement}")
+        parts.append(f"Bank Statement 2: {bank_statement_b}")
+    else:
+        parts.append(f"Bank Statement: {bank_statement}")
+    parts.append(f"ULAD DU: {ulad_du}")
     if extra_context:
         parts.append(extra_context)
     closing = "Answer the question."
@@ -698,22 +700,28 @@ def load_dataset(
         
         bank_path = os.path.join(tc_dir, "bank_statement.json")
         ulad_path = os.path.join(tc_dir, "ulad.json")
-        
+
         bank_statement = {}
         if os.path.exists(bank_path):
             with open(bank_path, "r") as f:
                 bank_statement = json.load(f)
-                
         with open(ulad_path, "r") as f:
             ulad_du = json.dumps(json.load(f), indent=2)
 
         metadata_path = os.path.join(tc_dir, "metadata.json")
         gt_answer = row["revised_answer"]
+        bank_statement_b = None
         if os.path.exists(metadata_path):
             with open(metadata_path, "r") as f:
                 metadata = json.load(f)
                 if "ground_truth_answer" in metadata:
                     gt_answer = metadata["ground_truth_answer"]
+                b_rel_path = metadata.get("bank_statement_b_path")
+                if b_rel_path:
+                    b_full_path = os.path.join(tc_dir, b_rel_path)
+                    if os.path.exists(b_full_path):
+                        with open(b_full_path, "r") as f:
+                            bank_statement_b = json.load(f)
 
         answer_type = row["answer_type"]
         
@@ -745,6 +753,7 @@ def load_dataset(
             "answer_type": answer_type,
             "pii": False,
             "bank_statement": bank_statement,
+            "bank_statement_b": bank_statement_b,
             "ulad_du": ulad_du
         })
 
@@ -861,9 +870,14 @@ def evaluate_model(
             except FileNotFoundError:
                 plaid_bank_statement_obj = {}
 
+        plaid_bank_statement_b_obj = row.get("bank_statement_b")
+
         plaid_transactions_flat = flatten_plaid_transactions(plaid_bank_statement_obj)
-        transactions_json = json.dumps(plaid_transactions_flat, indent=2)
         accounts_summary = extract_plaid_accounts(plaid_bank_statement_obj)
+        if plaid_bank_statement_b_obj:
+            plaid_transactions_flat = plaid_transactions_flat + flatten_plaid_transactions(plaid_bank_statement_b_obj)
+            accounts_summary = accounts_summary + extract_plaid_accounts(plaid_bank_statement_b_obj)
+        transactions_json = json.dumps(plaid_transactions_flat, indent=2)
         accounts_json = json.dumps(accounts_summary, indent=2)
         account_last4_values = [
             account.get("account_number_last4")
@@ -877,6 +891,11 @@ def evaluate_model(
         bank_statement_obj_to_use = json.loads(json.dumps(plaid_bank_statement_obj))
 
         bank_statement = json.dumps(bank_statement_obj_to_use, indent=2)
+        bank_statement_b = (
+            json.dumps(plaid_bank_statement_b_obj, indent=2)
+            if plaid_bank_statement_b_obj
+            else None
+        )
         pii_raw = row["pii"] if "pii" in row else False
         is_pii = bool(pii_raw) if not pd.isna(pii_raw) else False
         ulad_du = row["ulad_du"]
@@ -897,7 +916,12 @@ def evaluate_model(
 
         # Provide source documents to the reflection agent for grounded verification
         if isinstance(agent, ReflectionAgent):
-            agent.set_context(bank_statement, ulad_du, question if use_rag else None)
+            agent.set_context(
+                bank_statement,
+                ulad_du,
+                question if use_rag else None,
+                bank_statement_b=bank_statement_b,
+            )
         elif use_rag and isinstance(agent, BaselineAgent):
             agent.set_rag_context(question)
 
@@ -912,7 +936,8 @@ def evaluate_model(
             try:
                 # First call: model produces a textual answer (no IDs expected)
                 formatted_prompt = agent.get_initial_prompt(
-                    question, bank_statement, ulad_du, use_domain_expertise, model_answer_instruction_str
+                    question, bank_statement, ulad_du, use_domain_expertise, model_answer_instruction_str,
+                    bank_statement_b=bank_statement_b,
                 )
                 raw_answer, input_tok, output_tok = call_llm_wrapper(
                     model_id=model_id,

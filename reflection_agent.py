@@ -305,13 +305,14 @@ class ReflectionAgent(BaselineAgent):
             wait_for_loan_gap_func,
         )
         self._bank_statement_str: str = ""
+        self._bank_statement_b_str: str = ""
         self._ulad_du_str: str = ""
 
     # ------------------------------------------------------------------
     # Context setter — must be called before process_* methods
     # ------------------------------------------------------------------
 
-    def set_context(self, bank_statement_str, ulad_du_str, question_str=None) -> None:
+    def set_context(self, bank_statement_str, ulad_du_str, question_str=None, bank_statement_b=None) -> None:
         """Store source documents for use during reflection and numerical reasoning."""
 
         def _to_str(val):
@@ -324,6 +325,7 @@ class ReflectionAgent(BaselineAgent):
             return json.dumps(val)
 
         self._bank_statement_str = _to_str(bank_statement_str)
+        self._bank_statement_b_str = _to_str(bank_statement_b)
         self._ulad_du_str = _to_str(ulad_du_str)
         self._rag_context_str = ""
         
@@ -348,10 +350,17 @@ class ReflectionAgent(BaselineAgent):
         Returns:
             (refined_answer: str, input_tokens: int, output_tokens: int)
         """
-        source_doc = (
-            f"Bank Statement:\n{self._bank_statement_str}\n\n"
-            f"ULAD DU:\n{self._ulad_du_str}"
-        )
+        if self._bank_statement_b_str:
+            source_doc = (
+                f"Bank Statement 1:\n{self._bank_statement_str}\n\n"
+                f"Bank Statement 2:\n{self._bank_statement_b_str}\n\n"
+                f"ULAD DU:\n{self._ulad_du_str}"
+            )
+        else:
+            source_doc = (
+                f"Bank Statement:\n{self._bank_statement_str}\n\n"
+                f"ULAD DU:\n{self._ulad_du_str}"
+            )
         if self._rag_context_str:
             source_doc += f"\n\nFannie Mae Selling Guide (RAG Context):\n{self._rag_context_str}"
 
@@ -452,10 +461,17 @@ class ReflectionAgent(BaselineAgent):
         """
         reflected, ref_in, ref_out = self._reflect(question, raw_answer, "dollar_amount")
 
-        source_excerpt = (
-            f"Bank Statement:\n{self._bank_statement_str}\n\n"
-            f"ULAD DU:\n{self._ulad_du_str}"
-        )
+        if self._bank_statement_b_str:
+            source_excerpt = (
+                f"Bank Statement 1:\n{self._bank_statement_str}\n\n"
+                f"Bank Statement 2:\n{self._bank_statement_b_str}\n\n"
+                f"ULAD DU:\n{self._ulad_du_str}"
+            )
+        else:
+            source_excerpt = (
+                f"Bank Statement:\n{self._bank_statement_str}\n\n"
+                f"ULAD DU:\n{self._ulad_du_str}"
+            )
         if self._rag_context_str:
             source_excerpt += f"\n\nFannie Mae Selling Guide (RAG Context):\n{self._rag_context_str}"
         compute_prompt = (
