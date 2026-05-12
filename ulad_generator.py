@@ -1,4 +1,6 @@
+from __future__ import annotations
 import copy
+import datetime
 import json
 import os
 import argparse
@@ -504,11 +506,12 @@ class UladGenerator:
     - "MESSAGE.DEAL_SETS.DEAL_SET.DEALS.DEAL.ASSETS.ASSET[0].ASSET_DETAIL.AssetCashOrMarketValueAmount"
     """
 
-    def __init__(self, template_path: str | Path, plaid_data: dict[str, Any], output_dir: str | Path | None = None):
+    def __init__(self, template_path: str | Path, plaid_data: dict[str, Any], output_dir: str | Path | None = None, base_date: datetime.date | None = None):
         self.template_path = Path(template_path)
         self.template = self._load_template(self.template_path)
         self.plaid_data = plaid_data
         self.output_dir = output_dir
+        self.base_date = base_date or datetime.date.today()
 
     def _load_template(self, template_path: Path) -> dict[str, Any]:
         with template_path.open("r", encoding="utf-8") as f:
@@ -779,6 +782,11 @@ class UladGenerator:
         relationships = self.generate_relationships(assets, liabilities, borrower_party)
         
         ulad_payload = copy.deepcopy(self.template)
+        created_dt = datetime.datetime(
+            self.base_date.year, self.base_date.month, self.base_date.day,
+            tzinfo=datetime.timezone.utc,
+        ).strftime("%Y-%m-%dT%H:%M:%SZ")
+        ulad_payload["MESSAGE"]["ABOUT_VERSIONS"]["ABOUT_VERSION"]["CreatedDatetime"] = created_dt
         deal = self._get_deal_node(ulad_payload)
 
         deal["ASSETS"]["ASSET"] = [asset.to_dict() for asset in assets]

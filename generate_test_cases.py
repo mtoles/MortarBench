@@ -114,7 +114,7 @@ MUTATION_RULES = [
     ("recurring debt payments that are not disclosed on the loan application",
      {"type": "ulad", "fn": "mutate_undisclosed_liabilities"}),
 
-    ("payments to creditors that are not listed on the credit report or the loan application",
+    ("payments to creditors that are not listed on the loan application",
      {"type": "ulad", "fn": "mutate_undisclosed_liabilities"}),
 
     ("undisclosed other income source",
@@ -147,17 +147,14 @@ MUTATION_RULES = [
     ("joint account",
      {"type": "ulad", "fn": "mutate_joint_account_holder"}),
 
-    ("net pay amounts on any of the borrower",
+    ("Do the payroll deposits on the bank statements exactly match the income reported on the ULAD",
      {"type": "ulad", "fn": "mutate_payroll_paystub_consistency"}),
 
-    ("net pay amounts",
-     {"type": "ulad", "fn": "mutate_payroll_paystub_consistency"}),
+     ("earnest money",
+     {"type": "ulad", "fn": "emd"}),
 
-    ("pay stubs provided",
-     {"type": "ulad", "fn": "mutate_payroll_paystub_consistency"}),
-
-    ("payroll deposits on the bank statements exactly match",
-     {"type": "ulad", "fn": "mutate_payroll_paystub_consistency"}),
+    ("withdrawal matching the earnest money",
+     {"type": "ulad", "fn": "emd"}),
 
     # ── Recurring income / expense matching ─────────────────────────────────
     ("recurring deposits match the claimed alimony",
@@ -183,7 +180,7 @@ MUTATION_RULES = [
 
     # ── Eligible income ──────────────────────────────────────────────────
     ("do not support employment income sources disclosed",
-     {"type": "ulad", "fn": "mutate_eligible_income"}),
+     {"type": "ulad", "fn": "mutate_employer"}),
 
     ("eligible income",
      {"type": "ulad", "fn": "mutate_eligible_income"}),
@@ -234,10 +231,10 @@ MUTATION_RULES = [
 
     # ── Unexplained large deposits (after excluding payroll/tax refunds) ─────
     # Must precede the generic "large deposit" rule to win first-match.
-    ("unexplained after excluding payroll, tax refunds",
+    ("unexplained after excluding BNPL",
      {"type": "bank_special", "fn": "mutate_unexplained_large_deposits"}),
 
-    ("large deposits remain unexplained after excluding payroll",
+    ("large deposits remain unexplained after excluding BNPL",
      {"type": "bank_special", "fn": "mutate_unexplained_large_deposits"}),
 
     # ── Multiple-employer payroll (two-year window) ────────────────────────
@@ -267,7 +264,7 @@ MUTATION_RULES = [
     ("missing or non-consecutive bank statement records",
      {"type": "bank_special", "fn": "mutate_missing_transactions"}),
 
-    ("missing date",
+    ("Is there any gap date between bank statements?",
      {"type": "bank_special", "fn": "mutate_missing_date"}),
 
     ("any missing date",
@@ -276,10 +273,10 @@ MUTATION_RULES = [
     # ── Bank-transaction mutations ─────────────────────────────────────────
     # Negation variants must come before the generic BNPL / secured-loan keywords
     ("not made to known bnpl providers",
-     {"type": "transaction", "mutation_type": "regular_recurring_debits"}),
+     {"type": "transaction", "mutation_type": "recurring_debits"}),
 
     ("are not made to known bnpl",
-     {"type": "transaction", "mutation_type": "regular_recurring_debits"}),
+     {"type": "transaction", "mutation_type": "recurring_debits"}),
 
     ("bnpl",
      {"type": "transaction", "mutation_type": "bnpl"}),
@@ -347,8 +344,11 @@ MUTATION_RULES = [
     ("does not appear to be from a secured loan",
      {"type": "transaction", "mutation_type": "regular_deposits"}),
 
-    ("secured loan",
+    ("deposits that appear to be from a secured loan",
      {"type": "transaction", "mutation_type": "secured_loan_deposits"}),
+
+    ("loan that don't appear to be from a secured loan",
+     {"type": "transaction", "mutation_type": "unsecured_loan_deposits"}),
 
     ("cash deposit",
      {"type": "transaction", "mutation_type": "cash_deposits"}),
@@ -379,12 +379,6 @@ MUTATION_RULES = [
 
     ("undisclosed housing",
      {"type": "transaction", "mutation_type": "undisclosed_housing_payments"}),
-
-    ("earnest money",
-     {"type": "transaction", "mutation_type": "withdrawals"}),
-
-    ("withdrawal matching the earnest money",
-     {"type": "transaction", "mutation_type": "withdrawals"}),
 
     ("mortgage payment needed to confirm current payment history",
      {"type": "transaction", "mutation_type": "mortgage_payments"}),
@@ -493,6 +487,10 @@ def execute_mutation(mutator: DataMutator, spec: Dict, answer_type: str, positiv
             b["BankStatements"] = [
                 s for s in b["BankStatements"]
                 if not s["StartDate"].startswith(month_prefix)
+            ]
+            b["Transactions"] = [
+                t for t in b["Transactions"]
+                if not t["Date"].startswith(month_prefix)
             ]
 
     return result
@@ -674,6 +672,9 @@ def main():
                     success += 1
                     print(f"  → saved to test_case_{tc_id:04d}/")
                 else:
+                    breakpoint()
+                    print("This question has issue")
+                    print(row['rephrased_question'][:60] + "...")
                     skipped += 1
 
     summary = {
