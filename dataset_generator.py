@@ -250,7 +250,7 @@ class PlaidGenerator:
         
         # Payday Loan (Income/Deposit -> Positive)
         r = profile["payday"]
-        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Payday_Loan"]), round(random.uniform(r[0], r[1]), 2), tag=[TAG_OPTIONS["payday"]]))
+        checking_txns.append(self._create_txn(random.choice(KEYWORDS["Payday_Loan"]), round(random.uniform(r[0], r[1]), 2), tag=[TAG_OPTIONS["payday"], TAG_OPTIONS["unsecured_loan"]]))
         
         # Foreign Deposit (Credit/Deposit -> Positive)
         r = profile["foreign"]

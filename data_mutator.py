@@ -315,6 +315,7 @@ ULAD_MUTATION_CONFIGS = {
         "description_template": "ACH DEBIT {keyword}",
     },
     "undisclosed_liabilities": {
+        "tag": "undisclosed liabilities",
         "liability_types": [
             {
                 "type": "bnpl",
@@ -1845,6 +1846,7 @@ class DataMutator:
 
         # Remove any existing transactions that might conflict with our undisclosed liabilities
         self._remove_transactions_by_description(bank, config["liability_indicators"])
+        self._remove_transactions_by_tag(bank, config["tag"])
 
         # Get existing ULAD creditors to ensure we don't accidentally match them
         deal = self._get_deal(ulad)
