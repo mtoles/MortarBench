@@ -196,8 +196,8 @@ class BaselineAgent(Agent):
         if not question_str:
             self._rag_context_str = ""
             return
-        retriever = get_shared_retriever()
-        retrieved_docs = retrieve_and_rerank(question_str, retriever)
+        retriever = get_shared_retriever(self.model_id)
+        retrieved_docs = retrieve_and_rerank(self.model_id, question_str, retriever)
         self._rag_context_str = "\n\n".join([
             f"Content:\n{d.page_content}\nSource: {d.metadata.get('source', 'Unknown')} - Page: {d.metadata.get('page', 'Unknown')} - Score: {d.metadata.get('relevance_score', 0):.4f}"
             for d in retrieved_docs

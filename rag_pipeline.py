@@ -1,5 +1,6 @@
 import os
 import argparse
+import threading
 from typing import List, Dict, Any
 from dotenv import load_dotenv
 
@@ -13,21 +14,19 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_experimental.text_splitter import SemanticChunker
 from langchain_core.documents import Document
 from llm import call_llm_wrapper
-
-try:
-    from sentence_transformers import CrossEncoder
-except ImportError:
-    CrossEncoder = None
+from sentence_transformers import CrossEncoder
 
 load_dotenv()
 
 # Constants
 PDF_PATH = "Selling-Guide_12-10-25_Highlight.pdf"
 FAISS_INDEX_PATH = "faiss_index_bge_semantic"
+RERANKER_MODEL_NAME = "BAAI/bge-reranker-base"
+EMBEDDING_MODEL_NAME = "BAAI/bge-large-en-v1.5"
 
 class LocalCrossEncoderReranker:
     """A simple reranker using sentence-transformers CrossEncoder."""
-    def __init__(self, model_name="BAAI/bge-reranker-base", top_n=10):
+    def __init__(self, model_name=RERANKER_MODEL_NAME, top_n=10):
         if CrossEncoder is None:
             raise ImportError("sentence-transformers is not installed.")
         print(f"Loading CrossEncoder model {model_name}...")
@@ -61,7 +60,6 @@ class LocalCrossEncoderReranker:
             
         return top_docs
 
-import threading
 
 _SHARED_RERANKER = None
 _RERANKER_LOCK = threading.Lock()
@@ -72,13 +70,14 @@ def get_shared_reranker():
         with _RERANKER_LOCK:
             if _SHARED_RERANKER is None:
                 print("Initializing CrossEncoder for reranking...")
-                _SHARED_RERANKER = LocalCrossEncoderReranker(model_name="BAAI/bge-reranker-base", top_n=10)
+                _SHARED_RERANKER = LocalCrossEncoderReranker(model_name=RERANKER_MODEL_NAME, top_n=10)
     return _SHARED_RERANKER
 
-def retrieve_and_rerank(query: str, retriever) -> List[Document]:
+def retrieve_and_rerank(model_id, query: str, retriever) -> List[Document]:
     # 1. Custom Query Rewriting
+    print(f"\n[RAG] Logic triggered using model: {model_id}")
     print(f"\n[RAG] Generating multi-queries...")
-    sub_queries = generate_queries(query)
+    sub_queries = generate_queries(model_id, query)
     print(f"[RAG] Generated sub-queries: {sub_queries}")
     
     all_docs = []
@@ -104,7 +103,7 @@ def load_and_split_documents(pdf_path: str):
     docs = loader.load()
     
     print("Splitting documents using SemanticChunker (this takes longer but preserves meaning)...")
-    embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-large-en-v1.5")
+    embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)
     
     # Semantic chunking relies on embedding similarity to determine breaks
     text_splitter = SemanticChunker(
@@ -115,8 +114,8 @@ def load_and_split_documents(pdf_path: str):
     print(f"Created {len(splits)} semantic chunks.")
     return splits
 
-def build_retrievers(splits, force_rebuild=False):
-    embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-large-en-v1.5")
+def build_retrievers(model_id, splits, force_rebuild=False):
+    embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)
     
     if os.path.exists(FAISS_INDEX_PATH) and not force_rebuild:
         print("Loading existing FAISS indices...")
@@ -135,14 +134,14 @@ def build_retrievers(splits, force_rebuild=False):
     
     return faiss_retriever
 
-def generate_queries(query: str, num_queries: int = 3) -> List[str]:
+def generate_queries(model_id, query: str, num_queries: int = 3) -> List[str]:
     prompt = f"""You are an expert mortgage RAG assistant. Your task is to rewrite the user's query into {num_queries} specific, fact-seeking queries to retrieve relevant policies from a Fannie Mae Selling Guide vector database.
 Instead of just rephrasing the question, break it down into the core definitions and policies needed to answer it. 
 For example, if the user's question is "which txns are large deposits", you should produce a RAG query like "What is the definition of a large deposit".
 Target specific facts, thresholds, and definitions that would be documented in the guidelines. Provide these {num_queries} queries separated by newlines, with no other text.
 Original question: {query}"""
     try:
-        resp, _, _ = call_llm_wrapper("gpt-4o", [{"role": "user", "content": prompt}])
+        resp, _, _ = call_llm_wrapper(model_id, [{"role": "user", "content": prompt}])
         queries = [q.strip("- \t*1234567890.") for q in resp.strip().split("\n") if q.strip()]
         if not queries:
             return [query]
@@ -153,8 +152,9 @@ Original question: {query}"""
         print(f"Query generation failed: {e}")
         return [query]
 
-def create_rag_chain(retriever):
-    llm = ChatOllama(model="gemma3", temperature=0)
+def create_rag_chain(model_id, retriever):
+    print(f"[RAG] Initializing LangChain for model: {model_id}")
+    llm = ChatOllama(model=model_id, temperature=0)
     
     template = """You are an expert mortgage assistant answering questions based on the provided Fannie Mae Selling Guide.
 Use the following pieces of retrieved context to answer the question.
@@ -172,7 +172,7 @@ Answer:"""
     prompt = ChatPromptTemplate.from_template(template)
     
     def retrieve_and_format(query: str) -> str:
-        reranked_docs = retrieve_and_rerank(query, retriever)
+        reranked_docs = retrieve_and_rerank(model_id, query, retriever)
         formatted = "\n\n".join([f"Content:\n{d.page_content}\nSource: {d.metadata.get('source', 'Unknown')} - Page: {d.metadata.get('page', 'Unknown')} - Score: {d.metadata.get('relevance_score', 0):.4f}" for d in reranked_docs])
         return formatted
         
@@ -189,6 +189,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run RAG on Selling Guide")
     parser.add_argument("--query", type=str, help="Question to ask the RAG system")
     parser.add_argument("--rebuild", action="store_true", help="Force rebuild of index")
+    parser.add_argument("--model", type=str, default="gemma3")
     args = parser.parse_args()
     
     if args.rebuild or not os.path.exists(FAISS_INDEX_PATH):
@@ -196,8 +197,8 @@ def main():
     else:
         splits = [] # Not needed if loading from disk
         
-    retriever = build_retrievers(splits, force_rebuild=(args.rebuild or not os.path.exists(FAISS_INDEX_PATH)))
-    rag_chain = create_rag_chain(retriever)
+    retriever = build_retrievers(args.model, splits, force_rebuild=(args.rebuild or not os.path.exists(FAISS_INDEX_PATH)))
+    rag_chain = create_rag_chain(args.model, retriever)
     
     if args.query:
         print(f"\nQuestion: {args.query}")
