@@ -18,8 +18,9 @@ KEYWORDS = {
     "Secured_Loan": ["Loan Proceeds", "Secured Loan Deposit"],
     "Crypto": ["Coinbase", "Crypto.com", "Binance", "Gemini", "Kraken"],
     "Overdraft": ["Overdraft Fee", "NSF Fee", "Non-Sufficient Funds"],
-    "Unsecured_Loan": ["Personal Loan", "LendingClub", "SoFi", "Upstart"],
+    "Unsecured_Loan": ["Personal Loan", "LendingClub", "SoFi", "Upstart", "Payday Loan", "Speedy Cash", "Check 'n Go", "Ace Cash Express"],
     "Undisclosed_Debt": ["Chase Credit Card", "Auto Loan", "Navient", "Nelnet"],
+    "Undisclosed_Liability": ["BNPL", "Klarna", "Afterpay", "Affirm", "Sezzle", "Zip Co", "PayPal in 4", "Alimony", "Rent from venmo"],
     "Cash_Deposit": ["ATM Cash Deposit", "Cash Deposit", "Branch Deposit"],
     "Undisclosed_Income": ["Consulting Income", "Side Gig", "Venmo Cash Out"],
     "Payroll": ["ACH Credit Payroll"], # Will append Employer
@@ -49,6 +50,7 @@ TAG_OPTIONS = {
     "additional_holder": "additional account holder",
     "undisclosed_housing": "undisclosed housing payments",
     "undisclosed_income": "undisclosed income source",
+    "undisclosed_liability": "undisclosed liability",
     "unexplained_deposit": "unexplained deposits",
     "excessive_cash": "excessive cash deposits",
     "default": "general transaction",
@@ -79,6 +81,7 @@ ECONOMIC_PROFILES = {
         "undisclosed_income": (50, 200),
         "gift": (500, 2500),
         "undisclosed_employment": (300, 800),
+        "undisclosed_liability": (50, 250),
         "savings_club": (50, 200),
         "secured_loan": (500, 2000),
         "balances": {
@@ -105,6 +108,7 @@ ECONOMIC_PROFILES = {
         "earnest": (2000, 10000),
         "unsecured": (2000, 10000),
         "undisclosed_income": (200, 600),
+        "undisclosed_liability": (200, 800),
         "gift": (2000, 10000),
         "undisclosed_employment": (800, 2000),
         "savings_club": (100, 500),
@@ -134,6 +138,7 @@ ECONOMIC_PROFILES = {
         "earnest": (15000, 100000),
         "unsecured": (10000, 50000),
         "undisclosed_income": (1000, 5000),
+        "undisclosed_liability": (1000, 5000),
         "gift": (15000, 100000),
         "undisclosed_employment": (3000, 10000),
         "savings_club": (1000, 5000), # Investment clubs?
@@ -280,6 +285,18 @@ class PlaidGenerator:
             amt = side_gig_amount + round(random.uniform(- (side_gig_amount * 0.1), (side_gig_amount * 0.1)), 2)
             checking_txns.append(self._create_txn(side_gig_keyword, amt, tag=[TAG_OPTIONS["undisclosed_income"]]))
 
+        # Undisclosed Liability (Debit/Withdrawal -> Negative)
+        r = profile["undisclosed_liability"]
+        liability_desc = random.choice(KEYWORDS["Undisclosed_Liability"])
+        # We'll generate one for each month to simulate a recurring payment
+        for i in range(self.num_months):
+            amt = -round(random.uniform(r[0], r[1]), 2)
+            checking_txns.append(self._create_txn(
+                liability_desc, 
+                amt, 
+                tag=[TAG_OPTIONS["undisclosed_liability"]]
+            ))
+            
         # Gift (Credit/Deposit -> Positive)
         r = profile["gift"]
         checking_txns.append(self._create_txn(random.choice(KEYWORDS["Gift"]), round(random.uniform(r[0], r[1]), 2), tag=[TAG_OPTIONS["large_deposit"]]))
