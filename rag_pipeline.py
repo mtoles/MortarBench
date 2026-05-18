@@ -4,40 +4,118 @@ from typing import List, Dict, Any
 from dotenv import load_dotenv
 
 from langchain_community.document_loaders import PyMuPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.chat_models import ChatOllama
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
+from langchain_experimental.text_splitter import SemanticChunker
+from langchain_core.documents import Document
+from llm import call_llm_wrapper
+
+try:
+    from sentence_transformers import CrossEncoder
+except ImportError:
+    CrossEncoder = None
 
 load_dotenv()
 
 # Constants
 PDF_PATH = "Selling-Guide_12-10-25_Highlight.pdf"
-FAISS_INDEX_PATH = "faiss_index_bge"
+FAISS_INDEX_PATH = "faiss_index_bge_semantic"
+
+class LocalCrossEncoderReranker:
+    """A simple reranker using sentence-transformers CrossEncoder."""
+    def __init__(self, model_name="BAAI/bge-reranker-base", top_n=10):
+        if CrossEncoder is None:
+            raise ImportError("sentence-transformers is not installed.")
+        print(f"Loading CrossEncoder model {model_name}...")
+        self.model = CrossEncoder(model_name)
+        self.top_n = top_n
+
+    def compress_documents(self, documents: List[Document], query: str) -> List[Document]:
+        if not documents:
+            return []
+        
+        # Deduplicate docs based on content
+        unique_docs = []
+        seen_content = set()
+        for doc in documents:
+            if doc.page_content not in seen_content:
+                unique_docs.append(doc)
+                seen_content.add(doc.page_content)
+                
+        pairs = [[query, doc.page_content] for doc in unique_docs]
+        scores = self.model.predict(pairs)
+        
+        scored_docs = list(zip(unique_docs, scores))
+        scored_docs.sort(key=lambda x: x[1], reverse=True)
+        
+        top_docs = []
+        for doc, score in scored_docs[:self.top_n]:
+            # Create a new document to avoid modifying the original cached one
+            new_doc = Document(page_content=doc.page_content, metadata=doc.metadata.copy())
+            new_doc.metadata["relevance_score"] = float(score)
+            top_docs.append(new_doc)
+            
+        return top_docs
+
+import threading
+
+_SHARED_RERANKER = None
+_RERANKER_LOCK = threading.Lock()
+
+def get_shared_reranker():
+    global _SHARED_RERANKER
+    if _SHARED_RERANKER is None:
+        with _RERANKER_LOCK:
+            if _SHARED_RERANKER is None:
+                print("Initializing CrossEncoder for reranking...")
+                _SHARED_RERANKER = LocalCrossEncoderReranker(model_name="BAAI/bge-reranker-base", top_n=10)
+    return _SHARED_RERANKER
+
+def retrieve_and_rerank(query: str, retriever) -> List[Document]:
+    # 1. Custom Query Rewriting
+    print(f"\n[RAG] Generating multi-queries...")
+    sub_queries = generate_queries(query)
+    print(f"[RAG] Generated sub-queries: {sub_queries}")
+    
+    all_docs = []
+    for sq in sub_queries:
+        try:
+            all_docs.extend(retriever.invoke(sq))
+        except Exception as e:
+            print(f"Retrieval failed for '{sq}': {e}")
+            
+    print(f"[RAG] Retrieved {len(all_docs)} raw documents across all sub-queries.")
+        
+    # 2. CrossEncoder Reranking
+    reranker = get_shared_reranker()
+    print(f"[RAG] Reranking {len(all_docs)} documents with CrossEncoder...")
+    reranked_docs = reranker.compress_documents(all_docs, query)
+    print(f"[RAG] Retained top {len(reranked_docs)} documents.")
+    
+    return reranked_docs
 
 def load_and_split_documents(pdf_path: str):
     print(f"Loading {pdf_path}...")
     loader = PyMuPDFLoader(pdf_path)
     docs = loader.load()
     
-    print("Splitting documents...")
-    # Best parameters for chunking general technical documents
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200,
-        length_function=len,
-        separators=["\n\n", "\n", " ", ""]
+    print("Splitting documents using SemanticChunker (this takes longer but preserves meaning)...")
+    embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-large-en-v1.5")
+    
+    # Semantic chunking relies on embedding similarity to determine breaks
+    text_splitter = SemanticChunker(
+        embeddings, breakpoint_threshold_type="percentile"
     )
+    
     splits = text_splitter.split_documents(docs)
-    print(f"Created {len(splits)} chunks.")
+    print(f"Created {len(splits)} semantic chunks.")
     return splits
 
 def build_retrievers(splits, force_rebuild=False):
-    # Using one of the best open-source embedding models (MTEB leaderboard)
-    # BAAI/bge-large-en-v1.5 provides excellent semantic search performance
     embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-large-en-v1.5")
     
     if os.path.exists(FAISS_INDEX_PATH) and not force_rebuild:
@@ -48,20 +126,36 @@ def build_retrievers(splits, force_rebuild=False):
         vectorstore = FAISS.from_documents(splits, embeddings)
         vectorstore.save_local(FAISS_INDEX_PATH)
             
-    # FAISS Retriever setup with MMR for diverse retrieval
+    # Significantly increase k value to ensure we catch facts hidden deep in the vector space
+    # The CrossEncoder will filter this down later.
     faiss_retriever = vectorstore.as_retriever(
         search_type="mmr", 
-        search_kwargs={'k': 5, 'fetch_k': 20}
+        search_kwargs={'k': 50, 'fetch_k': 100}
     )
     
     return faiss_retriever
 
+def generate_queries(query: str, num_queries: int = 3) -> List[str]:
+    prompt = f"""You are an expert mortgage RAG assistant. Your task is to rewrite the user's query into {num_queries} specific, fact-seeking queries to retrieve relevant policies from a Fannie Mae Selling Guide vector database.
+Instead of just rephrasing the question, break it down into the core definitions and policies needed to answer it. 
+For example, if the user's question is "which txns are large deposits", you should produce a RAG query like "What is the definition of a large deposit".
+Target specific facts, thresholds, and definitions that would be documented in the guidelines. Provide these {num_queries} queries separated by newlines, with no other text.
+Original question: {query}"""
+    try:
+        resp, _, _ = call_llm_wrapper("gpt-4o", [{"role": "user", "content": prompt}])
+        queries = [q.strip("- \t*1234567890.") for q in resp.strip().split("\n") if q.strip()]
+        if not queries:
+            return [query]
+        # Return unique queries including original
+        all_queries = list(set([query] + queries))
+        return all_queries
+    except Exception as e:
+        print(f"Query generation failed: {e}")
+        return [query]
+
 def create_rag_chain(retriever):
-    # Using Llama 3 via Ollama for a completely free, local LLM option
-    # Note: You already have gemma3 installed, so this avoids your disk space limits
     llm = ChatOllama(model="gemma3", temperature=0)
     
-    # Best prompt template for factual RAG
     template = """You are an expert mortgage assistant answering questions based on the provided Fannie Mae Selling Guide.
 Use the following pieces of retrieved context to answer the question.
 If you don't know the answer or the context doesn't contain the answer, just say that you don't know. 
@@ -77,11 +171,13 @@ Question:
 Answer:"""
     prompt = ChatPromptTemplate.from_template(template)
     
-    def format_docs(docs):
-        return "\n\n".join([f"Content:\n{d.page_content}\nSource: {d.metadata.get('source', 'Unknown')} - Page: {d.metadata.get('page', 'Unknown')}" for d in docs])
+    def retrieve_and_format(query: str) -> str:
+        reranked_docs = retrieve_and_rerank(query, retriever)
+        formatted = "\n\n".join([f"Content:\n{d.page_content}\nSource: {d.metadata.get('source', 'Unknown')} - Page: {d.metadata.get('page', 'Unknown')} - Score: {d.metadata.get('relevance_score', 0):.4f}" for d in reranked_docs])
+        return formatted
         
     chain = (
-        {"context": retriever | format_docs, "question": RunnablePassthrough()}
+        {"context": retrieve_and_format, "question": RunnablePassthrough()}
         | prompt
         | llm
         | StrOutputParser()

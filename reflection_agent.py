@@ -34,7 +34,7 @@ from dotenv import load_dotenv
 
 from agents import BaselineAgent
 from llm import call_llm_wrapper
-from rag_pipeline import build_retrievers, load_and_split_documents, FAISS_INDEX_PATH, PDF_PATH
+from rag_pipeline import build_retrievers, load_and_split_documents, retrieve_and_rerank, FAISS_INDEX_PATH, PDF_PATH
 
 load_dotenv(override=True)
 
@@ -331,9 +331,9 @@ class ReflectionAgent(BaselineAgent):
         
         if question_str:
             retriever = get_shared_retriever()
-            retrieved_docs = retriever.invoke(question_str)
+            retrieved_docs = retrieve_and_rerank(question_str, retriever)
             self._rag_context_str = "\n\n".join([
-                f"Content:\n{d.page_content}\nSource: {d.metadata.get('source', 'Unknown')} - Page: {d.metadata.get('page', 'Unknown')}" 
+                f"Content:\n{d.page_content}\nSource: {d.metadata.get('source', 'Unknown')} - Page: {d.metadata.get('page', 'Unknown')} - Score: {d.metadata.get('relevance_score', 0):.4f}" 
                 for d in retrieved_docs
             ])
 
