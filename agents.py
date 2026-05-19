@@ -191,13 +191,15 @@ class BaselineAgent(Agent):
         ReflectionAgent."""
         # Lazy import to avoid circular dependency with reflection_agent.
         from reflection_agent import get_shared_retriever
+        from rag_pipeline import retrieve_and_rerank
 
         if not question_str:
             self._rag_context_str = ""
             return
-        retrieved_docs = get_shared_retriever().invoke(question_str)
+        retriever = get_shared_retriever(self.model_id)
+        retrieved_docs = retrieve_and_rerank(self.model_id, question_str, retriever)
         self._rag_context_str = "\n\n".join([
-            f"Content:\n{d.page_content}\nSource: {d.metadata.get('source', 'Unknown')} - Page: {d.metadata.get('page', 'Unknown')}"
+            f"Content:\n{d.page_content}\nSource: {d.metadata.get('source', 'Unknown')} - Page: {d.metadata.get('page', 'Unknown')} - Score: {d.metadata.get('relevance_score', 0):.4f}"
             for d in retrieved_docs
         ])
 

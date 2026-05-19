@@ -34,14 +34,14 @@ from dotenv import load_dotenv
 
 from agents import BaselineAgent
 from llm import call_llm_wrapper
-from rag_pipeline import build_retrievers, load_and_split_documents, FAISS_INDEX_PATH, PDF_PATH
+from rag_pipeline import build_retrievers, load_and_split_documents, retrieve_and_rerank, FAISS_INDEX_PATH, PDF_PATH
 
 load_dotenv(override=True)
 
 _SHARED_RETRIEVER = None
 _RETRIEVER_LOCK = threading.Lock()
 
-def get_shared_retriever():
+def get_shared_retriever(model_id):
     global _SHARED_RETRIEVER
     if _SHARED_RETRIEVER is None:
         with _RETRIEVER_LOCK:
@@ -56,7 +56,7 @@ def get_shared_retriever():
                             f"Place the Selling Guide PDF at '{PDF_PATH}' or disable RAG with --use_rag off."
                         )
                     splits = load_and_split_documents(PDF_PATH)
-                _SHARED_RETRIEVER = build_retrievers(splits, force_rebuild=False)
+                _SHARED_RETRIEVER = build_retrievers(model_id, splits, force_rebuild=False)
     return _SHARED_RETRIEVER
 
 # ---------------------------------------------------------------------------
@@ -330,10 +330,10 @@ class ReflectionAgent(BaselineAgent):
         self._rag_context_str = ""
         
         if question_str:
-            retriever = get_shared_retriever()
-            retrieved_docs = retriever.invoke(question_str)
+            retriever = get_shared_retriever(self.model_id)
+            retrieved_docs = retrieve_and_rerank(self.model_id, question_str, retriever)
             self._rag_context_str = "\n\n".join([
-                f"Content:\n{d.page_content}\nSource: {d.metadata.get('source', 'Unknown')} - Page: {d.metadata.get('page', 'Unknown')}" 
+                f"Content:\n{d.page_content}\nSource: {d.metadata.get('source', 'Unknown')} - Page: {d.metadata.get('page', 'Unknown')} - Score: {d.metadata.get('relevance_score', 0):.4f}" 
                 for d in retrieved_docs
             ])
 
