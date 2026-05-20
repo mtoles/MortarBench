@@ -195,6 +195,8 @@ def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) ->
 
         # Extract tools from kwargs if provided
         tools = kwargs.get("tools", None)
+        if os.getenv("DISABLE_LLM_CACHE", "").lower() in ("1", "true", "yes"):
+            return _uncached_llm_call(model_id, messages, tools)
         return _cached_llm_call(model_id, messages, tools)
 
 

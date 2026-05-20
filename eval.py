@@ -67,6 +67,7 @@ MODEL_PRICING = {
     "gemini-2.5-flash": {"input": 0.30, "output": 2.50},
     "gemini-2.5-pro": {"input": 1.25, "output": 10.00},
     "gemini-3-pro-preview": {"input": 1.25, "output": 10.00},
+    "gemini-3.1-pro-preview": {"input": 2.00, "output": 12.00},
 }
 
 domain_expertise = (
@@ -685,6 +686,17 @@ def preprocess_data(
     return True
 
 
+def strip_tags(bank_statement):
+    """Drop the `override_accounts` block from a loaded bank statement.
+    That block is generator-only and carries `tag`/`tags` keys that would
+    otherwise leak ground-truth labels into the prompt when the dict is
+    stringified. Mutates `bank_statement` in place.
+    """
+    if not isinstance(bank_statement, dict):
+        return
+    bank_statement.pop("override_accounts", None)
+
+
 def load_dataset(
     test_cases_dir="generated_data/test_cases_official",
     question_col="question",
@@ -705,6 +717,7 @@ def load_dataset(
         if os.path.exists(bank_path):
             with open(bank_path, "r") as f:
                 bank_statement = json.load(f)
+            strip_tags(bank_statement)
         with open(ulad_path, "r") as f:
             ulad_du = json.dumps(json.load(f), indent=2)
 
@@ -722,6 +735,7 @@ def load_dataset(
                     if os.path.exists(b_full_path):
                         with open(b_full_path, "r") as f:
                             bank_statement_b = json.load(f)
+                        strip_tags(bank_statement_b)
 
         answer_type = row["answer_type"]
         

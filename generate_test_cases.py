@@ -605,7 +605,7 @@ def main():
                         help="Only process questions containing these keywords")
     parser.add_argument("--seed", type=str, default=0,
                         help="Random seed for reproducibility")
-    parser.add_argument("--cases_per_question", type=int, default=4,
+    parser.add_argument("--cases_per_question", type=int, default=2,
                         help="How many independent profile pairs to generate per question. "
                              "Each pair yields both polarities, so total cases = 2 * cases_per_question.")
     args = parser.parse_args()
