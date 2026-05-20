@@ -38,6 +38,8 @@ import datetime
 import json
 import os
 import random
+import sys
+import traceback
 import re
 import threading
 import time
@@ -48,7 +50,7 @@ import pandas as pd
 from dotenv import load_dotenv
 
 from agents import BaselineAgent, ExperimentalAgent, SoloAgent
-from llm import call_llm_wrapper, clear_messages
+from llm import call_llm_wrapper, clear_messages, set_llm_seed
 from reflection_agent import ReflectionAgent, normalize_dollar_answer
 
 load_dotenv(override=True)
@@ -811,6 +813,27 @@ def create_agent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_
         return ReflectionAgent(*args)
     return BaselineAgent(*args)
 
+
+class EvalAborted(Exception):
+    """Raised to abort the whole eval; results are not saved."""
+
+
+class RateLimitAborted(EvalAborted):
+    """Subclass marking the abort as caused by an upstream rate limit."""
+
+
+def _is_rate_limit_error(e):
+    """Detect provider rate-limit errors across anthropic/openai/gemini SDKs."""
+    if type(e).__name__ in ("RateLimitError", "ResourceExhausted", "TooManyRequestsError"):
+        return True
+    msg = str(e).lower()
+    if "429" in msg:
+        return True
+    if "rate" in msg and "limit" in msg:
+        return True
+    return False
+
+
 def evaluate_model(
     model_id,
     model_type,
@@ -999,12 +1022,13 @@ def evaluate_model(
                     metrics = is_correct(cleaned_answer, answer_type, gt_answer)
                 trial_metrics.append(metrics)
             except Exception as e:
+                tb = traceback.format_exc()
+                if _is_rate_limit_error(e):
+                    print(f"Rate-limit error from provider on loan_id {loan_id}: {e}")
+                    raise RateLimitAborted(f"loan_id {loan_id}: {e}\n\n{tb}") from e
                 print(f"Error encountered for loan_id {loan_id}, question: {question}")
-                print(f"Error details: {str(e)}")
-                
-                error_msg = f"ERROR: {str(e)}"
-                predicted_answers.append(error_msg)
-                raw_answers.append(error_msg)
+                print(tb)
+                raise EvalAborted(f"loan_id {loan_id}: {type(e).__name__}: {e}\n\n{tb}") from e
                 if isinstance(agent, SoloAgent):
                     solo_answers.append(error_msg)
                 
@@ -1056,15 +1080,19 @@ def evaluate_model(
 
         completed = 0
         for future in concurrent.futures.as_completed(future_to_idx):
-            (
-                row_idx,
-                result,
-                row_exact_match_count,
-                row_f1_sum,
-                valid_trials,
-                row_input_tokens,
-                row_output_tokens,
-            ) = future.result()
+            try:
+                (
+                    row_idx,
+                    result,
+                    row_exact_match_count,
+                    row_f1_sum,
+                    valid_trials,
+                    row_input_tokens,
+                    row_output_tokens,
+                ) = future.result()
+            except EvalAborted:
+                executor.shutdown(wait=False, cancel_futures=True)
+                raise
 
             with aggregate_lock:
                 results[row_idx] = result
@@ -1520,12 +1548,22 @@ def main():
         default="test_cases_official",
         help="Dataset name under generated_data/ (e.g. 'default', 'test_cases_official')",
     )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Seed threaded into LLM calls; folded into the joblib cache key so "
+             "different seeds with the same prompt cache as distinct samples. "
+             "Used for OpenAI's request `seed` parameter where supported.",
+    )
 
     args = parser.parse_args()
 
     now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     output_dir = f"results/{args.results_dir}/{args.question_col.replace(' ', '_')}/{args.model_id}/{args.model_type}/{now}"
     os.makedirs(output_dir, exist_ok=True)
+
+    set_llm_seed(args.seed)
 
     print(f"\n{'='*50}")
     print(f"Running evaluation")
@@ -1580,16 +1618,30 @@ def main():
         random.seed(42)  # For reproducibility
 
     print(f"Evaluating model: {args.model_id} (type: {args.model_type})")
-    results, f1_accuracy, df, cost_info = evaluate_model(
-        args.model_id,
-        args.model_type,
-        dataset,
-        args.use_domain_expertise,
-        args.downsample_size,
-        args.offset,
-        args.trials,
-        use_rag=args.use_rag,
-    )
+    try:
+        results, f1_accuracy, df, cost_info = evaluate_model(
+            args.model_id,
+            args.model_type,
+            dataset,
+            args.use_domain_expertise,
+            args.downsample_size,
+            args.offset,
+            args.trials,
+            use_rag=args.use_rag,
+        )
+    except EvalAborted as e:
+        kind = "rate limit" if isinstance(e, RateLimitAborted) else "error"
+        note_name = "RATE_LIMITED.txt" if isinstance(e, RateLimitAborted) else "FAILED.txt"
+        note_path = os.path.join(output_dir, note_name)
+        with open(note_path, "w") as fh:
+            fh.write(
+                f"Aborted: {kind} during eval.\n"
+                f"Model: {args.model_id}\n"
+                f"Type:  {args.model_type}\n"
+                f"Error: {e}\n"
+            )
+        print(f"\nEval aborted ({kind}); note written to {note_path}. Skipping results save.")
+        sys.exit(1)
 
     # Calculate exact match accuracy for display
     exact_match_count = 0

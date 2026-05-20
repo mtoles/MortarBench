@@ -19,7 +19,8 @@ import urllib.parse
 from datetime import datetime, timezone
 import time
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
+from google.genai import types as genai_types
 
 # Load environment variables from .env file
 load_dotenv(override=True)
@@ -28,11 +29,19 @@ load_dotenv(override=True)
 memory = Memory("joblib_cache", verbose=0)
 
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# Module-level seed used both as a cache-key component and (where the provider
+# supports it) as a request parameter. Set via `set_llm_seed`; defaults to None
+# which keeps cache behavior identical to the pre-seed version.
+_seed = None
 
-# Configure Google Generative AI with API key
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+
+def set_llm_seed(seed):
+    """Set the seed used for caching and (where supported) sampling."""
+    global _seed
+    _seed = seed
+
+
+gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Read Anthropic API key from environment
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
@@ -55,12 +64,13 @@ admin_headers = {
 
 
 @memory.cache
-def _cached_llm_call(model_id: str, messages: List[Dict[str, str]], tools: List[Dict[str, Any]] = None) -> tuple:
-    return _uncached_llm_call(model_id, messages, tools)
-
-def _uncached_llm_call(model_id: str, messages: List[Dict[str, str]], tools: List[Dict[str, Any]] = None) -> tuple:
+def _cached_llm_call(model_id: str, messages: List[Dict[str, str]], tools: List[Dict[str, Any]] = None, seed=None) -> tuple:
     """
-    Cached LLM call function.
+    Cached LLM call. Implementation lives directly inside the decorated function
+    so joblib's source-fingerprint catches behavior changes (e.g. swapping SDKs)
+    and invalidates stale entries automatically. To bypass the cache, call
+    `_cached_llm_call.func(...)` — joblib exposes the un-decorated function
+    there.
 
     Args:
         model_id: The model identifier (e.g., 'gpt-4', 'gpt-5', 'claude-3-opus-20240229')
@@ -77,7 +87,9 @@ def _uncached_llm_call(model_id: str, messages: List[Dict[str, str]], tools: Lis
         kwargs = {"model": model_id, "messages": messages}
         if tools:
             kwargs["tools"] = tools
-        
+        if seed is not None:
+            kwargs["seed"] = seed
+
         response = client.chat.completions.create(**kwargs)
         
         content = response.choices[0].message.content.strip() if response.choices[0].message.content else ""
@@ -105,26 +117,29 @@ def _uncached_llm_call(model_id: str, messages: List[Dict[str, str]], tools: Lis
         output_tokens = response.usage.output_tokens
         return content, input_tokens, output_tokens
     elif model_id.startswith("gemini-"):
-        # Convert messages to Gemini's chat format
-        model = genai.GenerativeModel(model_id)
-        
-        # Convert messages to Gemini chat history format
-        chat_history = []
-        for msg in messages[:-1]:  # All messages except the last one
+        contents = []
+        for msg in messages[:-1]:
             role = "user" if msg["role"] == "user" else "model"
-            chat_history.append({"role": role, "parts": [msg["content"]]})
-        
-        # Start chat with history
-        if chat_history:
-            chat = model.start_chat(history=chat_history)
-            response = chat.send_message(messages[-1]["content"])
-        else:
-            # Single message case
-            response = model.generate_content(messages[0]["content"])
-        
+            contents.append(
+                genai_types.Content(role=role, parts=[genai_types.Part(text=msg["content"])])
+            )
+        contents.append(
+            genai_types.Content(role="user", parts=[genai_types.Part(text=messages[-1]["content"])])
+        )
+
+        config = genai_types.GenerateContentConfig(seed=seed) if seed is not None else None
+        response = gemini_client.models.generate_content(
+            model=model_id, contents=contents, config=config,
+        )
+
         content = response.text.strip()
-        input_tokens = response.usage_metadata.prompt_token_count
-        output_tokens = response.usage_metadata.candidates_token_count
+        usage = response.usage_metadata
+        # New SDK types every count as Optional[int]; in particular Gemini 3.x
+        # returns candidates_token_count=None when the model emits only
+        # thoughts. Compute output as (total - prompt) so thinking tokens are
+        # counted toward cost and we always get an int.
+        input_tokens = usage.prompt_token_count or 0
+        output_tokens = (usage.total_token_count or 0) - input_tokens
         return content, input_tokens, output_tokens
     else:
         raise ValueError(f"Invalid model ID: {model_id}")
@@ -196,8 +211,8 @@ def call_llm_wrapper(model_id: str, messages: List[Dict[str, str]], **kwargs) ->
         # Extract tools from kwargs if provided
         tools = kwargs.get("tools", None)
         if os.getenv("DISABLE_LLM_CACHE", "").lower() in ("1", "true", "yes"):
-            return _uncached_llm_call(model_id, messages, tools)
-        return _cached_llm_call(model_id, messages, tools)
+            return _cached_llm_call.func(model_id, messages, tools, _seed)
+        return _cached_llm_call(model_id, messages, tools, _seed)
 
 
 def clear_messages(loan_id):

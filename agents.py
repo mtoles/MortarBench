@@ -287,7 +287,7 @@ class BaselineAgent(Agent):
         from eval import cleaning_answer_instruction
         cleanup_prompt = (
             f"Question: {question}\n\nUnformatted answer: {raw_answer}\n\n"
-            f"{cleaning_answer_instruction['dollar_amounts']}"
+            f"{cleaning_answer_instruction['dollar_amount']}"
         )
         cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
             model_id=self.model_id,
