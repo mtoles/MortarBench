@@ -49,9 +49,8 @@ from decimal import Decimal, InvalidOperation
 import pandas as pd
 from dotenv import load_dotenv
 
-from agents import BaselineAgent, ExperimentalAgent, SoloAgent
 from llm import call_llm_wrapper, clear_messages, set_llm_seed
-from reflection_agent import ReflectionAgent, normalize_dollar_answer
+
 
 load_dotenv(override=True)
 
@@ -822,6 +821,17 @@ def get_answer_type(answer):
     raise ValueError(f"Unknown answer type: {answer}")
 
 
+# Deferred to break circular import: agents.py imports build_prompt /
+# cleaning_answer_instruction / normalize_* (all defined above).
+from agents import (  # noqa: E402
+    BaselineAgent,
+    ExperimentalAgent,
+    ReflectionAgent,
+    SoloAgent,
+    normalize_dollar_answer,
+)
+
+
 def create_agent(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func, model_type="baseline"):
     """Factory function to create the appropriate agent based on model_type."""
     args = (model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func)
@@ -992,14 +1002,10 @@ def evaluate_model(
         for trial_idx in range(trials):
             try:
                 # First call: model produces a textual answer (no IDs expected)
-                formatted_prompt = agent.get_initial_prompt(
-                    question, bank_statement, ulad_du, use_domain_expertise, model_answer_instruction_str,
+                raw_answer, input_tok, output_tok = agent.process_initial_prompt(
+                    question, bank_statement, ulad_du, use_domain_expertise,
+                    model_answer_instruction_str,
                     bank_statement_b=bank_statement_b,
-                )
-                raw_answer, input_tok, output_tok = call_llm_wrapper(
-                    model_id=model_id,
-                    messages=[{"role": "user", "content": formatted_prompt}],
-                    loan_id=loan_id,
                 )
                 
                 if isinstance(agent, SoloAgent):
