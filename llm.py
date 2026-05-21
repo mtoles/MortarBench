@@ -134,13 +134,17 @@ def _cached_llm_call(model_id: str, messages: List[Dict[str, str]], tools: List[
 
         content = response.text.strip()
         usage = response.usage_metadata
-        # New SDK types every count as Optional[int]; in particular Gemini 3.x
-        # returns candidates_token_count=None when the model emits only
-        # thoughts. Compute output as (total - prompt) so thinking tokens are
-        # counted toward cost and we always get an int.
-        input_tokens = usage.prompt_token_count or 0
-        output_tokens = (usage.total_token_count or 0) - input_tokens
-        return content, input_tokens, output_tokens
+        # SDK types every count as Optional[int]; we've observed total and
+        # candidates fields come back as None for some Gemini 3.x responses.
+        # Force ints so downstream `+=` arithmetic and joblib-cached tuples
+        # never propagate None.
+        in_tok = int(usage.prompt_token_count or 0)
+        out_tok = int(
+            (usage.candidates_token_count or 0)
+            + (usage.thoughts_token_count or 0)
+            + (usage.tool_use_prompt_token_count or 0)
+        )
+        return content, in_tok, out_tok
     else:
         raise ValueError(f"Invalid model ID: {model_id}")
 

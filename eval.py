@@ -83,6 +83,21 @@ domain_expertise = (
     "Eligible income = sum(qualifying deposits) − sum(obligation payments)."
 )
 
+# Set from main() based on --include_tags. When True, build_prompt adds the
+# tag-trust instruction so the model treats `tag`/`tags` fields as authoritative.
+_INCLUDE_TAGS = False
+TAG_TRUST_NOTE = (
+    "Transaction data includes tags, such as \"BNPL transaction\". These tags "
+    "should be considered perfectly complete and accurate. Tags describe all "
+    "relevant properties of the transaction and no tags are missing."
+)
+
+
+def set_include_tags(flag):
+    global _INCLUDE_TAGS
+    _INCLUDE_TAGS = bool(flag)
+
+
 def build_prompt(question, bank_statement, ulad_du, use_domain_expertise, answer_instruction, extra_context="", bank_statement_b=None):
     """Construct the model prompt."""
     parts = [question]
@@ -92,6 +107,8 @@ def build_prompt(question, bank_statement, ulad_du, use_domain_expertise, answer
     else:
         parts.append(f"Bank Statement: {bank_statement}")
     parts.append(f"ULAD DU: {ulad_du}")
+    if _INCLUDE_TAGS:
+        parts.append(TAG_TRUST_NOTE)
     if extra_context:
         parts.append(extra_context)
     closing = "Answer the question."
@@ -702,6 +719,7 @@ def strip_tags(bank_statement):
 def load_dataset(
     test_cases_dir="generated_data/test_cases_official",
     question_col="question",
+    include_tags=False,
 ):
     """Load the benchmark dataset using generated test cases and unique questions."""
     csv_path = os.path.join(test_cases_dir, "questions.csv")
@@ -711,7 +729,7 @@ def load_dataset(
     for idx, row in df.iterrows():
         tc_id = idx + 1
         tc_dir = os.path.join(test_cases_dir, f"test_case_{tc_id:04d}")
-        
+
         bank_path = os.path.join(tc_dir, "bank_statement.json")
         ulad_path = os.path.join(tc_dir, "ulad.json")
 
@@ -719,7 +737,8 @@ def load_dataset(
         if os.path.exists(bank_path):
             with open(bank_path, "r") as f:
                 bank_statement = json.load(f)
-            strip_tags(bank_statement)
+            if not include_tags:
+                strip_tags(bank_statement)
         with open(ulad_path, "r") as f:
             ulad_du = json.dumps(json.load(f), indent=2)
 
@@ -737,7 +756,8 @@ def load_dataset(
                     if os.path.exists(b_full_path):
                         with open(b_full_path, "r") as f:
                             bank_statement_b = json.load(f)
-                        strip_tags(bank_statement_b)
+                        if not include_tags:
+                            strip_tags(bank_statement_b)
 
         answer_type = row["answer_type"]
         
@@ -1556,6 +1576,13 @@ def main():
              "different seeds with the same prompt cache as distinct samples. "
              "Used for OpenAI's request `seed` parameter where supported.",
     )
+    parser.add_argument(
+        "--include_tags",
+        action="store_true",
+        help="Keep the dataset-generator `override_accounts` block (which "
+             "carries `tag`/`tags` ground-truth labels) in the prompt. "
+             "Default: stripped to avoid leaking answer hints.",
+    )
 
     args = parser.parse_args()
 
@@ -1564,6 +1591,7 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     set_llm_seed(args.seed)
+    set_include_tags(args.include_tags)
 
     print(f"\n{'='*50}")
     print(f"Running evaluation")
@@ -1572,7 +1600,11 @@ def main():
     print(f"Loading dataset...")
     dataset_dir = os.path.join("generated_data", args.dataset_path)
     test_cases_dir = os.path.join(dataset_dir, "test_cases")
-    dataset = load_dataset(test_cases_dir=test_cases_dir, question_col=args.question_col)
+    dataset = load_dataset(
+        test_cases_dir=test_cases_dir,
+        question_col=args.question_col,
+        include_tags=args.include_tags,
+    )
     print(f"Loaded {len(dataset)} samples")
 
     if len(dataset) == 0:

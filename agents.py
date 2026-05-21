@@ -2,6 +2,7 @@
 
 import re
 from llm import call_llm_wrapper, clear_messages
+from eval import cleaning_answer_instruction
 
 
 class Agent:
@@ -343,6 +344,139 @@ class BaselineAgent(Agent):
         # For solo, raw_answer and cleaned_answer are the same
         return raw_answer, cleaned_answer, clean_in_tok, clean_out_tok
 
+
+class ThresholdAgent(BaselineAgent):
+    """Agent for baseline/generic models (non-solo)."""
+
+    def __init__(self, model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func):
+        super().__init__(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func)
+        self._rag_context_str = ""
+
+
+
+    def get_initial_prompt(self, question, bank_statement, ulad_du, use_domain_expertise, answer_instruction, bank_statement_b=None):
+        from eval import build_prompt
+        extra = (
+            f"Fannie Mae Selling Guide (RAG Context):\n{self._rag_context_str}"
+            if self._rag_context_str else ""
+        )
+        return build_prompt(
+            question, bank_statement, ulad_du, use_domain_expertise, answer_instruction,
+            extra_context=extra, bank_statement_b=bank_statement_b,
+        )
+        return build_prompt(question, bank_statement, ulad_du, use_domain_expertise, answer_instruction, extra_context=extra)
+
+    
+    def process_txn_id_list(self, question, raw_answer, loan_id, transactions_json, cleaning_answer_instruction_str, plaid_transactions_flat):
+        """Process txn_id_list answer type for baseline agent."""
+        from eval import normalize_transaction_answer
+        solo_text_answer = raw_answer
+        txn_info_display = transactions_json
+        solo_txn_info_for_mapping = None
+
+        cleaned_answer_prompt = (
+            "Question: {question}\n\n"
+            "Unformatted answer text (source of truth):\n{solo_text}\n\n"
+            "Unformatted transaction JSON (may be incomplete or wrong):\n{txn_info}\n\n"
+            "Reference bank statement transactions JSON:\n{transactions}\n\n"
+            "Step-by-step:\n"
+            "1) From the text only, count how many distinct transactions or payment occurrences are implied (call this N, allow that it might be N+ if frequency/pattern suggests more occurrences).\n"
+            "2) Using the reference transactions JSON, find all matching transactions (titles/descriptions/amounts/dates). Do not stop at the first N; include additional matches if the pattern implies more than N.\n"
+            "3) If the text says none / no matching transactions, return []. Otherwise return ONLY a JSON list of all matching TransactionID values (no prose, no extra text).\n"
+            "Ignore any TransactionIDs in the unformatted JSON portion if they conflict with the text. "
+            "If nothing matches, return an empty list ([]).\n"
+            "Ignore any boilerplate such as 'analysis report is outdated' or suggestion/help sections; they are not part of the answer.\n\n"
+            "{answer_instruction}"
+        ).format(
+            question=question,
+            solo_text=solo_text_answer,
+            txn_info=txn_info_display,
+            transactions=transactions_json,
+            answer_instruction=cleaning_answer_instruction_str,
+        )
+        cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
+            model_id=self.model_id,
+            messages=[{"role": "user", "content": cleaned_answer_prompt}],
+            loan_id=loan_id,
+        )
+        fenced_match = re.search(
+            r"```(?:json)?\s*(\[[\s\S]*?\])\s*```",
+            cleaned_answer,
+        )
+        if fenced_match:
+            cleaned_answer = fenced_match.group(1).strip()
+        else:
+            list_match = re.search(r"\[[^\]]*\]", cleaned_answer, re.DOTALL)
+            if list_match:
+                cleaned_answer = list_match.group(0).strip()
+        cleaned_answer = normalize_transaction_answer(
+            cleaned_answer,
+            "txn_id_list",
+            plaid_transactions_flat,
+            solo_txn_info=solo_txn_info_for_mapping,
+        )
+        # For solo, raw_answer and cleaned_answer are the same
+        return raw_answer, cleaned_answer, clean_in_tok, clean_out_tok
+    
+    def process_dollar_amounts(self, question, raw_answer, loan_id):
+        """Process dollar_amounts answer type for baseline agent (simple cleanup pass)."""
+        cleanup_prompt = (
+            f"Question: {question}\n\nUnformatted answer: {raw_answer}\n\n"
+            f"{cleaning_answer_instruction['dollar_amount']}"
+        )
+        cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
+            model_id=self.model_id,
+            messages=[{"role": "user", "content": cleanup_prompt}],
+            loan_id=loan_id,
+        )
+        return raw_answer, cleaned_answer.strip(), clean_in_tok, clean_out_tok
+
+    def process_account_id_list(self, question, raw_answer, loan_id, accounts_json, cleaning_answer_instruction_str, account_last4_values):
+        """Process account_id_list answer type for baseline agent."""
+        from eval import normalize_account_answer
+        solo_text_answer = raw_answer
+        txn_info = accounts_json
+
+        cleaned_answer_prompt = (
+            "Question: {question}\n\n"
+            "Unformatted answer text (source of truth):\n{solo_text}\n\n"
+            "Unformatted transaction/account JSON (may be incomplete or wrong):\n{txn_info}\n\n"
+            "Reference bank statement accounts JSON:\n{accounts}\n\n"
+            "Use the text portion to decide which accounts the answer refers to. "
+            "Match the mentioned account names/descriptions to the BankStatementAccounts in the reference JSON and "
+            "return ONLY a JSON list of the last 4 digits of the matching AccountNumber values (no prose, no extra text). "
+            "Ignore any account IDs in the unformatted JSON if they conflict with the text. "
+            "If nothing matches, return an empty list ([]).\n"
+            "Ignore any boilerplate such as 'analysis report is outdated' or suggestion/help sections; they are not part of the answer.\n\n"
+            "{answer_instruction}"
+        ).format(
+            question=question,
+            solo_text=solo_text_answer,
+            txn_info=txn_info,
+            accounts=accounts_json,
+            answer_instruction=cleaning_answer_instruction_str,
+        )
+        cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
+            model_id=self.model_id,
+            messages=[{"role": "user", "content": cleaned_answer_prompt}],
+            loan_id=loan_id,
+        )
+        fenced_match = re.search(
+            r"```(?:json)?\s*(\[[\s\S]*?\])\s*```",
+            cleaned_answer,
+        )
+        if fenced_match:
+            cleaned_answer = fenced_match.group(1).strip()
+        else:
+            list_match = re.search(r"\[[^\]]*\]", cleaned_answer, re.DOTALL)
+            if list_match:
+                cleaned_answer = list_match.group(0).strip()
+        cleaned_answer = normalize_account_answer(
+            cleaned_answer,
+            account_last4_values,
+        )
+        # For solo, raw_answer and cleaned_answer are the same
+        return raw_answer, cleaned_answer, clean_in_tok, clean_out_tok
 
 
 

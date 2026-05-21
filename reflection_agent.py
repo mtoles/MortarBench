@@ -127,6 +127,7 @@ def call_with_python_tool(
     Returns:
         (final_answer: str, total_input_tokens: int, total_output_tokens: int)
     """
+    print("calling python!")
     total_in_tok = 0
     total_out_tok = 0
 
