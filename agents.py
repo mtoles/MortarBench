@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 from llm import call_llm_wrapper, clear_messages
-from eval import (
+from prompts import (
     build_prompt,
     cleaning_answer_instruction,
     normalize_account_answer,
@@ -380,284 +380,122 @@ class BaselineAgent(Agent):
         return raw_answer, cleaned_answer, clean_in_tok, clean_out_tok
 
 
+# ---------------------------------------------------------------------------
+# ThresholdAgent prompt instructions
+# ---------------------------------------------------------------------------
+#
+# Initial pass: ask the model to enumerate every plausibly-related transaction
+# with a 1–5 confidence rating. Cleanup pass: re-emit the same shape so we can
+# filter in Python by a threshold.
+
+THRESHOLD_MODEL_INSTRUCTION = (
+    "List every transaction in the bank statement that is plausibly related to "
+    "the question, even if you are not sure. For each one, assign an integer "
+    "confidence rating from 1 to 5 of how strongly the transaction matches the "
+    "question's criteria: 1 = least likely to be relevant, 5 = clearly relevant. "
+    "Do not mention any transactions that are definitely irrelevant (confidence 0). "
+    # "Return ONLY a JSON list of objects of the form "
+    "Think outloud and state what assumptions you are making. "
+    "A confidence of 5 should require no assumptions whatsoever to be relevant."
+    "After stating your assumptions, return a JSON list starting with ```json of the form"
+    '`[{"transaction_id": "<TransactionID>", "confidence": <1-5>}, ...]`, or '
+    "`[]` if nothing is even plausibly related. Do not output any other text."
+)
+
+THRESHOLD_CLEANING_INSTRUCTION = (
+    "The answer above should be a JSON list of "
+    '`{"transaction_id", "confidence"}` objects rating candidate transactions. '
+    "Return ONLY a valid JSON list in EXACTLY that shape — preserve every "
+    "transaction_id and its confidence value unchanged. If the answer is empty "
+    "or no transactions are listed, return `[]`. Output ONLY the JSON list."
+)
+
+
 class ThresholdAgent(BaselineAgent):
-    """Agent for baseline/generic models (non-solo)."""
+    """Confidence-thresholded variant of BaselineAgent.
 
-    def __init__(self, model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func):
+    The initial prompt asks the model to list every plausibly-related
+    transaction with a 1-5 confidence rating; the cleanup pass re-emits the
+    same JSON shape; we then drop any transaction with confidence below
+    `self.confidence_threshold` in Python.
+    """
+
+    def __init__(self, model_id, loan_id, cleared_loans, cleared_loans_lock,
+                 wait_for_loan_gap_func, confidence_threshold=3):
         super().__init__(model_id, loan_id, cleared_loans, cleared_loans_lock, wait_for_loan_gap_func)
-        self._rag_context_str = ""
+        self.confidence_threshold = int(confidence_threshold)
 
-
-
-    def get_initial_prompt(self, question, bank_statement, ulad_du, use_domain_expertise, answer_instruction, bank_statement_b=None):
-        extra = (
-            f"Fannie Mae Selling Guide (RAG Context):\n{self._rag_context_str}"
-            if self._rag_context_str else ""
+    def get_initial_prompt(self, question, bank_statement, ulad_du, use_domain_expertise,
+                           answer_instruction, bank_statement_b=None):
+        """Swap in the confidence-rating instruction ONLY when the caller
+        requested the txn_id_list instruction; for boolean / account_id_list /
+        dollar_amount the agent behaves identically to BaselineAgent."""
+        # The instruction strings live in prompts.py; we identify the
+        # txn_id_list case by equality with the canonical string so we don't
+        # have to thread answer_type through the call signature.
+        from prompts import model_answer_instruction
+        if answer_instruction == model_answer_instruction["txn_id_list"]:
+            answer_instruction = THRESHOLD_MODEL_INSTRUCTION
+        return super().get_initial_prompt(
+            question, bank_statement, ulad_du, use_domain_expertise,
+            answer_instruction, bank_statement_b=bank_statement_b,
         )
-        return build_prompt(
-            question, bank_statement, ulad_du, use_domain_expertise, answer_instruction,
-            extra_context=extra, bank_statement_b=bank_statement_b,
-        )
-        return build_prompt(question, bank_statement, ulad_du, use_domain_expertise, answer_instruction, extra_context=extra)
 
-    
-    def process_txn_id_list(self, question, raw_answer, loan_id, transactions_json, cleaning_answer_instruction_str, plaid_transactions_flat):
-        """Process txn_id_list answer type for baseline agent."""
-        solo_text_answer = raw_answer
-        txn_info_display = transactions_json
-        solo_txn_info_for_mapping = None
-
+    def process_txn_id_list(self, question, raw_answer, loan_id, transactions_json,
+                            cleaning_answer_instruction_str, plaid_transactions_flat):
+        """Cleanup → JSON parse → filter by confidence → normalize."""
         cleaned_answer_prompt = (
-            "Question: {question}\n\n"
-            "Unformatted answer text (source of truth):\n{solo_text}\n\n"
-            "Unformatted transaction JSON (may be incomplete or wrong):\n{txn_info}\n\n"
-            "Reference bank statement transactions JSON:\n{transactions}\n\n"
-            "Step-by-step:\n"
-            "1) From the text only, count how many distinct transactions or payment occurrences are implied (call this N, allow that it might be N+ if frequency/pattern suggests more occurrences).\n"
-            "2) Using the reference transactions JSON, find all matching transactions (titles/descriptions/amounts/dates). Do not stop at the first N; include additional matches if the pattern implies more than N.\n"
-            "3) If the text says none / no matching transactions, return []. Otherwise return ONLY a JSON list of all matching TransactionID values (no prose, no extra text).\n"
-            "Ignore any TransactionIDs in the unformatted JSON portion if they conflict with the text. "
-            "If nothing matches, return an empty list ([]).\n"
-            "Ignore any boilerplate such as 'analysis report is outdated' or suggestion/help sections; they are not part of the answer.\n\n"
-            "{answer_instruction}"
-        ).format(
-            question=question,
-            solo_text=solo_text_answer,
-            txn_info=txn_info_display,
-            transactions=transactions_json,
-            answer_instruction=cleaning_answer_instruction_str,
+            f"Question: {question}\n\n"
+            f"Unformatted answer text (source of truth):\n{raw_answer}\n\n"
+            f"Reference bank statement transactions JSON:\n{transactions_json}\n\n"
+            f"{THRESHOLD_CLEANING_INSTRUCTION}"
         )
         cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
             model_id=self.model_id,
             messages=[{"role": "user", "content": cleaned_answer_prompt}],
             loan_id=loan_id,
         )
+
+        # Extract the JSON list from fenced or bare form (mirrors BaselineAgent).
         fenced_match = re.search(
             r"```(?:json)?\s*(\[[\s\S]*?\])\s*```",
             cleaned_answer,
         )
         if fenced_match:
-            cleaned_answer = fenced_match.group(1).strip()
+            json_blob = fenced_match.group(1).strip()
         else:
-            list_match = re.search(r"\[[^\]]*\]", cleaned_answer, re.DOTALL)
-            if list_match:
-                cleaned_answer = list_match.group(0).strip()
+            list_match = re.search(r"\[[\s\S]*\]", cleaned_answer, re.DOTALL)
+            json_blob = list_match.group(0).strip() if list_match else "[]"
+
+        try:
+            parsed = json.loads(json_blob)
+            if not isinstance(parsed, list):
+                parsed = []
+        except (json.JSONDecodeError, ValueError):
+            parsed = []
+
+        kept_ids = []
+        for obj in parsed:
+            if not isinstance(obj, dict):
+                continue
+            try:
+                conf = int(obj.get("confidence", 0))
+            except (TypeError, ValueError):
+                conf = 0
+            tid = obj.get("transaction_id")
+            if tid is not None and conf >= self.confidence_threshold:
+                kept_ids.append(str(tid))
+
         cleaned_answer = normalize_transaction_answer(
-            cleaned_answer,
+            json.dumps(kept_ids),
             "txn_id_list",
             plaid_transactions_flat,
-            solo_txn_info=solo_txn_info_for_mapping,
+            solo_txn_info=None,
         )
-        # For solo, raw_answer and cleaned_answer are the same
-        return raw_answer, cleaned_answer, clean_in_tok, clean_out_tok
-    
-    def process_dollar_amounts(self, question, raw_answer, loan_id):
-        """Process dollar_amounts answer type for baseline agent (simple cleanup pass)."""
-        cleanup_prompt = (
-            f"Question: {question}\n\nUnformatted answer: {raw_answer}\n\n"
-            f"{cleaning_answer_instruction['dollar_amount']}"
-        )
-        cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=self.model_id,
-            messages=[{"role": "user", "content": cleanup_prompt}],
-            loan_id=loan_id,
-        )
-        return raw_answer, cleaned_answer.strip(), clean_in_tok, clean_out_tok
-
-    def process_account_id_list(self, question, raw_answer, loan_id, accounts_json, cleaning_answer_instruction_str, account_last4_values):
-        """Process account_id_list answer type for baseline agent."""
-        solo_text_answer = raw_answer
-        txn_info = accounts_json
-
-        cleaned_answer_prompt = (
-            "Question: {question}\n\n"
-            "Unformatted answer text (source of truth):\n{solo_text}\n\n"
-            "Unformatted transaction/account JSON (may be incomplete or wrong):\n{txn_info}\n\n"
-            "Reference bank statement accounts JSON:\n{accounts}\n\n"
-            "Use the text portion to decide which accounts the answer refers to. "
-            "Match the mentioned account names/descriptions to the BankStatementAccounts in the reference JSON and "
-            "return ONLY a JSON list of the last 4 digits of the matching AccountNumber values (no prose, no extra text). "
-            "Ignore any account IDs in the unformatted JSON if they conflict with the text. "
-            "If nothing matches, return an empty list ([]).\n"
-            "Ignore any boilerplate such as 'analysis report is outdated' or suggestion/help sections; they are not part of the answer.\n\n"
-            "{answer_instruction}"
-        ).format(
-            question=question,
-            solo_text=solo_text_answer,
-            txn_info=txn_info,
-            accounts=accounts_json,
-            answer_instruction=cleaning_answer_instruction_str,
-        )
-        cleaned_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=self.model_id,
-            messages=[{"role": "user", "content": cleaned_answer_prompt}],
-            loan_id=loan_id,
-        )
-        fenced_match = re.search(
-            r"```(?:json)?\s*(\[[\s\S]*?\])\s*```",
-            cleaned_answer,
-        )
-        if fenced_match:
-            cleaned_answer = fenced_match.group(1).strip()
-        else:
-            list_match = re.search(r"\[[^\]]*\]", cleaned_answer, re.DOTALL)
-            if list_match:
-                cleaned_answer = list_match.group(0).strip()
-        cleaned_answer = normalize_account_answer(
-            cleaned_answer,
-            account_last4_values,
-        )
-        # For solo, raw_answer and cleaned_answer are the same
         return raw_answer, cleaned_answer, clean_in_tok, clean_out_tok
 
 
 
-class ExperimentalAgent(Agent):
-    """Agent for experimental two-pass processing. Inherits the base prompt builder."""
-
-    def process_boolean(self, question, raw_answer, loan_id):
-        """Process boolean answer type for experimental agent."""
-        answer_prompt = (
-            f"Question: {question}\n\nUnformatted answer: {raw_answer}\n\n"
-            "The answer given should be either yes or no. "
-            "Read the question and answer, and then give an explanation followed by either yes or no. "
-            "Ignore any boilerplate (e.g., 'analysis report is outdated' or suggestion/help sections); they are not part of the answer."
-        )
-        processed_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=self.model_id,
-            messages=[{"role": "user", "content": answer_prompt}],
-            loan_id=loan_id,
-        )
-        # Extract yes/no from the processed answer
-        match = re.search(r"yes|no", processed_answer, re.IGNORECASE)
-        cleaned_answer = match.group(0).lower() if match else processed_answer.strip().lower()
-        
-        # For experimental, raw_answer is the explanation + answer, cleaned_answer is just yes/no
-        return processed_answer, cleaned_answer, clean_in_tok, clean_out_tok
-    
-    def process_txn_id_list(self, question, raw_answer, loan_id, transactions_json, cleaning_answer_instruction_str, plaid_transactions_flat):
-        """Process txn_id_list answer type for experimental agent."""
-        solo_text_answer = raw_answer
-        txn_info_display = transactions_json
-        solo_txn_info_for_mapping = None
-
-        answer_prompt = (
-            "Question: {question}\n\n"
-            "Unformatted answer text (source of truth):\n{solo_text}\n\n"
-            "Unformatted transaction JSON (may be incomplete or wrong):\n{txn_info}\n\n"
-            "Reference bank statement transactions JSON:\n{transactions}\n\n"
-            "Step-by-step:\n"
-            "1) From the text only, count how many distinct transactions or payment occurrences are implied (call this N, allow that it might be N+ if frequency/pattern suggests more occurrences).\n"
-            "2) Using the reference transactions JSON, find all matching transactions (titles/descriptions/amounts/dates). Do not stop at the first N; include additional matches if the pattern implies more than N.\n"
-            "3) Give an explanation for each transaction you chose, followed by a list of the transaction IDs. If the text says none / no matching transactions, return []. Otherwise return ONLY a JSON list of all matching TransactionID values (no prose, no extra text).\n"
-            "Ignore any TransactionIDs in the unformatted JSON portion if they conflict with the text. "
-            "If nothing matches, return an empty list ([]).\n"
-            "Ignore any boilerplate such as 'analysis report is outdated' or suggestion/help sections; they are not part of the answer.\n\n"
-            "You answer should be formatted as: <explanation>\n\n[list_item_1, list_item_2, ...]"
-            "{answer_instruction}"
-        ).format(
-            question=question,
-            solo_text=solo_text_answer,
-            txn_info=txn_info_display,
-            transactions=transactions_json,
-            answer_instruction=cleaning_answer_instruction_str,
-        )
-        processed_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=self.model_id,
-            messages=[{"role": "user", "content": answer_prompt}],
-            loan_id=loan_id,
-        )
-        txn_check_prompt = (
-            "### Double Checking Prompt:\n"
-            "Check each transaction in your previous response. For each transaction, double check that the transaction is correctly included based on their line of business. "
-            "Additionally, check that the transaction should actually be included in the answer, even if it results in no transactions being included. " 
-            "Common mistakes include:\n"
-            "- Accidentally including additional vendors who do not provide the relevant service\n"
-            "- Including transactions that are interesting but do not qualify under the question criteria\n\n"
-            "Then generate a corrected output (or identical output if no corrections are needed). "
-        )
-        txn_check_answer, txn_check_in_tok, txn_check_out_tok = call_llm_wrapper(
-            model_id=self.model_id,
-            messages=[
-                {"role": "user", "content": answer_prompt},
-                {"role": "assistant", "content": processed_answer},
-                {"role": "user", "content": txn_check_prompt}
-                ],
-            loan_id=loan_id,
-            tools=[{"type": "web_search"}],
-        )
-        fenced_matches = list(re.finditer(
-            r"```(?:json)?\s*(\[[\s\S]*?\])\s*```",
-            txn_check_answer,
-        ))
-        if fenced_matches:
-            extracted_list = fenced_matches[-1].group(1).strip()
-        else:
-            list_matches = list(re.finditer(r"\[[^\]]*\]", txn_check_answer, re.DOTALL))
-            if list_matches:
-                extracted_list = list_matches[-1].group(0).strip()
-            else:
-                extracted_list = txn_check_answer
-        cleaned_answer = normalize_transaction_answer(
-            extracted_list,
-            "txn_id_list",
-            plaid_transactions_flat,
-            solo_txn_info=solo_txn_info_for_mapping,
-        )
-        # For experimental, raw_answer is the explanation + list, cleaned_answer is just the list
-        # Sum tokens from both LLM calls
-        total_in_tok = clean_in_tok + txn_check_in_tok
-        total_out_tok = clean_out_tok + txn_check_out_tok
-        return txn_check_answer, cleaned_answer, total_in_tok, total_out_tok
-    
-    def process_account_id_list(self, question, raw_answer, loan_id, accounts_json, cleaning_answer_instruction_str, account_last4_values):
-        """Process account_id_list answer type for experimental agent."""
-        solo_text_answer = raw_answer
-        txn_info = accounts_json
-
-        answer_prompt = (
-            "Question: {question}\n\n"
-            "Unformatted answer text (source of truth):\n{solo_text}\n\n"
-            "Unformatted transaction/account JSON (may be incomplete or wrong):\n{txn_info}\n\n"
-            "Reference bank statement accounts JSON:\n{accounts}\n\n"
-            "Use the text portion to decide which accounts the answer refers to. "
-            "Match the mentioned account names/descriptions to the BankStatementAccounts in the reference JSON and "
-            "Give an explanation for each account you chose, followed by a list of the account IDs. Return a JSON list of the last 4 digits of the matching AccountNumber values (no prose, no extra text). "
-            "Ignore any account IDs in the unformatted JSON if they conflict with the text. "
-            "If nothing matches, return an empty list ([]).\n"
-            "Ignore any boilerplate such as 'analysis report is outdated' or suggestion/help sections; they are not part of the answer.\n\n"
-            "You answer should be formatted as: <explanation>\n\n[list_item_1, list_item_2, ...]"
-            "{answer_instruction}"
-        ).format(
-            question=question,
-            solo_text=solo_text_answer,
-            txn_info=txn_info,
-            accounts=accounts_json,
-            answer_instruction=cleaning_answer_instruction_str,
-        )
-        processed_answer, clean_in_tok, clean_out_tok = call_llm_wrapper(
-            model_id=self.model_id,
-            messages=[{"role": "user", "content": answer_prompt}],
-            loan_id=loan_id,
-        )
-        fenced_match = re.search(
-            r"```(?:json)?\s*(\[[\s\S]*?\])\s*```",
-            processed_answer,
-        )
-        if fenced_match:
-            extracted_list = fenced_match.group(1).strip()
-        else:
-            list_match = re.search(r"\[[^\]]*\]", processed_answer, re.DOTALL)
-            if list_match:
-                extracted_list = list_match.group(0).strip()
-            else:
-                extracted_list = processed_answer
-        cleaned_answer = normalize_account_answer(
-            extracted_list,
-            account_last4_values,
-        )
-        # For experimental, raw_answer is the explanation + list, cleaned_answer is just the list
-        return processed_answer, cleaned_answer, clean_in_tok, clean_out_tok
 
 
 # ---------------------------------------------------------------------------
