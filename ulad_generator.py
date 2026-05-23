@@ -819,7 +819,7 @@ class UladGenerator:
     def write_ulad(self, ulad_payload: dict[str, Any], output_dir: str | Path) -> None:
         output_path = os.path.join(output_dir, "ulad.json")
         with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(ulad_payload, f, indent=2)
+            json.dump(ulad_payload, f, indent=2, ensure_ascii=False)
 
     def _set_value_by_path(self, obj: dict[str, Any], path: str, value: Any) -> None:
         tokens = self._parse_path(path)

@@ -351,7 +351,7 @@ def preprocess_data(
         )
 
     with open(metadata_path, "w") as metadata_file:
-        json.dump(metadata_entries, metadata_file, indent=2)
+        json.dump(metadata_entries, metadata_file, indent=2, ensure_ascii=False)
 
     test_case_numbers = sorted(test_case_map.keys())
     with open(test_cases_path, "w") as test_cases_file:

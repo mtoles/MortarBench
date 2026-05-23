@@ -187,7 +187,7 @@ def _build_failure_mode_latex(distribution, total, txn_only=False):
     rows = [(cat, n, n / total * 100) for cat, n in distribution]
 
     plain_header = ["Category", "Count", "% of Total"]
-    plain_rows = [[cat, str(n), f"{pct:.1f}%"] for cat, n, pct in rows]
+    plain_rows = [[cat, str(n), f"{pct:.1f}"] for cat, n, pct in rows]
     widths = [
         max(len(plain_header[i]), *(len(r[i]) for r in plain_rows))
         for i in range(len(plain_header))
@@ -203,7 +203,7 @@ def _build_failure_mode_latex(distribution, total, txn_only=False):
     plain_comment = "\n".join(plain_comment_lines) + "\n"
 
     body = "\n".join(
-        f"{_latex_escape(cat)} & {n} & {pct:.1f}\\% \\\\"
+        f"{_latex_escape(cat)} & {n} & {pct:.1f} \\\\"
         for cat, n, pct in rows
     )
 
@@ -215,7 +215,7 @@ def _build_failure_mode_latex(distribution, total, txn_only=False):
 
     return (
         plain_comment +
-        "\\begin{table}[h]\n"
+        "\\begin{table}[H]\n"
         "\\centering\n"
         "\\small\n"
         "\\begin{tabular}{lrr}\n"

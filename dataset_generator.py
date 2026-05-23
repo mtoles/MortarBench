@@ -695,9 +695,9 @@ def main():
         ulad_filepath = os.path.join(args_output, f"ulad{suffix}.json")
 
         with open(bank_filepath, 'w') as f:
-            json.dump(plaid_data, f, indent=2)
+            json.dump(plaid_data, f, indent=2, ensure_ascii=False)
         with open(ulad_filepath, 'w') as f:
-            json.dump(ulad_data, f, indent=2)
+            json.dump(ulad_data, f, indent=2, ensure_ascii=False)
         print(f"Generated {bank_filepath} and {ulad_filepath}")
 
 if __name__ == "__main__":
