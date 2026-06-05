@@ -108,7 +108,7 @@ def _cached_llm_call(model_id: str, messages: List[Dict[str, str]], tools: List[
         client = Anthropic(api_key=ANTHROPIC_API_KEY)
         response = client.messages.create(
             model=model_id,
-            max_tokens=4096,
+            # max_tokens=4096,
             messages=messages,
             temperature=1.0,
         )
