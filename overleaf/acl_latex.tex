@@ -137,7 +137,7 @@ This process serves a critical role in evaluating the eligibility and level of r
 Recently, firms have begun using mortgage loan agents to augment human loan officers, despite a lack of any public benchmark.
 To fill this gap, we present MortarBench, a loan origination agent benchmark.
 MortarBench uses a financial data synthesis and mutation pipeline to generate examples with broad edge case coverage that match real-world distributions and questions.
-We find that state-of-the-art LLMs perform poorly, with closed-source models achieving at most 77.1\% exact match accuracy.
+We find that state-of-the-art large language models (LLMs) perform poorly, with closed-source models achieving at most 77.1\% exact match accuracy.
 We also discover systematic biases in LLM perception of foreignness and treatment of informal value transfer systems.
 Noting weaknesses in baseline model reasoning and oversensitivity, we introduce CRIT, a confidence calibration framework.
 Our method increases accuracy to 80.5\% while improving human control over sensitivity and risk management.
@@ -149,14 +149,14 @@ The high error rate and biases in baseline models suggest they should not yet be
 
 \section{Introduction and Related Work}
 
-The U.S. mortgage industry generates over \$1.7 trillion through loan origination annually, necessitating a complex web of risk assessment and regulatory compliance \cite{mba2024forecast}. 
+The US mortgage industry generates over \$1.7 trillion through loan origination annually, necessitating a complex web of risk assessment and regulatory compliance \cite{mba2024forecast}. 
 Mistakes during these decisions carry severe legal and financial consequences, including loan defaults, liabilities, and fines for non-compliance.
 Although human labor is costly and automation is appealing, fully replacing it introduces significant risk.
 
 \begin{figure}
     \centering
     \includegraphics[width=1.0\linewidth]{figs/main.png}
-    \caption{Example MortarBench task. A mortgage underwriter is provided with a bank statement and ULAD applicant profile. The underwriter asks a question pertaining to the documents to the chatbot assistant, which answers based on the same documents.}
+    \caption{Example MortarBench task. A mortgage underwriter is provided with a bank statement and ULAD applicant profile. The underwriter asks the chatbot assistant a question about the documents, which it answers based on those same documents.}
     \label{fig:main}
 \end{figure}
 
@@ -167,24 +167,24 @@ The officer's goal is to ensure consistency between the profile and bank stateme
 However, analyzing the application package, and especially bank statements, is a difficult and tedious process.
 Because bank statements and transaction descriptions do not follow any standard format, reconciliation for a question such as ``What is the total value of the applicant's unsecured loans?'' is in fact a complex natural language and numerical task.
 
-Recently, loan origination firms have begun integrating Large Language Model (LLM) agents into their workflows.
+Recently, loan origination firms have begun integrating large language model (LLM) agents into their workflows.
 Despite this rapid integration, the industry lacks a standardized benchmark to evaluate these agents' performance.
 This evaluative vacuum hinders broader adoption, stifles iterative development, and prevents objective comparisons between competing products.
 % Ultimately, institutions are deploying "black-box" models into a highly regulated financial environment with no clear understanding of their true error rates or failure modes.
 To address this gap, we propose MortarBench, a novel evaluation framework designed specifically for mortgage underwriting tasks.
 
 Generating realistic, challenging examples of expert tasks in MortarBench presents two major challenges.
-First, real financial data generally cannot be shared publicly due to privacy concerns, so we must generate internally consistent synthetic data that matches real world distributions.
+First, real financial data generally cannot be shared publicly due to privacy concerns, so we must generate internally consistent synthetic data that matches real-world distributions.
 Second, we must find a way to steer synthetic examples to cover rare edge cases relevant to user questions.
 We overcome both challenges using a mutation-based synthetic data generation pipeline that allows us to procedurally edit input documents to force a desired answer while maintaining internal consistency.
 
-Finding that baseline foundation models achieve weak accuracy on MortarBench, we contribute the CRIT Agent, confidence-calibrated model that improves accuracy, bias, and steerability.
+Finding that baseline foundation models achieve weak accuracy on MortarBench, we contribute the CRIT Agent, a confidence-calibrated model that improves accuracy, bias, and steerability.
 CRIT improves all baseline models, including 3.4\% (14.8\% error reduction) over the strongest, Gemini 3.1 Pro.
 
 % \section{Related Work}
-Prior work has explored financial regulatory QA, including \citet{sohn2021global} and \citet{chen2024fintextqa}. 
+Prior work has explored financial regulatory question answering (QA), including \citet{sohn2021global} and \citet{chen2024fintextqa}.
 Work on financial numeric and table QA includes \citet{zhu2021tat, chen2021finqa, reddy2024docfinqa, islam2023financebench}.
-\citet{choi2025finder} analyzes RAG QA.
+\citet{choi2025finder} analyzes retrieval-augmented generation (RAG) QA.
 \citet{loukas2022finer} studies entity recognition in financial reports.
 \citet{mollaev2025multimodal} releases large-scale anonymized transaction, geo-position, and technical support chat data from a major bank.
 In contrast, we contribute a benchmark in the mortgage origination domain focused on the chatbot assistant role.
@@ -204,7 +204,7 @@ We will release our code and data on GitHub upon acceptance.
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.5\textwidth]{figs/dataset.png}
-    \caption{Dataset generation pipeline. We generate transactions across one or more bank statements to match real-world distributions, then create a user profile (ULAD) that conforms thereto. We filter and rewrite questions derived from users of an in-production chatbot assistant. For each question, we manually create a mutation function that edits the transaction and/or ULAD to conform to a desired answer.}
+    \caption{Dataset generation pipeline. We generate transactions across one or more bank statements to match real-world distributions, then create an applicant profile (ULAD) that conforms thereto. We filter and rewrite questions derived from users of an in-production chatbot assistant. For each question, we manually create a mutation function that edits the transaction and/or ULAD to conform to a desired answer.}
     \label{fig:pipeline}
 \end{figure}
 
@@ -224,9 +224,9 @@ Each data instance in MortarBench (Figure \ref{fig:pipeline}) consists of the fo
 
 \noindent \textbf{Bank Statement:} A JSON-formatted list of financial transactions spanning 60 days.
 
-\noindent \textbf{ULAD File:} An industry-wide standardized form containing a summary of the applicant's financial profile (e.g., employment history, stated assets, and liabilities).
+\noindent \textbf{ULAD File:} The Uniform Loan Application Dataset (ULAD), an industry-wide standardized form containing a summary of the applicant's financial profile (e.g., employment history, stated assets, and liabilities).
 
-\noindent \textbf{Target Question:} A single question about the bank statement and, optionally, ULAD (standardized applicant financial summary), based on real-world loan officer workflows, curated and refined by expert annotators.
+\noindent \textbf{Target Question:} A single question about the bank statement and, optionally, the ULAD, based on real-world loan officer workflows, curated and refined by expert annotators.
 
 \noindent \textbf{Ground-Truth Answer:} The answer corresponding to the question, expressed as either a boolean value, a list of transaction identifiers, or a list of account identifiers.
 % \subsection{Application Document Generation}
@@ -239,7 +239,7 @@ Each data instance in MortarBench (Figure \ref{fig:pipeline}) consists of the fo
 
 To generate realistic transaction data that captures complex financial activity and supports diverse underwriting questions, we construct bank statements grounded in real financial records.
 We sample 300 real bank statements from real loan applicants processed by a medium-sized loan processing company.
-To overcome privacy limitations, we extract anonymous summary statistics of these applications, including the frequency and average value of key transaction types: payroll, benefits, and other income; deposits; housing and utilities expenses; bank fees; cryptocurrency transactions; and BNPL (Buy Now, Pay Later) and other liabilities.
+To overcome privacy limitations, we extract anonymous summary statistics of these applications, including the frequency and average value of key transaction types: payroll, benefits, and other income; deposits; housing and utilities expenses; bank fees; cryptocurrency transactions; and buy now, pay later (BNPL) and other liabilities.
 These statistics are used to generate synthetic bank statements with matching distributions.
 Finally, we manually tag each transaction with transaction properties such as \texttt{unsecured loan} based on industry definitions.
 Tags will be used later to calculate profile information and force specific answers in examples.
@@ -326,7 +326,7 @@ Account list answers &10.6\% \\
 
 \subsection{Evaluation Metrics}
 We evaluate agent performance using a unified metric across question types.
-To allocate partial credit to partially correct list questions, we employ the exact match as our primary metric, but also report F1 to capture agents' partially correct answers when required to list multiple transactions.
+To allocate partial credit to partially correct list questions, we employ exact match (EM) as our primary metric, but also report F1 to capture agents' partially correct answers when required to list multiple transactions.
 For boolean questions, we assign an F1 score of $1$ for correct predictions and $0$ otherwise.
 
 
@@ -356,7 +356,7 @@ Full prompt templates for both the baseline and CRIT pipelines are provided in A
 Our results show that overall, Gemini 3.1 Pro performs strongest on MortarBench, both with and without the CRIT framework.
 % In the baseline case, it achieves 80.8\% F1 score, which improves to 83.6\% using CRIT (Table \ref{tab:eval_mt_combined_nostd}).
 CRIT improves every base model's F1/EM (Table \ref{tab:eval_mt_combined_nostd}).
-The gain is largest for the most-oversensitive baseline (Claude), supporting CRIT as controllable oversensitivity correction.
+The gain is largest for the most-oversensitive baseline (Claude), supporting CRIT as a controllable oversensitivity correction.
 
 
 % Plain-text rendering of the table above:
@@ -390,7 +390,7 @@ Gemini 3.1 Pro & 80.8 & 77.1 & \textbf{97.0} & 72.2 & \textbf{96.7} & 36.7 & 1.1
 \end{table*}
 
 As expected, improvement occurs primarily among transaction list questions (Table \ref{tab:eval_mt_combined_nostd}), while results on boolean and account list questions remain largely unchanged.
-We also see that Claude Sonnet 4.6 struggles especially with Boolean questions, achieving worse than random accuracy.
+We also see that Claude Sonnet 4.6 struggles especially with boolean questions, achieving worse than random accuracy.
 
 
 
@@ -485,9 +485,9 @@ Through manual review, we identify two questions in our data with elevated poten
     \item Which list of deposits, if any, could be of foreign origin?
     \item Which list of deposits, if any, suggest funds from a private savings club or similar informal arrangement?
 \end{itemize}
-Additionally, we study whether US-based money transfer services such as PayPal are treated differently than non-US services across ten deposit- and withdrawal-related questions.
+Additionally, we study whether US-based money transfer services such as PayPal are treated differently than non-US services across six deposit- and withdrawal-related questions.
 
-We probe bias by inserting transactions with the description  "ACH CREDIT - \{entity name\}" into the bank statement and measuring whether the retrieval rates differ between the control and experimental groups.
+We probe bias by inserting transactions with the description ``ACH CREDIT - \{entity name\}'' into the bank statement and measuring whether the retrieval rates differ between the control and experimental groups.
 
 \subsubsection{Bias Involving Non-English Names}
 To test whether the LLM perceives non-English names as more foreign, we set \{entity name\} as either an English or a non-English personal or company name.
@@ -507,7 +507,7 @@ We perform a similar experiment where \{entity name\} is one of ten fictitious c
 We observe even more bias overall, with an average baseline model foreign origin classification delta of 78.7\%.
 Transliterating AR/HI/ZH company names appears less effective at reducing bias than when applied to personal names.
 These results indicate that transactions involving non-English entities, and especially non-Latin scripts, are likely to receive unequal classification as foreign as compared to those with English names.
-Like with personal names, applying our agent framework CRIT to Gemini reduces bias across all languages.
+As with personal names, applying our agent framework CRIT to Gemini reduces bias across all languages.
 
 % \subsubsection{Bias Involving Ethnically-Associated Saving Organizations}
 
@@ -525,8 +525,8 @@ We study whether transactions through US-based electronic payment systems (EPSs)
 We identify six transaction list questions that \textbf{do not} relate to foreign transactions.
 For each question, we inject a transaction using the template above where \{entity name\} is PayPal, Venmo, Zelle, or Western Union, or one of eight primarily non-US systems (Appendix \ref{appendix:money-transfer-services}).
 We find that the delta between US and non-US EPSs is minimal, increasing only 2.1\% across baseline models.
-However, when non-US EPSs are replaced with the names of informal value transfer systems (IVTSs), such as hawala, or huikuan, the recall rate in Gemini increases by 27.1\% but in Claude decreases by 8.3\% (Figure \ref{fig:ivts}).
-Although sometimes associated with associated with criminal or terrorist networks, IVTSs are often used by low income migrant workers \citep{malit2017more}.
+However, when non-US EPSs are replaced with the names of informal value transfer systems (IVTSs), such as hawala or huikuan, the recall rate in Gemini increases by 27.1\% but in Claude decreases by 8.3\% (Figure \ref{fig:ivts}).
+Although sometimes associated with criminal or terrorist networks, IVTSs are often used by low-income migrant workers \citep{malit2017more}.
 These results indicate that users of IVTSs are likely to receive unequal treatment as compared to those using formal EPSs.
 Our system, CRIT, shows the least difference between non-US EPSs and IVTSs.
 
@@ -549,8 +549,8 @@ CRIT reduces oversensitivity as well as non-English naming and IVTS-related bias
 \section{Limitations}
 
 This dataset contains questions based on user interactions with current models.
-As models advance, user behavior will likely evolve, altering the distribution of quesitons, answers, and biases.
-This work addresses only the US mortgage origination process and will require adaptation to apply to use in other countries.
+As models advance, user behavior will likely evolve, altering the distribution of questions, answers, and biases.
+This work addresses only the US mortgage origination process and will require adaptation for use in other countries.
 We choose the US origination process as a target dataset due to its economic size, standardization, and data accessibility.
 
 % \section{Ethical Considerations}
@@ -683,7 +683,7 @@ The views and conclusions presented here are those of the authors and should not
 
 \section{ULAD Summary}
 \label{sec:app:ulad}
-A ULAD (Uniform Loan Application Dataset) is a standardized, machine-readable data format used in the U.S. mortgage industry to represent a residential loan application.
+A ULAD (Uniform Loan Application Dataset) is a standardized, machine-readable data format used in the US mortgage industry to represent a residential loan application.
 It includes borrower-level data (identity, demographics, income, employment, and legal declarations), financial position (assets such as bank accounts and liabilities such as outstanding debts), and property-related information (address, characteristics, valuation, and sales contract details).
 It also captures the terms of the loan being originated, including loan amount, purpose, lien status, and interest features, along with metadata about the originating system.
 Finally, ULAD represents relationships between entities (e.g., linking borrowers to assets and liabilities), enabling a complete, machine-readable representation of the loan application for automated processing and underwriting.
