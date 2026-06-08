@@ -108,7 +108,9 @@ def _cached_llm_call(model_id: str, messages: List[Dict[str, str]], tools: List[
         client = Anthropic(api_key=ANTHROPIC_API_KEY)
         response = client.messages.create(
             model=model_id,
-            # max_tokens=4096,
+            # Required by the Anthropic API. Set generously so Claude isn't
+            # truncated relative to the GPT/Gemini paths, which don't cap output.
+            max_tokens=8192,
             messages=messages,
             temperature=1.0,
         )

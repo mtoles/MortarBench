@@ -71,6 +71,7 @@
 
 \usepackage{CJKutf8} 
 \usepackage{ragged2e}
+\usepackage{enumitem}
 % If the title and author information does not fit in the area allocated, uncomment the following
 %
 %\setlength\titlebox{<dim>}
@@ -178,7 +179,7 @@ Second, we must find a way to steer synthetic examples to cover rare edge cases 
 We overcome both challenges using a mutation-based synthetic data generation pipeline that allows us to procedurally edit input documents to force a desired answer while maintaining internal consistency.
 
 Finding that baseline foundation models achieve weak accuracy on MortarBench, we contribute the CRIT Agent, confidence-calibrated model that improves accuracy, bias, and steerability.
-CRIT improves up to 3.4\% over baseline foundation models (14.8\% error reduction).
+CRIT improves all baseline models, including 3.4\% (14.8\% error reduction) over the strongest, Gemini 3.1 Pro.
 
 % \section{Related Work}
 Prior work has explored financial regulatory QA, including \citet{sohn2021global} and \citet{chen2024fintextqa}. 
@@ -238,7 +239,7 @@ Each data instance in MortarBench (Figure \ref{fig:pipeline}) consists of the fo
 
 To generate realistic transaction data that captures complex financial activity and supports diverse underwriting questions, we construct bank statements grounded in real financial records.
 We sample 300 real bank statements from real loan applicants processed by a medium-sized loan processing company.
-To overcome privacy limitations, we extract anonymous summary statistics of these applications, including the frequency and average value of key transaction types: payroll, benefits, and other income; deposits; housing and utilities expenses; bank fees; cryptocurrency transactions; and BNPL and other liabilities.
+To overcome privacy limitations, we extract anonymous summary statistics of these applications, including the frequency and average value of key transaction types: payroll, benefits, and other income; deposits; housing and utilities expenses; bank fees; cryptocurrency transactions; and BNPL (Buy Now, Pay Later) and other liabilities.
 These statistics are used to generate synthetic bank statements with matching distributions.
 Finally, we manually tag each transaction with transaction properties such as \texttt{unsecured loan} based on industry definitions.
 Tags will be used later to calculate profile information and force specific answers in examples.
@@ -333,13 +334,15 @@ For boolean questions, we assign an F1 score of $1$ for correct predictions and 
  \section{Methods}
 
 Noting weak baseline model performance, we introduce the \textbf{C}onfidence \textbf{R}eflection \textbf{I}nference for \textbf{T}ransactions (CRIT) Agent.
-CRIT is motivated by the severe imbalance between false positives (32) vs. false negatives (0) in Gemini, indicating oversensitivity in the base model.
+CRIT is motivated by the severe imbalance between false positives (32) vs. false negatives (0) in baseline models, indicating oversensitivity.
+% \red{TODO: oversensitivity is not Gemini-specific --- all three base models over-predict (baseline FP/Q: Claude 2.5, GPT-5.5 1.9, Gemini 1.1; see Table \ref{tab:add_vs_drop}). Consider generalizing this motivation across models.}
 CRIT differs from the baseline implementation in that, for each transaction in its answer, the agent also generates a confidence score (1-5) indicating the probability the transaction is correctly included.
 The confidence is based on the number and strength of assumptions that must be made to justify including the transaction.
 Finally, we drop all transactions with confidence below a threshold $T=5$.
 Confidence adjustment serves both to align the model away from oversensitivity and to improve steerability.
 For example, a user may decrease the confidence threshold on a question where false negatives carry a high cost but predicted transactions are easy to verify.
-We use Gemini 3.1 Pro for all CRIT implementations.
+% We use Gemini 3.1 Pro for all CRIT implementations.
+% \red{TODO: outdated --- CRIT is now applied to all three base models (Claude Sonnet 4.6, GPT-5.5, Gemini 3.1 Pro). A per-model threshold sweep ($T{=}1\ldots5$) shows $T{=}5$ is optimal for every model (Figure \ref{fig:fp_vs_fn}). Reframe CRIT as a model-agnostic framework rather than Gemini-only.}
 Full prompt templates for both the baseline and CRIT pipelines are provided in Appendix \ref{appendix:prompts}.
 
 % CRIT Agent is designed to improve document grounding and reasoning over sets of transactions.
@@ -351,61 +354,43 @@ Full prompt templates for both the baseline and CRIT pipelines are provided in A
 
 
 Our results show that overall, Gemini 3.1 Pro performs strongest on MortarBench, both with and without the CRIT framework.
-In the baseline case, it achieves 80.8\% F1 score, which improves to 83.6\% using CRIT (Table \ref{tab:eval_mt_combined_nostd}).
+% In the baseline case, it achieves 80.8\% F1 score, which improves to 83.6\% using CRIT (Table \ref{tab:eval_mt_combined_nostd}).
+CRIT improves every base model's F1/EM (Table \ref{tab:eval_mt_combined_nostd}).
+The gain is largest for the most-oversensitive baseline (Claude), supporting CRIT as controllable oversensitivity correction.
 
 
 % Plain-text rendering of the table above:
-%   Method            | F1   | EM  
-%   ------------------+------+-----
-%   Claude Sonnet 4.6 | 56.1 | 51.4
-%   GPT-5.5           | 79.9 | 76.8
-%   Gemini 3.1 Pro    | 80.8 | 77.1
-%   CRIT              | 83.6 | 80.5
-\begin{table}[H]
+%   Method            | F1   | EM   | Boolean | Txn IDs | Account IDs
+%   ------------------+------+------+---------+---------+------------
+%   Claude Sonnet 4.6 | 56.1 | 51.4 | 36.3    | 63.0    | 85.0
+%   + CRIT            | 62.3 | 59.4 | 36.9    | 72.6    | 90.0
+%   GPT-5.5           | 79.9 | 76.8 | 94.6    | 72.3    | 93.3
+%   + CRIT            | 80.2 | 77.3 | 93.5    | 73.1    | 95.0
+%   Gemini 3.1 Pro    | 80.8 | 77.1 | 97.0    | 72.2    | 96.7
+%   + CRIT            | 83.6 | 80.5 | 97.0    | 77.0    | 96.7
+\begin{table*}[t]
 \centering
 \small
-\begin{tabular}{lrr}
+\begin{tabular}{lrrrrrrrrr}
 \toprule
-Method & F1 & EM \\
+ & \multicolumn{2}{c}{Overall} & \multicolumn{3}{c}{F1 By Question Type} & \multicolumn{2}{c}{Extras (FP)} & \multicolumn{2}{c}{Drops (FN)} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-6} \cmidrule(lr){7-8} \cmidrule(lr){9-10}
+Method & F1 & EM & Boolean & Txn IDs & Account IDs & Qs & FP/Q & Qs & FN/Q \\
 \midrule
-Claude Sonnet 4.6 & 56.1 & 51.4 \\
-GPT-5.5 & 79.9 & 76.8 \\
-Gemini 3.1 Pro & 80.8 & 77.1 \\
-CRIT & \textbf{83.6} & \textbf{80.5} \\
+Claude Sonnet 4.6 & 56.1 & 51.4 & 36.3 & 63.0 & 85.0 & 48.7 & 2.5 & 1.7 & 0.05 \\
+\quad + CRIT & 62.3 & 59.4 & 36.9 & 72.6 & 90.0 & 34.3 & 1.2 & 2.7 & 0.05 \\
+GPT-5.5 & 79.9 & 76.8 & 94.6 & 72.3 & 93.3 & 34.7 & 1.9 & 1.3 & 0.03 \\
+\quad + CRIT & 80.2 & 77.3 & 93.5 & 73.1 & 95.0 & 31.0 & 1.2 & 7.7 & 0.14 \\
+Gemini 3.1 Pro & 80.8 & 77.1 & \textbf{97.0} & 72.2 & \textbf{96.7} & 36.7 & 1.1 & \textbf{0.0} & \textbf{0.00} \\
+\quad + CRIT & \textbf{83.6} & \textbf{80.5} & \textbf{97.0} & \textbf{77.0} & \textbf{96.7} & \textbf{29.3} & \textbf{1.0} & 3.3 & 0.06 \\
 \bottomrule
 \end{tabular}
-\caption{Exact Match Accuracy (\%, mean over $N=3$ trials).}
+\caption{Accuracy overall (F1, EM) and by question type (F1 \%, mean over $N=3$ trials), alongside error counts on transaction-list questions: the share of questions (Qs) with at least one false positive (FP) or false negative (FN) transaction and the average number of FP and FN transactions per question.}
 \label{tab:eval_mt_combined_nostd}
-\end{table}
+\end{table*}
 
-As expected, improvement occurs entirely among transaction list questions (Table \ref{tab:eval_mt_by_question_type_nostd}), while results on boolean and account list questions remain identical.
+As expected, improvement occurs primarily among transaction list questions (Table \ref{tab:eval_mt_combined_nostd}), while results on boolean and account list questions remain largely unchanged.
 We also see that Claude Sonnet 4.6 struggles especially with Boolean questions, achieving worse than random accuracy.
-
-
-
-% Plain-text rendering of the table above:
-%   Method            | Boolean | Txn IDs | Account IDs
-%   ------------------+---------+---------+------------
-%   Claude Sonnet 4.6 | 36.3    | 63.0    | 85.0       
-%   GPT-5.5           | 94.6    | 72.3    | 93.3       
-%   Gemini 3.1 Pro    | 97.0    | 72.2    | 96.7       
-%   CRIT (ours)       | 97.0    | 77.0    | 96.7       
-\begin{table}[H]
-\centering
-\small
-\begin{tabular}{lrrr}
-\toprule
-Method & Boolean & Txn IDs & Account IDs \\
-\midrule
-Claude Sonnet 4.6 & 36.3 & 63.0 & 85.0 \\
-GPT-5.5 & 94.6 & 72.3 & 93.3 \\
-Gemini 3.1 Pro & \textbf{97.0} & 72.2 & \textbf{96.7} \\
-CRIT (ours) & \textbf{97.0} & \textbf{77.0} & \textbf{96.7} \\
-\bottomrule
-\end{tabular}
-\caption{Accuracy by Question Type (F1 \%, mean over $N=3$ trials).}
-\label{tab:eval_mt_by_question_type_nostd}
-\end{table}
 
 
 
@@ -431,12 +416,15 @@ However, performance on transaction list questions is substantially weaker, indi
 
 \subsection{Failure Analysis}
 
-To identify root causes of failure, we manually annotate failure modes for baseline Gemini based on reasoning traces (Table \ref{tab:failure_modes_txn}).
-The largest portion of errors (33.3\%) occur due to inaccurate transaction classification, for example, failing to recognize a BNPL transaction.
-27.8\% of errors occur due to value matching, e.g., inaccurately comparing a sum of earnest money deposits to the stated amount in the ULAD.
-Rather than making the arithmetic errors common in earlier models, Gemini often assumes that a value \textbf{exceeding} the stated ULAD value should be considered valid.
+To identify reasoning failures, authors manually reviewed all 36 erroneous reasoning traces in baseline Gemini, grouping errors qualitatively.
+We identify four distinct types of errors.
+The largest portion of errors (transaction misclassification, 33.3\%) occur due to erroneously adding or omitting a transaction based on its description, for example, including a personal loan as a BNPL transaction.
+27.8\% of errors occur due to failed value matching, e.g., inaccurately comparing values.
+Rather than making the arithmetic errors common in early models, Gemini often assumes that a value \textbf{exceeding} the stated ULAD value should be considered valid.
 Domain knowledge errors (22.2\%) include falsely assuming that all wire transfers are international or that deposits by co-borrowers are automatically documented.
 In 11.1\% of cases, Gemini misinterprets the constraints in the prompt, for example, classifying a one-time housing payment as recurring because it might recur in the future.
+We expect that value matching and constraint misinterpretation errors may be improved by increasing the specificity of prompts, i.e., that the LLM lacks sufficient understanding of industry norms to accurately interpret user intent.
+Transaction classification and domain knowledge errors, however, likely require an additional knowledge base or models with better parameterized knowledge.
 
 \begin{table}[H]
 \centering
@@ -445,31 +433,31 @@ In 11.1\% of cases, Gemini misinterprets the constraints in the prompt, for exam
 \toprule
 Category & Count & \% of Total \\
 \midrule
-Transaction Classification & 12 & 33.3 \\
-Value Matching & 10 & 27.8 \\
-Domain Knowledge & 8 & 22.2 \\
+Transaction Misclassification & 12 & 33.3 \\
+Value Matching Error & 10 & 27.8 \\
+Lack of Domain Knowledge & 8 & 22.2 \\
 Constraint Misinterpretation & 4 & 11.1 \\
-Unclear & 2 & 5.6 \\
+Other Error & 2 & 5.6 \\
 \bottomrule
 \end{tabular}
 \caption{Failure-mode breakdown over $N=36$ wrong predictions on transaction-list questions for Gemini 3.1 Pro.}
 \label{tab:failure_modes_txn}
 \end{table}
 
+\subsection{Stochasticity Analysis}
 
-% To determine whether errors occur due to false belief as opposed to 
-Constructing our dataset with multiple variations of profiles for each question allows us to determine to what degree errors result stochastically from variation in profiles versus from false beliefs or other systematic errors.
-For two versions of the same question, we define risk ratio as:
+Because our dataset contains multiple copies of each question backed by different documents, we can measure whether the model's errors are consistent. Consider two versions of a question that share the same answer but use different documents. If the model answers both incorrectly, the error is unlikely to be an accident of document phrasing and instead points to a misunderstanding or false belief. If the model errs on only one version, the mistake more plausibly arises stochastically from variation in the documents. Distinguishing these cases matters because stochastic errors and false beliefs call for different remedies: false beliefs can often be corrected through in-context learning, whereas stochastic errors may be diffuse across the distribution and harder to eliminate completely.
+
+We quantify the consistency of errors with the risk ratio (RR), which measures how much a first-version error raises the probability of a second-version error \citep{rothman2008modern}:
 
 \begin{align*}
-  \mathrm{RR} = \frac{\Pr(\text{2nd wrong}\mid\text{1st wrong})}{\Pr(\text{2nd wrong}\mid\text{1st right})} \approx 12.7
+\mathrm{RR} = \frac{\Pr(\text{2nd wrong}\mid\text{1st wrong})}{\Pr(\text{2nd wrong}\mid\text{1st right})} \approx 12.7
 \end{align*}
 
-\noindent for baseline Gemini.
-We find that, given that the model answered incorrectly on the first version, the likelihood of an error on the second version is 12.7× higher than after a first-attempt success. 
-This indicates that the overwhelming majority of errors are due to false beliefs in the model rather than stochasticity.
+\noindent An RR of 1 would indicate that the two errors are independent—pure stochasticity. For baseline Gemini, however, an error on the first version makes an error on the second 12.7× more likely than a first-version success does (3 trials, 110 total errors). We therefore conclude that the overwhelming majority of errors stem from false beliefs in the model rather than from stochastic variation.
 
-CRIT successfully aligns Gemini to reduce oversensitivity in transaction selection, reducing the false positive rate significantly at the expense of a negligible increase in false negatives (Table \ref{tab:add_vs_drop}).
+CRIT successfully aligns base models to reduce oversensitivity in transaction selection, reducing the false positive rate significantly at the expense of a negligible increase in false negatives (Table \ref{tab:eval_mt_combined_nostd}).
+% \red{TODO: generalize beyond Gemini --- CRIT cuts FP/Q for all three base models (Claude 2.5$\to$1.2, GPT-5.5 1.9$\to$1.2, Gemini 1.1$\to$1.0), with the largest correction on the most-oversensitive baseline (Claude). Note GPT-5.5 trades more false negatives (FN/Q 0.03$\to$0.14).}
 In addition to improving overall EM and F1 compared to baseline, selective thresholding also improves steering and interpretability (Figure \ref{fig:fp_vs_fn}) --- the inclusion threshold can be chosen based on the real-world financial risk or human verification cost associated with each error.
 Additionally, self-reflective confidence values can be used by users to prioritize human review.
 
@@ -482,32 +470,6 @@ Additionally, self-reflective confidence values can be used by users to prioriti
 
 
 
-% Plain-text rendering of the table above:
-%   Method            | Qs   | FP/Q | Qs  | FN/Q
-%   ------------------+------+------+-----+-----
-%   Claude Sonnet 4.6 | 48.7 | 2.5  | 1.7 | 0.05
-%   GPT-5.5           | 34.7 | 1.9  | 1.3 | 0.03
-%   Gemini 3.1 Pro    | 36.7 | 1.1  | 0.0 | 0.00
-%   CRIT (ours)       | 29.3 | 1.0  | 3.3 | 0.06
-\begin{table}[H]
-\centering
-\small
-\begin{tabular}{lrrrr}
-\toprule
- & \multicolumn{2}{c}{Extras (FP)} & \multicolumn{2}{c}{Drops (FN)} \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-5}
-Method & Qs & FP/Q & Qs & FN/Q \\
-\midrule
-Claude Sonnet 4.6 & 48.7 & 2.5 & 1.7 & 0.05 \\
-GPT-5.5 & 34.7 & 1.9 & 1.3 & 0.03 \\
-Gemini 3.1 Pro & 36.7 & 1.1 & 0.0 & 0.00 \\
-CRIT (ours) & 29.3 & 1.0 & 3.3 & 0.06 \\
-\bottomrule
-\end{tabular}
-\caption{Count of transaction list questions (Q) with at least one false positive (FP) or false negative (FN) transaction and the average number of FP or FN transactions per question.}
-\label{tab:add_vs_drop}
-\end{table}
-
 \subsection{Bias}
 
 \begin{figure*}
@@ -518,20 +480,14 @@ CRIT (ours) & 29.3 & 1.0 & 3.3 & 0.06 \\
 \end{figure*}
 For legal and ethical reasons, it is important that lending institutions do not discriminate against applicants based on protected classes.
 Through manual review, we identify two questions in our data with elevated potential for biased decisions:
-
-\noindent $\bullet$ Which list of deposits, if any, could be of foreign origin?
-
-\noindent $\bullet$ Which list of deposits, if any, suggest funds from a private savings club or similar informal arrangement?
-
+\begin{itemize}[leftmargin=1.5em, itemsep=2pt, topsep=2pt]
+    \RaggedRight
+    \item Which list of deposits, if any, could be of foreign origin?
+    \item Which list of deposits, if any, suggest funds from a private savings club or similar informal arrangement?
+\end{itemize}
 Additionally, we study whether US-based money transfer services such as PayPal are treated differently than non-US services across ten deposit- and withdrawal-related questions.
 
-We probe bias by inserting transactions of the form 
-
-\centering
-ACH CREDIT - \{entity name\}\par
-\justifying
-
-into the bank statement and measuring whether the retrieval rates differ between the control and experimental groups.
+We probe bias by inserting transactions with the description  "ACH CREDIT - \{entity name\}" into the bank statement and measuring whether the retrieval rates differ between the control and experimental groups.
 
 \subsubsection{Bias Involving Non-English Names}
 To test whether the LLM perceives non-English names as more foreign, we set \{entity name\} as either an English or a non-English personal or company name.
@@ -569,7 +525,8 @@ We study whether transactions through US-based electronic payment systems (EPSs)
 We identify six transaction list questions that \textbf{do not} relate to foreign transactions.
 For each question, we inject a transaction using the template above where \{entity name\} is PayPal, Venmo, Zelle, or Western Union, or one of eight primarily non-US systems (Appendix \ref{appendix:money-transfer-services}).
 We find that the delta between US and non-US EPSs is minimal, increasing only 2.1\% across baseline models.
-However, when non-US EPSs are replaced with the names of informal value transfer systems (IVTSs), such as hawala, or huikuan, the recall rate in Gemini increases by 27.1\% but in Claude decreases by 8.3\% (Figure \ref{fig:ivts).
+However, when non-US EPSs are replaced with the names of informal value transfer systems (IVTSs), such as hawala, or huikuan, the recall rate in Gemini increases by 27.1\% but in Claude decreases by 8.3\% (Figure \ref{fig:ivts}).
+Although sometimes associated with associated with criminal or terrorist networks, IVTSs are often used by low income migrant workers \citep{malit2017more}.
 These results indicate that users of IVTSs are likely to receive unequal treatment as compared to those using formal EPSs.
 Our system, CRIT, shows the least difference between non-US EPSs and IVTSs.
 
@@ -583,7 +540,7 @@ Our system, CRIT, shows the least difference between non-US EPSs and IVTSs.
 
 \section{Conclusion}
 
-We introduce MortarBench, a realistic benchmark with broad edge case coverage for evaluating mortgage loan assistants.
+We introduce MortarBench, the first realistic benchmark with broad edge case coverage for evaluating mortgage loan assistants.
 We propose CRIT, an effective and human-centric strategy for reducing chronic oversensitivity in frontier models.
 CRIT reduces oversensitivity as well as non-English naming and IVTS-related biases in baseline models.
 
