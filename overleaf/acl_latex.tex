@@ -339,8 +339,7 @@ CRIT is motivated by the severe imbalance between false positives (32) vs. false
 CRIT differs from the baseline implementation in that, for each transaction in its answer, the agent also generates a confidence score (1-5) indicating the probability the transaction is correctly included.
 The confidence is based on the number and strength of assumptions that must be made to justify including the transaction.
 Finally, we drop all transactions with confidence below a threshold $T=5$.
-Confidence adjustment serves both to align the model away from oversensitivity and to improve steerability.
-For example, a user may decrease the confidence threshold on a question where false negatives carry a high cost but predicted transactions are easy to verify.
+Confidence adjustment serves both to align the model away from oversensitivity and to allow steering depending on the relative cost of false positives vs negatives.
 % We use Gemini 3.1 Pro for all CRIT implementations.
 % \red{TODO: outdated --- CRIT is now applied to all three base models (Claude Sonnet 4.6, GPT-5.5, Gemini 3.1 Pro). A per-model threshold sweep ($T{=}1\ldots5$) shows $T{=}5$ is optimal for every model (Figure \ref{fig:fp_vs_fn}). Reframe CRIT as a model-agnostic framework rather than Gemini-only.}
 Full prompt templates for both the baseline and CRIT pipelines are provided in Appendix \ref{appendix:prompts}.
@@ -446,7 +445,7 @@ Other Error & 2 & 5.6 \\
 
 \subsection{Stochasticity Analysis}
 
-Because our dataset contains multiple copies of each question backed by different documents, we can measure whether the model's errors are consistent. Consider two versions of a question that share the same answer but use different documents. If the model answers both incorrectly, the error is unlikely to be an accident of document phrasing and instead points to a misunderstanding or false belief. If the model errs on only one version, the mistake more plausibly arises stochastically from variation in the documents. Distinguishing these cases matters because stochastic errors and false beliefs call for different remedies: false beliefs can often be corrected through in-context learning, whereas stochastic errors may be diffuse across the distribution and harder to eliminate completely.
+Because our dataset contains multiple copies of each question backed by different documents, we can measure whether the model's errors are consistent. Consider two versions of a question that share the same answer but use different documents. If the model answers both incorrectly, the error is unlikely to be an accident of document phrasing and instead points to a misunderstanding or false belief. If the model errs on only one version, the mistake more plausibly arises stochastically from variation in the documents. False beliefs can more often be corrected through in-context learning, whereas stochastic errors may be diffuse across the distribution and harder to eliminate completely.
 
 We quantify the consistency of errors with the risk ratio (RR), which measures how much a first-version error raises the probability of a second-version error \citep{rothman2008modern}:
 
