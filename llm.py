@@ -6,6 +6,7 @@ with disk-based caching to avoid redundant API calls.
 """
 
 import json
+import re
 from typing import List, Dict, Any
 from openai import OpenAI
 from anthropic import Anthropic
@@ -61,6 +62,79 @@ admin_headers = {
     "Content-Type": "application/json",
     "accept": "application/json",
 }
+
+
+# OpenAI-compatible open-source providers. Dispatch is by slug shape:
+#   - "local/..."     -> local vLLM server (e.g. local/Qwen/Qwen3.5-397B-...)
+#   - "accounts/..."  -> Fireworks (e.g. accounts/fireworks/models/qwen3-...)
+#   - "org/model"     -> Baseten Model APIs (e.g. moonshotai/Kimi-K2.6)
+# List live slugs: GET <base_url>/models with the provider key.
+# The local base URL is read from VLLM_BASE_URL (default localhost:8001) so the
+# eval script can point at whichever port `vllm serve` is bound to.
+OSS_PROVIDERS = {
+    "fireworks": {
+        "base_url": "https://api.fireworks.ai/inference/v1",
+        "key_env": "FIREWORKS_API_KEY",
+    },
+    "baseten": {
+        "base_url": "https://inference.baseten.co/v1",
+        "key_env": "BASETEN_API_KEY",
+    },
+    "local": {
+        "base_url": os.getenv("VLLM_BASE_URL", "http://localhost:8001/v1"),
+        "key_env": None,  # a local vLLM server ignores the API key
+    },
+}
+
+
+def _oss_provider_for(model_id: str):
+    """Return the provider config for an open-source `org/model` slug."""
+    if model_id.startswith("local/"):
+        return OSS_PROVIDERS["local"]
+    if model_id.startswith("accounts/"):
+        return OSS_PROVIDERS["fireworks"]
+    return OSS_PROVIDERS["baseten"]
+
+
+def _call_oss_model(model_id, messages, tools, seed):
+    """Call an open-source model via an OpenAI-compatible provider."""
+    provider = _oss_provider_for(model_id)
+    if provider["key_env"]:
+        api_key = os.getenv(provider["key_env"])
+        if not api_key:
+            raise ValueError(
+                f"{provider['key_env']} not set; required to route open-source "
+                f"model '{model_id}'."
+            )
+    else:
+        api_key = "EMPTY"  # local vLLM
+    client = OpenAI(api_key=api_key, base_url=provider["base_url"])
+    # The "local/" prefix is a routing hint only; the vLLM server is started
+    # with --served-model-name equal to the bare HF repo id, so strip it.
+    served_model = model_id[len("local/"):] if model_id.startswith("local/") else model_id
+    kwargs = {
+        "model": served_model,
+        "messages": messages,
+        # These OpenAI-compat paths require an explicit cap; set generously so
+        # open models aren't truncated relative to the GPT/Gemini paths.
+        "max_tokens": 8192,
+        "temperature": 0,
+    }
+    if tools:
+        kwargs["tools"] = tools
+    if seed is not None:
+        kwargs["seed"] = seed
+
+    response = client.chat.completions.create(**kwargs)
+    content = (
+        response.choices[0].message.content.strip()
+        if response.choices[0].message.content
+        else ""
+    )
+    # Some open reasoning models emit an inline <think>...</think> block before
+    # the answer; strip it so downstream cleaning sees only the answer text.
+    content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
+    return content, response.usage.prompt_tokens, response.usage.completion_tokens
 
 
 @memory.cache
@@ -147,6 +221,10 @@ def _cached_llm_call(model_id: str, messages: List[Dict[str, str]], tools: List[
             + (usage.tool_use_prompt_token_count or 0)
         )
         return content, in_tok, out_tok
+    elif "/" in model_id:
+        # Open-source `org/model` slug -> Fireworks or Baseten (see
+        # _oss_provider_for). New slugs work with no code change.
+        return _call_oss_model(model_id, messages, tools, seed)
     else:
         raise ValueError(f"Invalid model ID: {model_id}")
 

@@ -81,6 +81,14 @@ MODEL_PRICING = {
     "gemini-2.5-pro": {"input": 1.25, "output": 10.00},
     "gemini-3-pro-preview": {"input": 1.25, "output": 10.00},
     "gemini-3.1-pro-preview": {"input": 2.00, "output": 12.00},
+    # Open-source models via Baseten Model APIs (org/model slugs).
+    # Rates are APPROXIMATE — verify against https://www.baseten.co/pricing/
+    "moonshotai/Kimi-K2.6": {"input": 0.60, "output": 2.50},
+    "deepseek-ai/DeepSeek-V4-Pro": {"input": 0.55, "output": 2.19},
+    # Same models on Fireworks serverless (accounts/... slugs).
+    # Rates APPROXIMATE — verify against https://fireworks.ai/pricing
+    "accounts/fireworks/models/kimi-k2p6": {"input": 0.60, "output": 2.50},
+    "accounts/fireworks/models/deepseek-v4-pro": {"input": 0.56, "output": 2.19},
 }
 
 # Prompt assembly + answer normalization live in `prompts.py` so both `eval`
@@ -765,8 +773,22 @@ def evaluate_model(
             row_output_tokens,
         )
 
+    # Open-source providers rate-limit more aggressively than the hosted
+    # GPT/Claude/Gemini endpoints, so cap concurrency lower for them:
+    #   local vLLM (local/... slugs)     -> 32 (our own server, no rate limit)
+    #   Baseten (org/model slugs)        -> 2
+    #   Fireworks (accounts/... slugs)   -> 5
+    #   hosted GPT/Claude/Gemini         -> 10
+    if model_id.startswith("local/"):
+        worker_cap = 32
+    elif model_id.startswith("accounts/"):
+        worker_cap = 5
+    elif "/" in model_id:
+        worker_cap = 2
+    else:
+        worker_cap = 10
     with concurrent.futures.ThreadPoolExecutor(
-        max_workers=min(10, len(df))
+        max_workers=min(worker_cap, len(df))
     ) as executor:
         future_to_idx = {
             executor.submit(process_single_row, idx, row): idx
@@ -815,7 +837,8 @@ def evaluate_model(
 
     # Use "solo" for pricing lookup when model_type is solo, otherwise use model_id
     pricing_key = "solo" if model_type == "solo" else model_id
-    pricing = MODEL_PRICING[pricing_key]
+    # Unknown open-source slugs (org/model) price at zero rather than KeyError-ing.
+    pricing = MODEL_PRICING.get(pricing_key, {"input": 0.0, "output": 0.0})
     input_cost = (total_input_tokens / 1_000_000) * pricing["input"]
     output_cost = (total_output_tokens / 1_000_000) * pricing["output"]
     total_cost = input_cost + output_cost
@@ -966,7 +989,7 @@ def save_results(
         ]
 
     # Use "solo" for output file names when model_type is solo, otherwise use model_id
-    output_model_id = "solo" if model_type == "solo" else model_id
+    output_model_id = "solo" if model_type == "solo" else model_id.replace("/", "_")
     jsonl_path = f"{output_dir}/{output_model_id}_results.jsonl"
     df_with_results.to_json(jsonl_path, orient="records", lines=True)
     print(f"JSONL results saved to {jsonl_path}")
