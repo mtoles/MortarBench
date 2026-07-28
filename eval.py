@@ -532,11 +532,32 @@ def _is_rate_limit_error(e):
     if type(e).__name__ in ("RateLimitError", "ResourceExhausted", "TooManyRequestsError"):
         return True
     msg = str(e).lower()
-    if "429" in msg:
+    # Match 429 only as a standalone status code, not as a digit run inside a
+    # larger number (e.g. a token count like "42991" must not look like a 429).
+    if re.search(r"\b429\b", msg):
         return True
     if "rate" in msg and "limit" in msg:
         return True
     return False
+
+
+def _context_length_error(e):
+    """Detect a provider "maximum context length exceeded" 400 (e.g. vLLM /
+    OpenAI) and return ``(max_context, message_tokens)``, else ``None``.
+
+    ``message_tokens`` is the size of the *input* (the prompt); the overflow may
+    come from the input alone or from input + requested completion. The caller
+    uses this split to decide: input-alone overflow is fatal, whereas a
+    completion that won't fit means the model simply failed to answer in budget.
+    """
+    msg = str(e)
+    m = re.search(r"maximum context length is (\d+) tokens", msg)
+    if not m:
+        return None
+    max_ctx = int(m.group(1))
+    mt = re.search(r"(\d+) in the messages", msg)
+    message_tokens = int(mt.group(1)) if mt else max_ctx  # unknown -> treat as fatal
+    return max_ctx, message_tokens
 
 
 def evaluate_model(
@@ -726,6 +747,25 @@ def evaluate_model(
                 trial_metrics.append(metrics)
             except Exception as e:
                 tb = traceback.format_exc()
+                # Check context-length first: it is an unambiguous 400 and its
+                # token counts can contain digit runs (e.g. "429") that would
+                # otherwise be misread as a rate-limit status code.
+                ctx = _context_length_error(e)
+                if ctx is not None:
+                    max_ctx, message_tokens = ctx
+                    # The prompt (and/or requested completion) overflows the
+                    # model's context window. The model can't answer this item,
+                    # so score the trial as incorrect and keep going.
+                    print(f"Context overflow on loan_id {loan_id}: "
+                          f"{message_tokens} msg tokens vs {max_ctx} context; "
+                          f"marking trial incorrect.")
+                    predicted_answers.append([] if answer_type.endswith("_list") else "")
+                    raw_answers.append(f"<context overflow: {e}>")
+                    if is_pii:
+                        trial_metrics.append({"exact_match": None, "f1_score": None})
+                    else:
+                        trial_metrics.append({"exact_match": False, "f1_score": 0.0})
+                    continue
                 if _is_rate_limit_error(e):
                     print(f"Rate-limit error from provider on loan_id {loan_id}: {e}")
                     raise RateLimitAborted(f"loan_id {loan_id}: {e}\n\n{tb}") from e
@@ -776,7 +816,7 @@ def evaluate_model(
     # Open-source providers rate-limit more aggressively than the hosted
     # GPT/Claude/Gemini endpoints, so cap concurrency lower for them:
     #   local vLLM (local/... slugs)     -> 32 (our own server, no rate limit)
-    #   Baseten (org/model slugs)        -> 2
+    #   Baseten (org/model slugs)        -> 1 (Kimi 429s at 2)
     #   Fireworks (accounts/... slugs)   -> 5
     #   hosted GPT/Claude/Gemini         -> 10
     if model_id.startswith("local/"):
@@ -784,7 +824,7 @@ def evaluate_model(
     elif model_id.startswith("accounts/"):
         worker_cap = 5
     elif "/" in model_id:
-        worker_cap = 2
+        worker_cap = 1
     else:
         worker_cap = 10
     with concurrent.futures.ThreadPoolExecutor(

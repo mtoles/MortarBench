@@ -96,6 +96,38 @@ def _oss_provider_for(model_id: str):
     return OSS_PROVIDERS["baseten"]
 
 
+def _is_429(e):
+    """True for provider rate-limit errors (Baseten/Fireworks return HTTP 429)."""
+    if e.__class__.__name__ == "RateLimitError":
+        return True
+    if getattr(e, "status_code", None) == 429:
+        return True
+    return bool(re.search(r"\b429\b", str(e)))
+
+
+def _retry_on_429(fn, model_id, max_retries=6, base_delay=5.0, max_delay=120.0):
+    """Call `fn`, retrying 429s with exponential backoff (5s, 10s, 20s, ...).
+
+    Baseten and Fireworks rate-limit per-key, so a burst of concurrent eval
+    workers can trip a 429 even at low concurrency. Retrying here (inside the
+    joblib-cached call path) keeps an eval from aborting mid-dataset. Local
+    vLLM has no rate limit, so callers skip this for "local/" slugs.
+    """
+    delay = base_delay
+    for attempt in range(1, max_retries + 1):
+        try:
+            return fn()
+        except Exception as e:
+            if not _is_429(e) or attempt == max_retries:
+                raise
+            print(
+                f"Rate limited (429) by provider for {model_id}; "
+                f"retry {attempt}/{max_retries - 1} in {delay:.0f}s"
+            )
+            time.sleep(delay)
+            delay = min(delay * 2, max_delay)
+
+
 def _call_oss_model(model_id, messages, tools, seed):
     """Call an open-source model via an OpenAI-compatible provider."""
     provider = _oss_provider_for(model_id)
@@ -125,7 +157,12 @@ def _call_oss_model(model_id, messages, tools, seed):
     if seed is not None:
         kwargs["seed"] = seed
 
-    response = client.chat.completions.create(**kwargs)
+    if model_id.startswith("local/"):
+        response = client.chat.completions.create(**kwargs)
+    else:
+        response = _retry_on_429(
+            lambda: client.chat.completions.create(**kwargs), model_id
+        )
     content = (
         response.choices[0].message.content.strip()
         if response.choices[0].message.content

@@ -22,6 +22,20 @@ MODEL_COLORS = {
 
 PLOTTED_MODELS = set(MODEL_COLORS.keys())
 
+# Base models drawn in the CRIT threshold sweep (plot_fp_vs_fn). Kept separate
+# from MODEL_COLORS/PLOTTED_MODELS: those gate the main EM/F1 charts and their
+# trial-count consistency check, which the open-weight single-seed sweeps would
+# trip. Colors match the bias plots' model ordering where they overlap.
+SWEEP_MODELS = [
+    ("gemini-3.1-pro-preview",                         "Gemini 3.1 Pro",    "#1a73e8"),
+    ("gpt-5",                                          "GPT-5.5",           "#10a37f"),
+    ("claude-sonnet-4-6",                              "Claude Sonnet 4.6", "#cc7a00"),
+    ("deepseek-ai/DeepSeek-V4-Pro",                    "DeepSeek V4 Pro",   "#7b3fa0"),
+    ("moonshotai/Kimi-K2.6",                           "Kimi K2.6",         "#d1495b"),
+    ("local/Qwen/Qwen3-32B-AWQ",                       "Qwen3 32B",         "#6b8f3a"),
+    ("local/mistralai/Mistral-Small-24B-Instruct-2501", "Mistral Small 24B", "#8c6d46"),
+]
+
 # Hatch pattern encodes the alternative method (currently the threshold agent).
 CONDITION_HATCHES = {
     "Baseline":      "",
@@ -521,9 +535,13 @@ def _collect_extras_drops(scan_dir, rows_spec):
 # per-model McNemar p-value on txn questions, and seed-range reporting.
 # --------------------------------------------------------------------------
 TABLE2_MODELS = [
-    ("claude-sonnet-4-6",      "Claude Sonnet 4.6"),
-    ("gpt-5",                  "GPT-5.5"),
-    ("gemini-3.1-pro-preview", "Gemini 3.1 Pro"),
+    ("claude-sonnet-4-6",             "Claude Sonnet 4.6"),
+    ("gpt-5",                         "GPT-5.5"),
+    ("gemini-3.1-pro-preview",        "Gemini 3.1 Pro"),
+    ("deepseek-ai/DeepSeek-V4-Pro",   "DeepSeek V4 Pro"),
+    ("moonshotai/Kimi-K2.6",          "Kimi K2.6"),
+    ("local/Qwen/Qwen3-32B-AWQ",                       "Qwen3 32B"),
+    ("local/mistralai/Mistral-Small-24B-Instruct-2501", "Mistral Small 24B"),
 ]
 # Question types CRIT never touches — CRIT recycles the baseline model's
 # predictions on these, so any measured difference would be pure noise.
@@ -596,7 +614,8 @@ def _overall_seed_scores(seeds, field, recycle=None):
 
 
 def _clustered_perm_txn_p(base_seeds, crit_seeds, n_perm=20000, seed=0):
-    """Two-sided p-value for CRIT vs. baseline on transaction-id questions,
+    """One-sided p-value (H1: CRIT > baseline) for CRIT vs. baseline on
+    transaction-id questions,
     using a paired permutation test with question-level clustering over all
     trials (F1). The statistic is the mean over questions of (mean CRIT F1 --
     mean baseline F1). Under H0 the baseline and CRIT trials of a question are
@@ -615,6 +634,8 @@ def _clustered_perm_txn_p(base_seeds, crit_seeds, n_perm=20000, seed=0):
             if at.get(q) == "txn_id_list":
                 byq.setdefault(q, [[], []])[1].append(v["f1"])
     qs = [q for q, (bt, ct) in byq.items() if bt and ct]
+    if not qs:  # model not run yet (or no txn questions) — nothing to test
+        return {"p": None, "obs": float("nan"), "n_txn": 0, "n_perm": 0}
     pools = [np.array(byq[q][0] + byq[q][1]) for q in qs]
     nbs = [len(byq[q][0]) for q in qs]
     obs = float(np.mean([np.mean(byq[q][1]) - np.mean(byq[q][0]) for q in qs]))
@@ -626,7 +647,7 @@ def _clustered_perm_txn_p(base_seeds, crit_seeds, n_perm=20000, seed=0):
         for pool, nb in zip(pools, nbs):
             idx = rng.permutation(len(pool))
             acc += pool[idx[nb:]].mean() - pool[idx[:nb]].mean()
-        if abs(acc / len(qs)) >= abs(obs) - 1e-12:
+        if acc / len(qs) >= obs - 1e-12:
             count += 1
     p = (1 + count) / (n_perm + 1)
     return {"p": p, "obs": obs, "n_txn": len(qs), "n_perm": n_perm}
@@ -649,7 +670,17 @@ def write_combined_table2(scan_dir=None, out_dir=None,
         out_dir = os.path.join("overleaf", "figs")
 
     def _rng(vals):
-        return f"{{\\scriptsize({min(vals):.1f}--{max(vals):.1f})}}" if vals else ""
+        # Omit for single-seed cells (e.g. thin CRIT runs) or when the rounded
+        # endpoints coincide, so we never render a degenerate "(x--x)".
+        if not vals or len(vals) < 2 or f"{min(vals):.1f}" == f"{max(vals):.1f}":
+            return ""
+        return f"{{\\scriptsize({min(vals):.1f}--{max(vals):.1f})}}"
+
+    def _rng_plain(vals):
+        # Same rule as _rng, but rendered for the markdown comment block.
+        if not vals or len(vals) < 2 or f"{min(vals):.1f}" == f"{max(vals):.1f}":
+            return ""
+        return f" ({min(vals):.1f}-{max(vals):.1f})"
 
     # Collect every cell first so we can bold column-best across all rows.
     cells = []  # list of dicts, in table row order
@@ -672,12 +703,14 @@ def write_combined_table2(scan_dir=None, out_dir=None,
             "label": disp, "crit": False,
             "f1": float(np.mean(b_f1s)), "em": float(np.mean(b_ems)),
             "f1_rng": _rng(b_f1s), "em_rng": _rng(b_ems),
+            "f1_rng_md": _rng_plain(b_f1s), "em_rng_md": _rng_plain(b_ems),
             "boolean": b_bool, "txn": _type_f1(base, "txn_id_list"), "acct": b_acct,
         })
         cells.append({
             "label": r"\quad + CRIT", "crit": True,
             "f1": float(np.mean(c_f1s)), "em": float(np.mean(c_ems)),
             "f1_rng": _rng(c_f1s), "em_rng": _rng(c_ems),
+            "f1_rng_md": _rng_plain(c_f1s), "em_rng_md": _rng_plain(c_ems),
             # Recycled from baseline (CRIT does not touch these types).
             "boolean": b_bool, "txn": _type_f1(crit, "txn_id_list"), "acct": b_acct,
             "p": stat["p"],
@@ -690,10 +723,13 @@ def write_combined_table2(scan_dir=None, out_dir=None,
         fpfn_spec.append((model, r"\quad + CRIT", "threshold_t5"))
     fpfn = _collect_extras_drops(scan_dir, fpfn_spec)
     for cell, fp in zip(cells, fpfn):
-        cell.update({
-            "q_fp": fp["q_with_extras"], "fp_q": fp["avg_extras"],
-            "q_fn": fp["q_with_drops"], "fn_q": fp["avg_drops"],
-        })
+        if fp.get("n_questions", 0) == 0:  # model not run -> blank, don't show 0.0
+            cell.update({"q_fp": None, "fp_q": None, "q_fn": None, "fn_q": None})
+        else:
+            cell.update({
+                "q_fp": fp["q_with_extras"], "fp_q": fp["avg_extras"],
+                "q_fn": fp["q_with_drops"], "fn_q": fp["avg_drops"],
+            })
 
     # Column-best (max for accuracy, min for error columns) for bolding.
     def _best(key, mode):
@@ -718,7 +754,35 @@ def write_combined_table2(scan_dir=None, out_dir=None,
             return "$<0.001$"
         return f"{p:.3f}" if p < 0.01 else f"{p:.2f}"
 
+    def mdbold(val, key, fmt=".1f"):
+        if val is None or (isinstance(val, float) and np.isnan(val)):
+            return "--"
+        s = f"{val:{fmt}}"
+        if best.get(key) is not None and abs(val - best[key]) < 1e-9:
+            s = f"**{s}**"
+        return s
+
+    def pfmt_md(p):
+        if p is None:
+            return "--"
+        if p < 0.001:
+            return "<0.001"
+        return f"{p:.3f}" if p < 0.01 else f"{p:.2f}"
+
     body = []
+    md_rows = []
+    for c in cells:
+        md_rows.append([
+            "+ CRIT" if c["crit"] else c["label"],
+            mdbold(c["f1"], "f1") + c["f1_rng_md"],
+            mdbold(c["em"], "em") + c["em_rng_md"],
+            mdbold(c["boolean"], "boolean"),
+            mdbold(c["txn"], "txn"),
+            mdbold(c["acct"], "acct"),
+            mdbold(c["q_fp"], "q_fp"), mdbold(c["fp_q"], "fp_q"),
+            mdbold(c["q_fn"], "q_fn"), mdbold(c["fn_q"], "fn_q", ".2f"),
+            pfmt_md(c.get("p")),
+        ])
     for c in cells:
         txn_cell = bold(c["txn"], "txn")
         f1_cell = bold(c["f1"], "f1") + (r"\," + c["f1_rng"] if c["f1_rng"] else "")
@@ -739,7 +803,27 @@ def write_combined_table2(scan_dir=None, out_dir=None,
         if i % 2 == 1 and i != len(body) - 1:
             grouped.append(r"\midrule")
 
+    # Markdown rendering of the same table, emitted as a LaTeX comment block so
+    # it can be copy-pasted straight out of the .tex file.
+    md_header = ["Method", "F1", "EM", "Boolean", "Txn IDs", "Account IDs",
+                 "FP Qs", "FP/Q", "FN Qs", "FN/Q", "p"]
+    md_widths = [max(len(md_header[i]), *(len(r[i]) for r in md_rows))
+                 for i in range(len(md_header))]
+
+    def md_line(cells_):
+        return "| " + " | ".join(c.ljust(md_widths[i])
+                                 for i, c in enumerate(cells_)) + " |"
+
+    md_sep = "| " + " | ".join("-" * w for w in md_widths) + " |"
+    md_comment = "\n".join(
+        ["% Markdown rendering of the table below (copy-paste ready):",
+         "%   " + md_line(md_header),
+         "%   " + md_sep,
+         *("%   " + md_line(r) for r in md_rows)]
+    ) + "\n"
+
     latex = (
+        md_comment +
         "% GENERATED by plot_results.write_combined_table2 -- do not edit by hand.\n"
         "\\begin{table*}[t]\n\\centering\n\\small\n"
         "\\resizebox{\\textwidth}{!}{%\n"
@@ -766,8 +850,11 @@ def write_combined_table2(scan_dir=None, out_dir=None,
     print(f"Combined Table 2 saved to {tex_path}")
     for model, disp in TABLE2_MODELS:
         s = pvals[model]
-        print(f"  {disp}: clustered perm txn F1  obs Δ={s['obs']:+.3f}  "
-              f"n_txn={s['n_txn']}  n_perm={s['n_perm']}  p={s['p']:.4g}")
+        if s.get("p") is None:
+            print(f"  {disp}: no txn data (model not run)")
+        else:
+            print(f"  {disp}: clustered perm txn F1  obs Δ={s['obs']:+.3f}  "
+                  f"n_txn={s['n_txn']}  n_perm={s['n_perm']}  p={s['p']:.4g}")
     return tex_path
 
 
@@ -901,13 +988,8 @@ def plot_fp_vs_fn(threshold_scan_dir=None, fig_name="fp_vs_fn.png"):
     if threshold_scan_dir is None:
         threshold_scan_dir = os.path.join("results", "paper12_threshold_sweep", "rephrased_question")
 
-    # One sweep per base model. Gemini already has data; GPT-5 and Claude are
-    # plotted once their threshold sweeps land in the same dir.
-    sweep_models = [
-        "gemini-3.1-pro-preview",
-        "gpt-5",
-        "claude-sonnet-4-6",
-    ]
+    # One sweep per base model (SWEEP_MODELS); a model with no sweep data in
+    # threshold_scan_dir is silently skipped.
     thresholds = (1, 2, 3, 4, 5)
 
     from matplotlib.lines import Line2D
@@ -915,7 +997,9 @@ def plot_fp_vs_fn(threshold_scan_dir=None, fig_name="fp_vs_fn.png"):
     fig, ax = plt.subplots(figsize=(7.5, 3.85))
 
     legend_handles = []
-    for model in sweep_models:
+    outside_legend = False
+    all_x, all_y = [], []
+    for model, disp, base in SWEEP_MODELS:
         stats = _collect_extras_drops(
             threshold_scan_dir,
             [(model, f"T={t}", f"threshold_t{t}") for t in thresholds],
@@ -924,10 +1008,11 @@ def plot_fp_vs_fn(threshold_scan_dir=None, fig_name="fp_vs_fn.png"):
                if s["avg_extras"] is not None and s["avg_drops"] is not None]
         if not pts:
             continue  # no sweep data for this model yet
-        base = MODEL_COLORS.get(model, "#666666")
         shades = _color_shades(base, len(pts))
         xs = [p[0] for p in pts]
         ys = [p[1] for p in pts]
+        all_x.extend(xs)
+        all_y.extend(ys)
         ax.plot(xs, ys, color=base, linewidth=1.8, alpha=0.55, zorder=1)
         for (x, y, lbl), color in zip(pts, shades):
             ax.scatter(x, y, color=color, s=110, edgecolor="black",
@@ -938,27 +1023,51 @@ def plot_fp_vs_fn(threshold_scan_dir=None, fig_name="fp_vs_fn.png"):
         legend_handles.append(
             Line2D([0], [0], color=base, marker="o", markersize=9,
                    markeredgecolor="black", linewidth=1.8,
-                   label=MODEL_DISPLAY_NAMES.get(model, model))
+                   label=disp)
         )
 
     if legend_handles:
-        legend = ax.legend(handles=legend_handles, fontsize=15.6, loc="lower left",
-                  framealpha=0.9, title="CRIT base model")
-        legend.get_title().set_fontsize(15.6)
+        # With seven sweeps the curves span the whole panel, so an in-axes
+        # legend covers markers (Mistral's low-T points in particular). Park it
+        # under the axes in three columns instead.
+        if len(legend_handles) > 4:
+            legend = ax.legend(handles=legend_handles, fontsize=13, ncol=3,
+                               loc="upper center", bbox_to_anchor=(0.5, -0.30),
+                               framealpha=0.9, title="CRIT base model")
+            legend.get_title().set_fontsize(13)
+            # Give the legend its own strip of canvas; tight_layout would
+            # instead shrink the axes to fit it and squash the tick labels.
+            fig.set_size_inches(7.5, 5.4)
+            fig.subplots_adjust(left=0.13, right=0.98, top=0.95, bottom=0.42)
+            outside_legend = True
+        else:
+            legend = ax.legend(handles=legend_handles, fontsize=15.6,
+                               loc="lower left", framealpha=0.9,
+                               title="CRIT base model")
+            legend.get_title().set_fontsize(15.6)
 
     ax.set_xlabel("Avg FP per Question", fontsize=18, fontweight="bold")
     ax.set_ylabel("Avg FN per Question", fontsize=18, fontweight="bold")
     ax.tick_params(axis="both", labelsize=15)
-    ax.yaxis.set_major_locator(MultipleLocator(0.02))
     ax.yaxis.set_major_formatter(FormatStrFormatter("%.2f"))
     ax.grid(True, linestyle=":", alpha=0.4)
-    ax.set_xlim(left=0.95)
-    # Headroom above the FN≈0 cluster and below the worst point.
-    ax.set_ylim(-0.01, 0.15)
+    # Limits follow the data: the open-weight sweeps sit well outside the range
+    # the three hosted models occupied. Padding leaves room for the T labels
+    # (drawn above each marker) and the legend block.
+    if all_x and all_y:
+        x_pad = max(0.05, 0.08 * (max(all_x) - min(all_x)))
+        y_span = max(all_y) - min(all_y)
+        y_pad = max(0.01, 0.10 * y_span)
+        ax.set_xlim(min(all_x) - x_pad, max(all_x) + x_pad)
+        ax.set_ylim(min(all_y) - y_pad, max(all_y) + 2.2 * y_pad)
+        ax.yaxis.set_major_locator(MultipleLocator(0.02 if y_span <= 0.2 else 0.05))
+    else:
+        ax.yaxis.set_major_locator(MultipleLocator(0.02))
     ax.invert_xaxis()
     ax.invert_yaxis()
 
-    plt.tight_layout()
+    if not outside_legend:
+        plt.tight_layout()
     _save_current_fig(fig_name)
     plt.close(fig)
 

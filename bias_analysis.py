@@ -39,36 +39,78 @@ BIAS_LABELS_PATH_SAVINGS = (
 BIAS_LABELS_PATH_MT = (
     "generated_data/bias_study_money_transfer/test_cases/bias_analysis.jsonl"
 )
-# Names dataset accepts two paths: the current `results/bias_study_names/` and
+# Result roots. A run lives at
+#   <root>/<model_id>/<model_type>/<timestamp>/<file>_results.jsonl
+# where `model_id` may itself contain slashes — open-source slugs nest one or
+# two extra directories deep (`deepseek-ai/DeepSeek-V4-Pro`,
+# `local/Qwen/Qwen3-32B-AWQ`). `discover_runs` therefore searches each root
+# recursively and reconstructs model_id from whatever sits above
+# <model_type>/<timestamp>/, rather than assuming a fixed depth.
+#
+# Names dataset accepts two roots: the current `results/bias_study_names/` and
 # the legacy single-bucket `results/bias_study/` predating the names/savings
 # split. Records whose test_case_id isn't in the names labels (i.e. were
 # savings cases in the legacy bucket) are silently skipped by
 # `retrieval_per_run`, so mixing them is safe.
 RESULTS_GLOB_NAMES = [
-    "results/bias_study_names/rephrased_question/*/*/*/*_results.jsonl",
-    "results/bias_study/rephrased_question/*/*/*/*_results.jsonl",
+    "results/bias_study_names/rephrased_question",
+    "results/bias_study/rephrased_question",
 ]
-RESULTS_GLOB_SAVINGS = "results/bias_study_savings/rephrased_question/*/*/*/*_results.jsonl"
-RESULTS_GLOB_MT = "results/bias_study_money_transfer/rephrased_question/*/*/*/*_results.jsonl"
+RESULTS_GLOB_SAVINGS = "results/bias_study_savings/rephrased_question"
+RESULTS_GLOB_MT = "results/bias_study_money_transfer/rephrased_question"
 
 # Back-compat shim — the old single-dataset path. Kept as the names-dataset
 # alias so callers that read these still get the foreign-origin labels.
 BIAS_LABELS_PATH = BIAS_LABELS_PATH_NAMES
 RESULTS_GLOB = RESULTS_GLOB_NAMES
 
+# The compilable-paper source tree. Tables and figures are emitted directly
+# here (see main()) so recompiling the paper picks up a rerun of this script
+# without anything being copied by hand.
+LATEX_DIR = "overleaf"
+LATEX_FIGS_DIR = os.path.join(LATEX_DIR, "figs")
+
+# Short display names, keyed by the `--model_id` passed to eval.py. Open-source
+# slugs are routed by prefix (see OSS_PROVIDERS in llm.py): bare `org/model` →
+# Baseten, `accounts/...` → Fireworks, `local/...` → self-hosted vLLM. The same
+# model can therefore appear under two slugs (e.g. Kimi via Baseten and via
+# Fireworks); both map to one display name so they collapse into one column.
 MODEL_DISPLAY = {
     "claude-sonnet-4-5": "Claude 4.5",
     "claude-sonnet-4-6": "Claude 4.6",
     "gpt-5": "GPT-5.5",
     "gemini-3.1-pro-preview": "Gemini 3.1",
+    "deepseek-ai/DeepSeek-V4-Pro": "DeepSeek V4",
+    "accounts/fireworks/models/deepseek-v4-pro": "DeepSeek V4",
+    "moonshotai/Kimi-K2.6": "Kimi K2.6",
+    "accounts/fireworks/models/kimi-k2p6": "Kimi K2.6",
+    "local/Qwen/Qwen3-32B-AWQ": "Qwen3 32B",
+    "local/mistralai/Mistral-Small-24B-Instruct-2501": "Mistral 24B",
+    "local/stelterlab/Mistral-Small-24B-Instruct-2501-AWQ": "Mistral 24B",
 }
 
-# Per-model colors from the ULAD/bank-statement figure palette;
-# CRIT (ours) gets the distinctive warm-orange accent.
+# Left-to-right ordering of model columns/bars: proprietary API models first
+# (Claude, GPT, Gemini), then open-weight models (DeepSeek, Kimi, Qwen,
+# Mistral), with CRIT (ours) last.
+MODEL_ORDER = [
+    "Claude 4.6", "Claude 4.5", "GPT-5.5", "Gemini 3.1",
+    "DeepSeek V4", "Kimi K2.6", "Qwen3 32B", "Mistral 24B",
+    "CRIT (ours)",
+]
+
+# Per-model colors. The first four come from the ULAD/bank-statement figure
+# palette; the open-weight models extend it with distinguishable hues that
+# stay legible at the small bar widths a 7-model group produces. CRIT (ours)
+# keeps the distinctive lavender accent.
 MODEL_PALETTE = {
     "Claude 4.6":  "#e8e844",   # soft yellow (answer panel)
+    "Claude 4.5":  "#e8e844",
     "GPT-5.5":     "#8cbfac",   # sage/teal green (header box)
     "Gemini 3.1":  "#efa130",   # warm orange (clipboards)
+    "DeepSeek V4": "#4a7fb5",   # steel blue
+    "Kimi K2.6":   "#d1615d",   # brick red
+    "Qwen3 32B":   "#7f9c6c",   # olive green
+    "Mistral 24B": "#a68a64",   # tan / khaki
     "CRIT (ours)": "#b56fbf",   # lavender (person panel)
 }
 
@@ -76,6 +118,24 @@ MODEL_PALETTE = {
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def _model_color(label, index):
+    """Bar color for a model column. `<model> + CRIT` columns keep the
+    lavender CRIT accent so our method stays visually grouped."""
+    if label in MODEL_PALETTE:
+        return MODEL_PALETTE[label]
+    if label.endswith("+ CRIT"):
+        return MODEL_PALETTE["CRIT (ours)"]
+    return f"C{index}"
+
+
+def _legend_ncol(model_labels):
+    """Legend columns for a bottom-anchored figure legend. One row reads best,
+    but past five models the entries run past the figure width, so wrap onto a
+    second row instead."""
+    n = max(len(model_labels), 1)
+    return n if n <= 5 else (n + 1) // 2
 
 
 def _parse_id_list(value):
@@ -108,41 +168,71 @@ def load_bias_labels(path: str = BIAS_LABELS_PATH):
     return labels
 
 
-def discover_runs(glob_pat=RESULTS_GLOB):
-    """Return list of (column_label, model_id, model_type, path).
-    The latest timestamped directory wins when multiple exist per
-    (model_id, model_type). `glob_pat` may be a single pattern or a list of
-    patterns (union of matches across patterns)."""
-    patterns = [glob_pat] if isinstance(glob_pat, str) else list(glob_pat)
-    by_key = {}
-    matched_paths = []
-    for pat in patterns:
-        matched_paths.extend(glob.glob(pat))
-    for path in matched_paths:
-        # .../<model_id>/<model_type>/<timestamp>/<file>
-        parts = path.split(os.sep)
-        model_type = parts[-3]
-        model_id = parts[-4]
-        timestamp = parts[-2]
-        key = (model_id, model_type)
-        prev = by_key.get(key)
-        if prev is None or os.path.basename(os.path.dirname(prev)) < timestamp:
-            by_key[key] = path
+_MODEL_TYPES = ("baseline", "threshold", "reflection")
 
+
+def discover_runs(roots=RESULTS_GLOB):
+    """Return list of (column_label, model_id, model_type, path).
+
+    `roots` is a results root (or list of roots) laid out as
+    `<root>/<model_id>/<model_type>/<timestamp>/<file>_results.jsonl`. Each
+    root is searched recursively because `model_id` spans a variable number of
+    directories: one for a flat slug (`gpt-5`), two for a Baseten-style
+    `org/model` (`deepseek-ai/DeepSeek-V4-Pro`), three for a self-hosted vLLM
+    slug (`local/Qwen/Qwen3-32B-AWQ`). model_type/timestamp are always the two
+    directories directly above the file, so model_id is whatever precedes them.
+
+    The latest timestamped directory wins when multiple exist per
+    (model_id, model_type). Two slugs that share a display name (the same
+    model served by two providers) also share a column; the lexically latest
+    timestamp across both wins.
+    """
+    root_list = [roots] if isinstance(roots, str) else list(roots)
+    by_key = {}
+    for root in root_list:
+        root = os.path.normpath(root)
+        for path in glob.glob(os.path.join(root, "**", "*_results.jsonl"),
+                              recursive=True):
+            rel_parts = os.path.relpath(path, root).split(os.sep)
+            if len(rel_parts) < 4:
+                continue  # not a <model>/<type>/<timestamp>/<file> layout
+            model_type = rel_parts[-3]
+            timestamp = rel_parts[-2]
+            if model_type not in _MODEL_TYPES:
+                continue
+            model_id = "/".join(rel_parts[:-3])
+            key = (MODEL_DISPLAY.get(model_id, model_id), model_type)
+            prev = by_key.get(key)
+            if prev is None or prev[1] < timestamp:
+                by_key[key] = (path, timestamp, model_id)
+
+    # CRIT is a wrapper around a base model, so every threshold column names
+    # the model it wraps ("Gemini 3.1 + CRIT"). An unqualified "CRIT (ours)"
+    # column reads as a standalone system next to a column of baselines, which
+    # overstates coverage whenever only some models have threshold runs — and
+    # identical labels would silently overwrite each other in the per-column
+    # grids downstream.
     runs = []
-    for (model_id, model_type), path in by_key.items():
-        disp = MODEL_DISPLAY.get(model_id, model_id)
+    for (disp, model_type), (path, _ts, model_id) in by_key.items():
         if model_type == "threshold":
-            column = "CRIT (ours)"
+            column = f"{disp} + CRIT"
         elif model_type == "baseline":
             column = disp
         else:
             column = f"{disp} {model_type}"
         runs.append((column, model_id, model_type, path))
 
-    order = {"Claude 4.6": 0, "Claude 4.5": 0, "GPT-5.5": 1,
-             "Gemini 3.1": 2, "CRIT (ours)": 3}
-    runs.sort(key=lambda r: (order.get(r[0], 99), r[0]))
+    # A "<model> + CRIT" column sorts immediately after its own baseline
+    # rather than at the end of the table, so each pair reads together (the
+    # same convention as Table 2 in the paper).
+    order = {name: i for i, name in enumerate(MODEL_ORDER)}
+
+    def _sort_key(r):
+        label = r[0]
+        base = label[:-len(" + CRIT")] if label.endswith(" + CRIT") else label
+        return (order.get(base, 99), label.endswith(" + CRIT"), label)
+
+    runs.sort(key=_sort_key)
     return runs
 
 
@@ -714,7 +804,7 @@ def build_bias_plot(labels, runs,
     neg_grid = _fund_grid(neg_order)
 
     # ── Plot ────────────────────────────────────────────────────────────────
-    colors = [MODEL_PALETTE.get(m, f"C{i}") for i, m in enumerate(model_labels)]
+    colors = [_model_color(m, i) for i, m in enumerate(model_labels)]
 
     bar_w = 0.78 / max(len(model_labels), 1)
 
@@ -797,10 +887,10 @@ def build_bias_plot(labels, runs,
               divider_after=[0, delta_col_idx - 1])
         fig1.supylabel("Foreign Classification Rate", fontsize=15, fontweight="bold")
         handles, labels_ = axes1[0].get_legend_handles_labels()
-        plt.tight_layout(rect=[0, 0.06, 1, 1])
+        plt.tight_layout(rect=[0, 0.15, 1, 1])
         fig1.legend(handles, labels_, loc="lower center",
                     bbox_to_anchor=(0.5, 0.0),
-                    ncol=len(model_labels), fontsize=15, frameon=False)
+                    ncol=_legend_ncol(model_labels), fontsize=15, frameon=False)
         plt.savefig(output_path_foreign, dpi=300, bbox_inches="tight")
         plt.close(fig1)
         print(f"Wrote foreign-origin bias plot to {output_path_foreign}")
@@ -819,7 +909,7 @@ def build_bias_plot(labels, runs,
         plt.tight_layout(rect=[0, 0.08, 1, 1])
         fig_pos.legend(handles, labels_, loc="lower center",
                        bbox_to_anchor=(0.5, 0.0),
-                       ncol=len(model_labels), fontsize=15, frameon=False)
+                       ncol=_legend_ncol(model_labels), fontsize=15, frameon=False)
         plt.savefig(output_path_savings_positives, dpi=300, bbox_inches="tight")
         plt.close(fig_pos)
         print(f"Wrote savings-positives plot to {output_path_savings_positives}")
@@ -866,7 +956,7 @@ def build_bias_plot(labels, runs,
         plt.tight_layout(rect=[0, 0.10, 1, 1])
         fig_neg.legend(handles, labels_, loc="lower center",
                        bbox_to_anchor=(0.5, 0.0),
-                       ncol=len(model_labels), fontsize=15, frameon=False)
+                       ncol=_legend_ncol(model_labels), fontsize=15, frameon=False)
         plt.savefig(output_path_savings_negatives, dpi=300, bbox_inches="tight")
         plt.close(fig_neg)
         print(f"Wrote savings-negatives plot to {output_path_savings_negatives}")
@@ -922,7 +1012,7 @@ def build_money_transfer_plot(labels, runs,
             return 0.0
         return 100.0 * sum(1 for x in scored if x) / len(scored)
 
-    colors = [MODEL_PALETTE.get(m, f"C{i}") for i, m in enumerate(model_labels)]
+    colors = [_model_color(m, i) for i, m in enumerate(model_labels)]
     bar_w = 0.78 / max(len(model_labels), 1)
 
     # ── Per-platform grids ────────────────────────────────────────────────
@@ -1059,7 +1149,7 @@ def build_money_transfer_plot(labels, runs,
         handles, labels_ = ax.get_legend_handles_labels()
         plt.tight_layout(rect=[0, 0.10, 1, 1])
         fig.legend(handles, labels_, loc="lower center",
-                   bbox_to_anchor=(0.5, 0.0), ncol=len(model_labels),
+                   bbox_to_anchor=(0.5, 0.0), ncol=_legend_ncol(model_labels),
                    fontsize=21, frameon=False)
         plt.savefig(output_path_platforms, dpi=300, bbox_inches="tight")
         plt.close(fig)
@@ -1086,7 +1176,7 @@ def build_money_transfer_plot(labels, runs,
         handles, labels_ = ax1.get_legend_handles_labels()
         plt.tight_layout(rect=[0, 0.06, 1, 1])
         fig.legend(handles, labels_, loc="lower center",
-                   bbox_to_anchor=(0.5, 0.0), ncol=len(model_labels),
+                   bbox_to_anchor=(0.5, 0.0), ncol=_legend_ncol(model_labels),
                    fontsize=21, frameon=False)
         plt.savefig(output_path_questions, dpi=300, bbox_inches="tight")
         plt.close(fig)
@@ -1133,9 +1223,9 @@ def build_money_transfer_plot(labels, runs,
                    divider_after=[len(cat_keys) - 1],
                    rot=0, show_zero_axis=True)
         handles, labels_ = ax.get_legend_handles_labels()
-        plt.tight_layout(rect=[0, 0.10, 1, 1])
+        plt.tight_layout(rect=[0, 0.22, 1, 1])
         fig.legend(handles, labels_, loc="lower center",
-                   bbox_to_anchor=(0.5, 0.0), ncol=len(model_labels),
+                   bbox_to_anchor=(0.5, 0.0), ncol=_legend_ncol(model_labels),
                    fontsize=20, frameon=False)
         plt.savefig(output_path_categories, dpi=300, bbox_inches="tight")
         plt.close(fig)
@@ -1428,7 +1518,7 @@ def main():
 
     # ── Combined LaTeX output ──────────────────────────────────────────────
     if foreign_tbl or savings_tbl:
-        out_path = "bias_tables.tex"
+        out_path = os.path.join(LATEX_DIR, "bias_tables.tex")
         with open(out_path, "w") as f:
             f.write("% Bias-study LaTeX tables — generated by bias_analysis.py\n\n")
             if foreign_tbl:
@@ -1439,7 +1529,10 @@ def main():
         print(f"\nWrote LaTeX tables to {out_path}")
 
     # ── Plots ──────────────────────────────────────────────────────────────
-    figs_dir = os.path.join("paper", "figs", "bias")
+    # Written straight into the LaTeX source tree so a rerun updates the paper
+    # with no manual copying; `\includegraphics{figs/…}` in acl_latex.tex
+    # resolves relative to LATEX_DIR, hence the flat `figs/` layout.
+    figs_dir = LATEX_FIGS_DIR
     os.makedirs(figs_dir, exist_ok=True)
     if names_labels and names_runs:
         build_bias_plot(names_labels, names_runs,
