@@ -11,9 +11,10 @@ We will restructure the paper as suggested.
 
 **The authors do not clearly specify or justify which models they are comparing in the text.**
 
-Unless otherwise stated, all figures and analysis are for Gemini, which we chose because it was the strongest performing baseline.
-Regretfully, the above ordering appears to have compounded this confusion.
-We will clarify model references in the final draft.
+This is a fair criticism.
+Unless otherwise stated, all figures and analysis report Gemini 3.1 Pro, which we chose because it was the strongest performing baseline.
+This was never stated explicitly, and the structural problem identified above made it harder still for the reader to infer.
+We will state the model and the reason for its selection in each figure caption and at the start of each analysis section.
 
 **There is no information regarding the reasoning behind choosing these specific closed models, and it is unclear why open-source models were not evaluated.
 Including prominent open-source baselines, such as Llama 3 or Mistral, would provide a much fairer and more comprehensive evaluation landscape.**
@@ -42,6 +43,7 @@ Reviewers will note that CRIT continues to improve accuracy on 6/7 baseline mode
 
 **It remains completely unknown why the failure analysis focused exclusively on Gemini's outputs rather than analyzing a diverse set of models.**
 
+This concern is reasonable, and we should have justified the choice in the paper rather than leaving it implicit.
 We focused on Gemini as it is the strongest baseline model.
 Manual review of failures requires subjective interpretation of failures in reasoning traces as well as domain expertise, so is quite time-consuming.
 In a small sample analysis of other models, we did not detect a significant distribution shift in failure modes, so for brevity and focus we chose only to report on the failure modes of the strongest model.
@@ -155,7 +157,7 @@ We feel it is neither necessary nor possible to manually review these numeric fi
 
 To generate transaction descriptions, we reviewed our personal bank statements and online sources, creating descriptions based on these.
 Similar to the question generation process, we remove personally identifiable information, such as ATM addresses and account IDs.
-We try to cover major players and formats for each category of transaction.
+We try to cover the major players and description formats for each category of transaction.
 For example, “buy now, pay later” descriptions reflect payments to the following companies: Klarna, Afterpay, Affirm, Sezzle, Zip Co, PayPal in 4\.
 SMEs were involved in this process.
 

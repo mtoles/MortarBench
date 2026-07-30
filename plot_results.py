@@ -5,6 +5,11 @@ import re
 import glob
 import matplotlib.pyplot as plt
 import numpy as np
+from joblib import Memory
+
+# On-disk cache for the expensive permutation tests (Table 2 p-values). Keyed
+# on the numeric inputs, so it only recomputes when the underlying runs change.
+_MEMORY = Memory(os.path.join(".cache", "joblib"), verbose=0)
 
 MODEL_DISPLAY_NAMES = {
     "claude-sonnet-4-5": "Claude Sonnet 4.5",
@@ -25,16 +30,24 @@ PLOTTED_MODELS = set(MODEL_COLORS.keys())
 # Base models drawn in the CRIT threshold sweep (plot_fp_vs_fn). Kept separate
 # from MODEL_COLORS/PLOTTED_MODELS: those gate the main EM/F1 charts and their
 # trial-count consistency check, which the open-weight single-seed sweeps would
-# trip. Colors match the bias plots' model ordering where they overlap.
+# trip. Colors are MODEL_PALETTE from bias_analysis.py so a model keeps the
+# same hue in the bias figures and here; the list is alphabetical by display
+# name, which is the legend order every figure in the paper uses.
 SWEEP_MODELS = [
-    ("gemini-3.1-pro-preview",                         "Gemini 3.1 Pro",    "#1a73e8"),
-    ("gpt-5",                                          "GPT-5.5",           "#10a37f"),
-    ("claude-sonnet-4-6",                              "Claude Sonnet 4.6", "#cc7a00"),
-    ("deepseek-ai/DeepSeek-V4-Pro",                    "DeepSeek V4 Pro",   "#7b3fa0"),
-    ("moonshotai/Kimi-K2.6",                           "Kimi K2.6",         "#d1495b"),
-    ("local/Qwen/Qwen3-32B-AWQ",                       "Qwen3 32B",         "#6b8f3a"),
-    ("local/mistralai/Mistral-Small-24B-Instruct-2501", "Mistral Small 24B", "#8c6d46"),
+    ("claude-sonnet-4-6",                              "Claude Sonnet 4.6", "#e8e844"),
+    ("deepseek-ai/DeepSeek-V4-Pro",                    "DeepSeek V4 Pro",   "#4a7fb5"),
+    ("gemini-3.1-pro-preview",                         "Gemini 3.1 Pro",    "#efa130"),
+    ("gpt-5",                                          "GPT-5.5",           "#8cbfac"),
+    ("moonshotai/Kimi-K2.6",                           "Kimi K2.6",         "#d1615d"),
+    ("local/mistralai/Mistral-Small-24B-Instruct-2501", "Mistral Small 24B", "#a68a64"),
+    ("local/Qwen/Qwen3-32B-AWQ",                       "Qwen3 32B",         "#7f9c6c"),
 ]
+
+# Baselines for the CRIT sweep's start point. The sweep directory holds only
+# threshold runs, so the no-CRIT operating point comes from the main results
+# directory.
+SWEEP_BASELINE_DIR = os.path.join(
+    "results", "paper13_combine-10-12", "rephrased_question")
 
 # Hatch pattern encodes the alternative method (currently the threshold agent).
 CONDITION_HATCHES = {
@@ -613,6 +626,27 @@ def _overall_seed_scores(seeds, field, recycle=None):
     return out
 
 
+@_MEMORY.cache
+def _perm_count(pools_flat, pool_lens, nbs, obs, n_perm, seed):
+    """Permutation loop for `_clustered_perm_txn_p`, split out so joblib can
+    cache it on the numeric inputs alone (the F1 pools), not on the seed dicts.
+    Returns how many permutations reach the observed effect."""
+    pools, off = [], 0
+    for n in pool_lens:
+        pools.append(pools_flat[off:off + n])
+        off += n
+    rng = np.random.RandomState(seed)
+    count = 0
+    for _ in range(n_perm):
+        acc = 0.0
+        for pool, nb in zip(pools, nbs):
+            idx = rng.permutation(len(pool))
+            acc += pool[idx[nb:]].mean() - pool[idx[:nb]].mean()
+        if acc / len(pools) >= obs - 1e-12:
+            count += 1
+    return count
+
+
 def _clustered_perm_txn_p(base_seeds, crit_seeds, n_perm=20000, seed=0):
     """One-sided p-value (H1: CRIT > baseline) for CRIT vs. baseline on
     transaction-id questions,
@@ -633,22 +667,17 @@ def _clustered_perm_txn_p(base_seeds, crit_seeds, n_perm=20000, seed=0):
         for q, v in s.items():
             if at.get(q) == "txn_id_list":
                 byq.setdefault(q, [[], []])[1].append(v["f1"])
-    qs = [q for q, (bt, ct) in byq.items() if bt and ct]
+    # Sorted so the cache key below doesn't depend on dict insertion order.
+    qs = sorted(q for q, (bt, ct) in byq.items() if bt and ct)
     if not qs:  # model not run yet (or no txn questions) — nothing to test
         return {"p": None, "obs": float("nan"), "n_txn": 0, "n_perm": 0}
     pools = [np.array(byq[q][0] + byq[q][1]) for q in qs]
     nbs = [len(byq[q][0]) for q in qs]
     obs = float(np.mean([np.mean(byq[q][1]) - np.mean(byq[q][0]) for q in qs]))
 
-    rng = np.random.RandomState(seed)
-    count = 0
-    for _ in range(n_perm):
-        acc = 0.0
-        for pool, nb in zip(pools, nbs):
-            idx = rng.permutation(len(pool))
-            acc += pool[idx[nb:]].mean() - pool[idx[:nb]].mean()
-        if acc / len(qs) >= obs - 1e-12:
-            count += 1
+    count = _perm_count(np.concatenate(pools),
+                        np.array([len(p) for p in pools]),
+                        np.array(nbs), obs, n_perm, seed)
     p = (1 + count) / (n_perm + 1)
     return {"p": p, "obs": obs, "n_txn": len(qs), "n_perm": n_perm}
 
@@ -670,15 +699,17 @@ def write_combined_table2(scan_dir=None, out_dir=None,
         out_dir = os.path.join("overleaf", "figs")
 
     def _rng(vals):
-        # Omit for single-seed cells (e.g. thin CRIT runs) or when the rounded
-        # endpoints coincide, so we never render a degenerate "(x--x)".
-        if not vals or len(vals) < 2 or f"{min(vals):.1f}" == f"{max(vals):.1f}":
+        # Omitted only for single-seed cells. A cell whose seeds agree to the
+        # displayed precision still prints "(x--x)": a blank there reads as a
+        # missing trial, when it actually means the spread is narrower than one
+        # decimal place (e.g. Mistral baseline, 45.96/45.96/46.01).
+        if not vals or len(vals) < 2:
             return ""
         return f"{{\\scriptsize({min(vals):.1f}--{max(vals):.1f})}}"
 
     def _rng_plain(vals):
         # Same rule as _rng, but rendered for the markdown comment block.
-        if not vals or len(vals) < 2 or f"{min(vals):.1f}" == f"{max(vals):.1f}":
+        if not vals or len(vals) < 2:
             return ""
         return f" ({min(vals):.1f}-{max(vals):.1f})"
 
@@ -750,9 +781,13 @@ def write_combined_table2(scan_dir=None, out_dir=None,
     def pfmt(p):
         if p is None:
             return "--"
+        # Bold marks significance at the 0.05 level.
         if p < 0.001:
-            return "$<0.001$"
-        return f"{p:.3f}" if p < 0.01 else f"{p:.2f}"
+            # \textbf (not $\mathbf{}$) so the digits match the bolded numeric
+            # p-values in the same column; only the < needs math mode.
+            return r"\textbf{$<$0.001}"
+        s = f"{p:.3f}" if p < 0.01 else f"{p:.2f}"
+        return rf"\textbf{{{s}}}" if p < 0.05 else s
 
     def mdbold(val, key, fmt=".1f"):
         if val is None or (isinstance(val, float) and np.isnan(val)):
@@ -766,8 +801,9 @@ def write_combined_table2(scan_dir=None, out_dir=None,
         if p is None:
             return "--"
         if p < 0.001:
-            return "<0.001"
-        return f"{p:.3f}" if p < 0.01 else f"{p:.2f}"
+            return "**<0.001**"
+        s = f"{p:.3f}" if p < 0.01 else f"{p:.2f}"
+        return f"**{s}**" if p < 0.05 else s
 
     body = []
     md_rows = []
@@ -973,20 +1009,20 @@ def _save_current_fig(fig_name, subdir=None):
         print(f"Plot saved to {os.path.join(overleaf_dir, fig_name)}")
 
 
-def _color_shades(base_hex, n):
-    """n shades of base_hex, light → full color, for a per-model T sweep."""
-    import matplotlib.colors as mcolors
-    base = np.array(mcolors.to_rgb(base_hex))
-    white = np.array([1.0, 1.0, 1.0])
-    return [tuple((1 - f) * white + f * base) for f in np.linspace(0.40, 1.0, n)]
+def plot_fp_vs_fn(threshold_scan_dir=None, fig_name="fp_vs_fn.png",
+                  baseline_dir=None, ylim=(-0.01, 0.25)):
+    """Avg FP/Q vs FN/Q on txn-list questions: the CRIT precision/recall
+    tradeoff curve for each base model.
 
-
-def plot_fp_vs_fn(threshold_scan_dir=None, fig_name="fp_vs_fn.png"):
-    """Scatter of avg FP/Q vs FN/Q on txn-list questions, showing the CRIT
-    precision/recall tradeoff curve for each base model (one line per model,
-    one marker per --confidence_threshold value, light → dark as T rises)."""
+    One dashed line per model traces T=1..5 (each point labelled with its
+    threshold); the model's no-CRIT baseline is a filled marker at the start of
+    that trajectory. `ylim` is fixed rather than data-driven — the two
+    open-weight sweeps run off the bottom of the panel, which is the point.
+    """
     if threshold_scan_dir is None:
         threshold_scan_dir = os.path.join("results", "paper12_threshold_sweep", "rephrased_question")
+    if baseline_dir is None:
+        baseline_dir = SWEEP_BASELINE_DIR
 
     # One sweep per base model (SWEEP_MODELS); a model with no sweep data in
     # threshold_scan_dir is silently skipped.
@@ -994,11 +1030,11 @@ def plot_fp_vs_fn(threshold_scan_dir=None, fig_name="fp_vs_fn.png"):
 
     from matplotlib.lines import Line2D
     from matplotlib.ticker import FormatStrFormatter, MultipleLocator
-    fig, ax = plt.subplots(figsize=(7.5, 3.85))
+    fig, ax = plt.subplots(figsize=(7.5, 5.78))
 
     legend_handles = []
     outside_legend = False
-    all_x, all_y = [], []
+    all_x = []
     for model, disp, base in SWEEP_MODELS:
         stats = _collect_extras_drops(
             threshold_scan_dir,
@@ -1008,61 +1044,66 @@ def plot_fp_vs_fn(threshold_scan_dir=None, fig_name="fp_vs_fn.png"):
                if s["avg_extras"] is not None and s["avg_drops"] is not None]
         if not pts:
             continue  # no sweep data for this model yet
-        shades = _color_shades(base, len(pts))
         xs = [p[0] for p in pts]
         ys = [p[1] for p in pts]
         all_x.extend(xs)
-        all_y.extend(ys)
-        ax.plot(xs, ys, color=base, linewidth=1.8, alpha=0.55, zorder=1)
-        for (x, y, lbl), color in zip(pts, shades):
-            ax.scatter(x, y, color=color, s=110, edgecolor="black",
-                       linewidth=0.8, zorder=3)
+        ax.plot(xs, ys, color=base, linewidth=2.0, linestyle="--",
+                alpha=0.85, zorder=2)
+        for x, y, lbl in pts:
             ax.annotate(lbl.split("=")[-1], (x, y), textcoords="offset points",
-                        xytext=(0, 9), fontsize=12, color=base,
+                        xytext=(0, 6), fontsize=12, color=base,
                         ha="center", va="bottom", zorder=4)
+
+        # No-CRIT operating point for the same model. Drawn as a bare marker,
+        # not joined to the sweep: the segment from baseline to T=1 is not part
+        # of the tradeoff curve, and a second line per model made the panel
+        # unreadable.
+        bstats = _collect_extras_drops(baseline_dir, [(model, "base", "baseline")])[0]
+        if bstats["avg_extras"] is not None and bstats["avg_drops"] is not None:
+            bx, by = bstats["avg_extras"], bstats["avg_drops"]
+            all_x.append(bx)
+            ax.scatter(bx, by, color=base, s=110, edgecolor="black",
+                       linewidth=0.8, zorder=5)
+
         legend_handles.append(
             Line2D([0], [0], color=base, marker="o", markersize=9,
-                   markeredgecolor="black", linewidth=1.8,
+                   markeredgecolor="black", linewidth=2.0, linestyle="--",
                    label=disp)
         )
 
     if legend_handles:
         # With seven sweeps the curves span the whole panel, so an in-axes
-        # legend covers markers (Mistral's low-T points in particular). Park it
-        # under the axes in three columns instead.
+        # legend covers the trajectories. Park it under the axes in three
+        # columns instead.
         if len(legend_handles) > 4:
             legend = ax.legend(handles=legend_handles, fontsize=13, ncol=3,
-                               loc="upper center", bbox_to_anchor=(0.5, -0.30),
-                               framealpha=0.9, title="CRIT base model")
-            legend.get_title().set_fontsize(13)
+                               loc="upper center", bbox_to_anchor=(0.5, -0.10),
+                               framealpha=0.9)
             # Give the legend its own strip of canvas; tight_layout would
             # instead shrink the axes to fit it and squash the tick labels.
-            fig.set_size_inches(7.5, 5.4)
-            fig.subplots_adjust(left=0.13, right=0.98, top=0.95, bottom=0.42)
+            # The strip keeps its absolute height (1.36in) as the figure grows,
+            # so extra canvas goes to the axes rather than to white space.
+            fig.set_size_inches(7.5, 7.15)
+            fig.subplots_adjust(left=0.13, right=0.98, top=0.967, bottom=0.19)
             outside_legend = True
         else:
             legend = ax.legend(handles=legend_handles, fontsize=15.6,
-                               loc="lower left", framealpha=0.9,
-                               title="CRIT base model")
-            legend.get_title().set_fontsize(15.6)
+                               loc="lower left", framealpha=0.9)
 
     ax.set_xlabel("Avg FP per Question", fontsize=18, fontweight="bold")
     ax.set_ylabel("Avg FN per Question", fontsize=18, fontweight="bold")
     ax.tick_params(axis="both", labelsize=15)
     ax.yaxis.set_major_formatter(FormatStrFormatter("%.2f"))
     ax.grid(True, linestyle=":", alpha=0.4)
-    # Limits follow the data: the open-weight sweeps sit well outside the range
-    # the three hosted models occupied. Padding leaves room for the T labels
-    # (drawn above each marker) and the legend block.
-    if all_x and all_y:
+    # x follows the data (baselines sit further right than any T); y is pinned
+    # so the panel resolves the region where six of the seven models live.
+    if all_x:
         x_pad = max(0.05, 0.08 * (max(all_x) - min(all_x)))
-        y_span = max(all_y) - min(all_y)
-        y_pad = max(0.01, 0.10 * y_span)
         ax.set_xlim(min(all_x) - x_pad, max(all_x) + x_pad)
-        ax.set_ylim(min(all_y) - y_pad, max(all_y) + 2.2 * y_pad)
-        ax.yaxis.set_major_locator(MultipleLocator(0.02 if y_span <= 0.2 else 0.05))
-    else:
-        ax.yaxis.set_major_locator(MultipleLocator(0.02))
+    ax.set_ylim(*ylim)
+    # Ticks land on multiples of 0.02 from 0.00, so the slight negative
+    # headroom in `ylim` stays unlabelled.
+    ax.yaxis.set_major_locator(MultipleLocator(0.02))
     ax.invert_xaxis()
     ax.invert_yaxis()
 

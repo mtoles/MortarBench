@@ -137,17 +137,17 @@ This process serves a critical role in evaluating the eligibility and level of r
 Recently, firms have begun using mortgage loan agents to augment human loan officers, despite a lack of any public benchmark.
 To fill this gap, we present MortarBench, a loan origination agent benchmark.
 MortarBench uses a financial data synthesis and mutation pipeline to generate examples with broad edge case coverage that match real-world distributions and questions.
-We find that state-of-the-art large language models (LLMs) perform poorly, with closed-source models achieving at most 77.1\% exact match accuracy.
+We find that state-of-the-art large language models (LLMs) perform poorly, with closed-source models achieving at most 80.8\% F1 accuracy.
 We also discover systematic biases in LLM perception of foreignness related to non-English names.
 Noting these weaknesses, we introduce CRIT, a confidence calibration framework.
-Our method increases accuracy to 80.5\% while improving risk management steering and reducing bias.
+Our method increases peak F1 accuracy to 83.6\% while improving risk management steering and reducing bias.
 % The high error rate and biases in baseline models suggest they should not yet be deployed to loan origination without a human in the loop.
 
 
 
 \end{abstract}
 
-\section{Introduction and Related Work}
+\section{Introduction}
 
 The US mortgage industry generates over \$1.7 trillion through loan origination annually, necessitating a complex web of risk assessment and regulatory compliance \cite{mba2024forecast}. 
 Mistakes during these decisions carry severe legal and financial consequences, including loan defaults, liabilities, and fines for non-compliance.
@@ -179,17 +179,21 @@ Second, we must find a way to steer synthetic examples to cover rare edge cases 
 We overcome both challenges using a mutation-based synthetic data generation pipeline that allows us to procedurally edit input documents to force a desired answer while maintaining internal consistency across application documents.
 
 Finding that baseline foundation models achieve weak accuracy on MortarBench, we contribute the CRIT Agent, a confidence-calibrated model that improves accuracy, bias, and steerability.
-CRIT improves all baseline models, including 3.4\% (14.8\% error reduction) over the strongest, Gemini 3.1 Pro.
+CRIT improves accuracy on 6/7 baseline models, achieving 2.8\% (14.6\% error reduction) in Gemini 3.1 Pro for a state-of-the-art 83.6\% F1 accuracy.
 
 \section{Related Work}
 Prior work has explored financial regulatory question answering (QA), including \citet{sohn2021global} and \citet{chen2024fintextqa}.
+These works focus on public-facing questions (e.g. FAQ, textbooks) rather than private, in-production systems.
 Work on financial numeric and table QA includes \citet{zhu2021tat, chen2021finqa, reddy2024docfinqa, islam2023financebench}.
+\citet{trivedi2024tabsniper} introduces a dataset for bank statement table detection and structure recognition but without a QA component.
 \citet{choi2025finder} analyzes retrieval-augmented generation (RAG) QA.
 \citet{loukas2022finer} studies entity recognition in financial reports.
 \citet{mollaev2025multimodal} releases large-scale anonymized transaction, geo-position, and technical support chat data from a major bank.
 In contrast, we contribute a benchmark in the mortgage origination domain focused on the chatbot assistant role.
+To our knowledge, this is the first public dataset for QA directly on bank statement natural language and numerical contents.
 % Numerous works have explored the ability of LLMs to self-correct without external feedback, including \citet{han2024small, lu2023self, zhang2025ascot, sun2024enhancing, wang2022self, madaan2023self}.
 Numerous works have explored the ability of LLMs to self-calibrate confidence in their own answers, including \citet{manakul2023selfcheckgpt, zhu2023calibration, kapoor2024calibration, kuhn2023semantic, kadavath2022language}.
+In particular, we draw on \citeposs{zhu2023calibration} recognition that large models can accurately estimate their own confidence.
 
 
 \makeatletter
@@ -234,7 +238,7 @@ Each data instance in MortarBench (Figure \ref{fig:pipeline}) consists of the fo
 
 \noindent \textbf{Target Question:} A single question about the bank statement and, optionally, the ULAD, based on real-world loan officer workflows, curated and refined by expert annotators.
 
-\noindent \textbf{Ground-Truth Answer:} The answer corresponding to the question, expressed as either a boolean value, a list of transaction identifiers, or a list of account identifiers.
+\noindent \textbf{Ground-Truth Answer:} The answer corresponding to the question, expressed as either a Boolean value, a list of transaction identifiers, or a list of account identifiers.
 % \subsection{Application Document Generation}
 
 
@@ -305,7 +309,7 @@ Unlike with fully random bank statement generation, this process creates a balan
 
 We identify 47 unique questions satisfying the criteria in Section~\ref{sec:question-creation}.
 For each question, we generate 4 cases, each with a profile consisting of a ULAD and a bank statement.
-For boolean questions, we mutate half of the profiles to yield a ``yes'' answer and the other half to yield a ``no'' answer.
+For Boolean questions, we mutate half of the profiles to yield a ``yes'' answer and the other half to yield a ``no'' answer.
 For transaction and account list questions, we mutate half of the profiles to contain a random non-zero number of transactions or accounts, and the other half to contain none.
 
 
@@ -333,17 +337,26 @@ Account list answers &10.6\% \\
 % We evaluate agent performance using a unified metric across question types.
 % To allocate partial credit to partially correct list questions, we employ exact match (EM) as our primary metric, but also report F1 to capture agents' partially correct answers when required to list multiple transactions.
 We evaluate agents based on exact match (EM) and F1 to allocate partial credit to list-type questions.
-For boolean questions, we assign an F1 score of $1$ for correct predictions and $0$ otherwise.
+For Boolean questions, we assign an F1 score of $1$ for correct predictions and $0$ otherwise.
+
+\section{Baseline Results}
+
+We find that Gemini 3.1 Pro and DeepSeek V4 Pro achieve the greatest F1 and exact match accuracy, respectively \ref{tab:eval_mt_combined_nostd}. 
+They differ significantly in their strengths with respect to question type; Gemini performs well on Boolean and Account ID questions while Deepseek performs better on Transaction ID questions.
+Overall, we see the weakest accuracy across models in the Transaction ID category, with a maximum F1 of 78.2\%.
+All models produce far more false positives compared to false negatives on Transaction ID questions.
+This may be due to the relatively large number of true negatives compared to true positive in Transaction ID type questions, as well as models' tendency to guess rather than admit they cannot answer \cite{kalai2026evaluating}.
+% We also note that Claude Sonnet 4.6 struggles especially with boolean questions, achieving worse than random accuracy, unique among closed-source models.
 
 
+\section{Methods}
 
- \section{Methods}
-
-Noting weak baseline model performance, we introduce the \textbf{C}onfidence \textbf{R}eflection \textbf{I}nference for \textbf{T}ransactions (CRIT) Agent.
+Noting weak baseline model performance, especially on Transaction ID questions, we introduce the \textbf{C}onfidence \textbf{R}eflection \textbf{I}nference for \textbf{T}ransactions (CRIT) Agent.
 CRIT is motivated by the severe imbalance between false positives (32) vs. false negatives (0) in Gemini and baseline models, indicating oversensitivity.
 CRIT differs from the baseline implementation in that, for each transaction in its answer, the agent also generates a confidence score (1-5) indicating the probability the transaction is correctly included.
 The confidence is based on the number and strength of assumptions that must be made to justify the inclusion.
-Finally, we drop all transactions with confidence below a threshold $T=5$.
+Finally, we drop all transactions with confidence below a threshold $T$.
+We choose $T=5$ based on a parameter sweep using Gemini (Figure \ref{fig:fp_vs_fn}), but hold T=5 constant for all models.
 Confidence adjustment serves both to align the model away from oversensitivity and to allow steering depending on the relative cost of false positives vs negatives.
 Full prompt templates for implementations are provided in Appendix \ref{appendix:prompts}.
 
@@ -351,30 +364,27 @@ Full prompt templates for implementations are provided in Appendix \ref{appendix
 % After the agent produces an initial answer, the CRIT runs an additional verification round in which the original question, the initial answer, and the full source documents (bank statement and ULAD) are presented together with a targeted check instruction.
 % To discourage hallucination, we instruct the agent to quote the description, amount, and date of every relevant candidate transaction to confirm qualification, and drop those that cannot be justified.
 
-\section{Results}
+\section{Experimental Results}
 
 
 
 Our results show that overall, Gemini 3.1 Pro performs strongest on MortarBench, both with and without the CRIT framework.
 % In the baseline case, it achieves 80.8\% F1 score, which improves to 83.6\% using CRIT (Table \ref{tab:eval_mt_combined_nostd}).
-CRIT improves every base model's F1/EM (Table \ref{tab:eval_mt_combined_nostd}).
-The gain is largest for the most-oversensitive baseline (Claude), supporting CRIT as a controllable oversensitivity correction.
+CRIT improves 6/7 base model's F1 and EM (Table \ref{tab:eval_mt_combined_nostd}).
+The gain is largest for the most-oversensitive baseline (Kimi K2.6), which achieves the greatest F1 accuracy on Transaction ID questions of all CRIT agents, supporting CRIT as a controllable oversensitivity correction.
+CRIT does not improve accuracy on DeepSeek V4 Pro. 
+Although CRIT reduces false positives as expected, the remaining false positives are distributed across a wider range of questions
+This results in an overall increase in questions containing at least one false positive and therefore a decrease in overall accuracy. 
+
+We additionally attempted to improve models' domain knowledge by adding a RAG module to the baseline pipeline.
+We included the Fannie Mae selling guide in the RAG database but found that model accuracy either stayed the same or degraded.
+We believe this is because the type of domain knowledge present in the selling guide differs from what is needed here.
+The selling guide is dominated by procedural matters (e.g. lender breach of contract and record keeping) rather than how to handle contextual edge cases (e.g. whether a monthly Venmo payment to a roommate qualifies as a rent payment).
 
 
 % Table generated by plot_results.write_combined_table2 -> overleaf/figs/table2_eval_combined.tex
 \input{figs/table2_eval_combined.tex}
 
-As expected, improvement occurs primarily among transaction list questions (Table \ref{tab:eval_mt_combined_nostd}), while results on boolean and account list questions remain largely unchanged.
-We also see that Claude Sonnet 4.6 struggles especially with boolean questions, achieving worse than random accuracy.
-
-
-
-
-
-% We analyze failure modes in Gemini 3 Pro on the naturally phrased questions to identify root causes of inaccuracies. 
-% We observe that over half of errors (58.1\%) contain an extra transaction while only 29.8\% contain an extra transaction, suggesting a systematic bias for false positives.
-% Overall, models tend to perform somewhat better on transaction list questions compared to boolean questions.
-% One cause may be that boolean questions require reasoning over long range dependencies in the ULAD, whereas transaction list questions tend to be restricted to the bank statement only.
 
 
 
@@ -385,12 +395,19 @@ We also see that Claude Sonnet 4.6 struggles especially with boolean questions, 
 
 % Current frontier models show promise for improving accuracy and efficiency in the loan origination process in the near future.
 % Specifically, they can likely be deployed to assist with boolean and account list questions.
-Current frontier models show promise for improving accuracy and efficiency, especially on boolean and account list questions.
+% Current frontier models show promise for improving accuracy and efficiency, especially on boolean and account list questions.
+Current frontier models demonstrate diverse strengths and weaknesses across subtasks. 
+Baseline Gemini 3.1 Pro achieves state-of-the-art performance on Boolean and Account ID questions but places third after Claude Sonnet 4.6 and DeepSeek V4 Pro on Transaction ID questions.
+However, these models perform poorly on Boolean and Account ID questions, with Claude achieving only 36.3\% F1 on Boolean questions.
+
 However, performance on transaction list questions is substantially weaker, indicating a continued need for human-in-the-loop oversight.
+
+
 
 \subsection{Failure Analysis}
 
-To identify reasoning failures, authors manually reviewed all 36 erroneous reasoning traces in baseline Gemini, grouping errors qualitatively.
+To identify reasoning failures, authors manually reviewed all 36 erroneous reasoning traces in baseline Gemini on Transaction ID questions, grouping errors qualitatively.
+We choose Gemini because it demonstrated the strongest overall baseline performance F1 accuracy, and thus the most likely choice for industry practicioners to build on.
 We identify four distinct types of errors.
 The largest portion of errors (transaction misclassification, 33.3\%) occur due to erroneously adding or omitting a transaction based on its description, for example, including a personal loan as a BNPL transaction.
 27.8\% of errors occur due to failed value matching, i.e., Gemini assumes that a set of rent payments \textbf{exceeding} the total stated in the ULAD should be considered valid, when it is not.
@@ -423,6 +440,7 @@ It can be adjusted to reflect real-world financial risk or human verification co
 Additionally, self-reflective confidence values can be used by users to prioritize human review.
 
 \subsection{Stochasticity Analysis}
+\label{sec:stochasticity}
 
 % Because our dataset contains multiple copies of each question backed by different documents, we can measure whether the model's errors are consistent. Consider two versions of a question that share the same answer but use different documents. If the model answers both incorrectly, the error is unlikely to be an accident of document phrasing and instead points to a misunderstanding or false belief. If the model errs on only one version, the mistake more plausibly arises stochastically from variation in the documents. False beliefs can more often be corrected through in-context learning, whereas stochastic errors may be diffuse across the distribution and harder to eliminate completely.
 
@@ -432,16 +450,19 @@ By generating two document sets for each question-answer pair, we can systematic
 We quantify the consistency of errors using risk ratio (RR) \citep{rothman2008modern}, defined as how much a first-version error raises the probability of a second-version error:
 
 \begin{align*}
-\mathrm{RR} = \frac{\Pr(\text{2nd wrong}\mid\text{1st wrong})}{\Pr(\text{2nd wrong}\mid\text{1st right})} \approx 12.7
+\mathrm{RR} = \frac{\Pr(\text{2nd wrong}\mid\text{1st wrong})}{\Pr(\text{2nd wrong}\mid\text{1st right})}
 \end{align*}
 
-\noindent An RR of 1 would indicate that the two errors are independent—pure stochasticity. For baseline Gemini, however, an error on the first version makes an error on the second 12.7× more likely than a first-version success does (3 trials, 110 total errors). We therefore conclude that the overwhelming majority of errors stem from false beliefs in the model rather than from stochastic variation.
-This suggests models could benefit from additional in-context domain expertise and relevant post post-training.
+\noindent An RR of 1 would indicate that the two errors are independent—pure stochasticity. For baseline Gemini, however, an error on the first version makes an error on the second 10.7× more likely than a first-version success does (3 trials, 129 total errors). 
+This is the greatest risk ratio among models. 
+Other models express RR ranging from 3.0 (Mistral) to 6.8 (GPT-5.5) (Appendix~\ref{appendix:stochasticity}).
+We therefore conclude that the overwhelming majority of errors stem from false beliefs in the model rather than from stochastic variation. 
+This suggests models could benefit from additional in-context domain expertise and relevant post-training.
 
 \begin{figure}
     \centering
     \includegraphics[width=0.99\linewidth]{figs/fp_vs_fn.png}
-    \caption{False negative and positive rate as a function of CRIT threshold $T$.}
+    \caption{False negative and positive rate as a function of CRIT threshold $T$. Baseline results indicated with circles. Note that axis scales are chosen to ensure that small changes in FN are visible. Due to high FN rate, Mistral is partially clipped.}
     \label{fig:fp_vs_fn}
 \end{figure}
 
@@ -471,20 +492,21 @@ To test whether the LLM perceives non-English names as more foreign, we set \{en
 For personal names, we use the five most common masculine and feminine given names and the ten most common family names, paired arbitrarily, from Wikipedia's lists of most common given names and surnames \citep{wiki_given_names, wiki_surnames}.
 
 We observe an extreme level of bias based on the language of origin of the name.
-Across all three baseline models, transfers from English names are classified as foreign origin in only 13.3\% of cases (Figure \ref{fig:name_bias}).
-Gemini and GPT-5.5 never classify these transactions as foreign origin.
-However, non-English names induce a foreign origin classification in 77.0\% of cases. 
-This effect is substantially more pronounced in non-Latin scripts (AR, HI, ZH: 93.3\%) compared to non-English Latin scripts (ES, FR: 52.5\%).
+Across all five baseline models, transfers from English names are classified as foreign origin in only 12.0\% of cases (Figure \ref{fig:name_bias}).
+Gemini, DeepSeek, and GPT-5.5 never classify these transactions as foreign origin.
+However, non-English names induce a foreign origin classification in 74.0\% of cases.
+This effect is substantially more pronounced in non-Latin scripts (AR, HI, ZH: 94.0\%) compared to non-English Latin scripts (ES, FR: 44.0\%).
 % Baseline models classify Arabic and Chinese names as foreign origin in 60/60 cases.
-Gemini and Claude classify Arabic, Hindi, and Mandarin Chinese names as foreign origin in a staggering 60/60 cases.
-We find that we can reduce the foreign classification bias on non-Latin scripts to the level of Spanish and French by transliterating into Latin script (AR\textsuperscript{*}, HI\textsuperscript{*}, ZH\textsuperscript{*}, 53.9\%).
-Our agent, CRIT, shows less non-English bias than the corresponding Gemini 3.1 Pro baseline model in all cases, reducing the foreign origin classification gap between English and non-English names from 77.0\% to 54.0\%.
+Gemini, DeepSeek, Kimi, and Claude classify Arabic, Hindi, and Mandarin Chinese names as foreign origin in a staggering 60/60 cases.
+We find that we can reduce the foreign classification bias on non-Latin scripts to the level similar to Spanish and French by transliterating into Latin script (AR\textsuperscript{*}, HI\textsuperscript{*}, ZH\textsuperscript{*}, 52.7\%).
+Our agent, CRIT, shows less equal or lesser non-English bias than the corresponding baseline model in all cases, reducing the foreign origin classification gap between English and non-English names from 62.0\% to 38.4\% on average.
 
 We perform a similar experiment where \{entity name\} is one of ten fictitious company names machine translated into target languages.
-We observe even more bias overall, with an average baseline model foreign origin classification delta of 78.7\%.
-Transliterating AR/HI/ZH company names appears less effective at reducing bias than when applied to personal names.
+We observe even more bias overall, with an average baseline model foreign origin classification delta of 74.4\%.
+% Transliterating AR/HI/ZH company names appears less effective at reducing bias than when applied to personal names.
 % These results indicate that transactions involving non-English entities, and especially non-Latin scripts, are likely to receive unequal classification as foreign as compared to those with English names.
-As with personal names, applying our agent framework CRIT to Gemini reduces bias across all languages.
+As with personal names, applying our agent framework CRIT to Gemini reduces bias across all languages from 88.0\% to 60.0\%.
+Across both experiments we notice that models produced by Chinese companies (Kimi, DeepSeek) show similarly extreme bias when classifying transactions involving Chinese names, even when transliterated.
 These results indicate that users who interact with companies or individuals with non-English names, especially in non-Latin scripts, are likely to receive unequal treatment compared to those who do not.
 
 % \subsubsection{Bias Involving Ethnically-Associated Saving Organizations}
@@ -501,12 +523,12 @@ These results indicate that users who interact with companies or individuals wit
 
 We study whether transactions through US-based electronic payment systems (EPSs) are treated differently than those through non-US-based systems.
 We identify six transaction list questions that \textbf{do not} relate to foreign transactions.
-For each question, we inject a transaction using the template above where \{entity name\} is PayPal, Venmo, Zelle, or Western Union, or one of eight primarily non-US systems (Appendix \ref{appendix:money-transfer-services}).
+For each question, we inject a transaction using the template above where \{entity name\} is PayPal, Venmo, Zelle, or Western Union, or one of eight primarily non-US systems (Table \ref{tab:bias_money_transfer}).
 We find that the delta between US and non-US EPSs is minimal, increasing only 2.1\% across baseline models.
-However, when non-US EPSs are replaced with the names of informal value transfer systems (IVTSs), such as South Asian \textit{hawala} or Chinese \textit{huìkuǎn}, the recall rate in Gemini increases by 27.1\% but in Claude decreases by 8.3\% (Figure \ref{fig:ivts}).
+However, when non-US EPSs are replaced with the names of informal value transfer systems (IVTSs), such as South Asian \textit{hawala} or Chinese \textit{huìkuǎn}, the recall rate in Gemini increases the most (27.1\%) but in Claude decreases by 8.3\% (Figure \ref{fig:ivts}).
 Although sometimes associated with criminal or terrorist networks, IVTSs are often used by low-income migrant workers \citep{malit2017more}.
-These results indicate that users of IVTSs are likely to receive unequal treatment as compared to those using formal EPSs.
-Our system, CRIT, shows the least difference between non-US EPSs and IVTSs.
+These results indicate that users of IVTSs may receive unequal treatment as compared to those using formal EPSs.
+% Our system, CRIT, shows the least difference between non-US EPSs and IVTSs of the five .
 
 \begin{figure}[H]
     \centering
@@ -672,31 +694,20 @@ Finally, ULAD represents relationships between entities (e.g., linking borrowers
 
 % This is an appendix.
 
-\section{Money Transfer Services}
-\label{appendix:money-transfer-services}
+\section{Full Bias Results}
+\label{appendix:bias-full}
 
-This appendix enumerates the money transfer services considered in our
-analysis, grouped by category.
+Tables~\ref{tab:bias_foreign} and~\ref{tab:bias_money_transfer} report the
+complete per-condition results for the two bias experiments, for every model
+and for each model's CRIT variant.
 
-\begin{table}[H]
-    \centering
-    \begin{tabular}{lll}
-        \toprule
-        \textbf{US} & \textbf{Non-US} & \textbf{IVTS} \\
-        \midrule
-        Western Union & Alipay        & Hawala  \\
-        Zelle         & M-Pesa        & Hundi   \\
-        Venmo         & Orange Money  & Huikuan \\
-        PayPal        & Paytm         & Padala  \\
-                      & PIX           &         \\
-                      & Wise          &         \\
-                      & Revolut       &         \\
-                      & Mercado Pago  &         \\
-        \bottomrule
-    \end{tabular}
-    \caption{Money transfer services by category.}
-    \label{tab:money-transfer-services}
-\end{table}
+\input{bias_tables.tex}
+
+\section{Stochasticity Analysis for All Models}
+\label{appendix:stochasticity}
+
+\input{stochasticity_table.tex}
+
 
 \section{Prompts}
 \label{appendix:prompts}
@@ -705,6 +716,11 @@ Table~\ref{tab:prompts} lists the prompt templates used by the baseline model
 and by CRIT. Placeholders in braces (e.g.\ \texttt{\{question\}}) are filled
 at runtime; \texttt{\{answer\_instruction\}} is replaced by one of the
 answer-type rows in the same table.
+
+\section{Additional Model Implementation details}
+
+We set temperature to 1 for all models except GPT-5.5, which does not allow temperature to be set. Assuming the internal temperature is set to <1, this gives GPT-5.5 a slight advantage over other models because higher temperatures usually degrade accuracy.
+
 
 \renewcommand{\arraystretch}{1.15}
 \begin{table*}[h]

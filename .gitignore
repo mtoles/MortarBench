@@ -17,4 +17,4 @@ overleaf-old
 overleaf/_minted
 *.png
 *.latexmkrc
-packages/
+packages/.cache/

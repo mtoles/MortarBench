@@ -87,6 +87,18 @@ OSS_PROVIDERS = {
 }
 
 
+# Sampling temperature for open-source models served over an OpenAI-compatible
+# API.
+#
+# CACHE WARNING: joblib fingerprints only `_cached_llm_call`'s own source, and
+# this value is read by `_call_oss_model`, which that fingerprint does not
+# cover. Changing it therefore does NOT invalidate cached responses — a rerun
+# would silently replay answers sampled at the old temperature. After editing
+# this, purge the affected entries (each cached call's metadata.json records
+# its model_id, so they can be matched by slug) before rerunning.
+OSS_TEMPERATURE = 1.0
+
+
 def _oss_provider_for(model_id: str):
     """Return the provider config for an open-source `org/model` slug."""
     if model_id.startswith("local/"):
@@ -105,23 +117,46 @@ def _is_429(e):
     return bool(re.search(r"\b429\b", str(e)))
 
 
+# Gateway/upstream hiccups. Baseten fronts its inference endpoints with a
+# gateway that intermittently returns 502 even at worker_cap=1, which used to
+# abort a whole eval hours in; 500/503/504 and dropped connections are the same
+# class of transient failure.
+_TRANSIENT_STATUSES = (500, 502, 503, 504)
+
+
+def _is_transient(e):
+    """True for provider-side errors worth retrying (5xx or a dropped
+    connection), as opposed to a 4xx we would just hit again."""
+    if e.__class__.__name__ in ("APIConnectionError", "APITimeoutError",
+                                "InternalServerError"):
+        return True
+    if getattr(e, "status_code", None) in _TRANSIENT_STATUSES:
+        return True
+    return bool(re.search(r"\b(50[0234])\b", str(e)))
+
+
 def _retry_on_429(fn, model_id, max_retries=6, base_delay=5.0, max_delay=120.0):
-    """Call `fn`, retrying 429s with exponential backoff (5s, 10s, 20s, ...).
+    """Call `fn`, retrying rate limits and transient provider failures with
+    exponential backoff (5s, 10s, 20s, ...).
 
     Baseten and Fireworks rate-limit per-key, so a burst of concurrent eval
-    workers can trip a 429 even at low concurrency. Retrying here (inside the
-    joblib-cached call path) keeps an eval from aborting mid-dataset. Local
-    vLLM has no rate limit, so callers skip this for "local/" slugs.
+    workers can trip a 429 even at low concurrency; both also return the
+    occasional gateway 5xx. Retrying here (inside the joblib-cached call path)
+    keeps an eval from aborting mid-dataset. Local vLLM has neither, so callers
+    skip this for "local/" slugs.
     """
     delay = base_delay
     for attempt in range(1, max_retries + 1):
         try:
             return fn()
         except Exception as e:
-            if not _is_429(e) or attempt == max_retries:
+            rate_limited = _is_429(e)
+            if not (rate_limited or _is_transient(e)) or attempt == max_retries:
                 raise
+            reason = ("Rate limited (429)" if rate_limited
+                      else f"Transient provider error ({type(e).__name__})")
             print(
-                f"Rate limited (429) by provider for {model_id}; "
+                f"{reason} for {model_id}; "
                 f"retry {attempt}/{max_retries - 1} in {delay:.0f}s"
             )
             time.sleep(delay)
@@ -150,7 +185,13 @@ def _call_oss_model(model_id, messages, tools, seed):
         # These OpenAI-compat paths require an explicit cap; set generously so
         # open models aren't truncated relative to the GPT/Gemini paths.
         "max_tokens": 8192,
-        "temperature": 0,
+        # Match the hosted models, which all sample at their default
+        # temperature of 1.0 (Claude sets it explicitly; GPT and Gemini inherit
+        # the provider default). Greedy decoding here made the open-weight
+        # models effectively deterministic, so their multi-seed trials
+        # collapsed to a single point and the reported ranges measured
+        # inference nondeterminism rather than sampling variance.
+        "temperature": OSS_TEMPERATURE,
     }
     if tools:
         kwargs["tools"] = tools

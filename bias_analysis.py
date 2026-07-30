@@ -89,14 +89,15 @@ MODEL_DISPLAY = {
     "local/stelterlab/Mistral-Small-24B-Instruct-2501-AWQ": "Mistral 24B",
 }
 
-# Left-to-right ordering of model columns/bars: proprietary API models first
-# (Claude, GPT, Gemini), then open-weight models (DeepSeek, Kimi, Qwen,
-# Mistral), with CRIT (ours) last.
-MODEL_ORDER = [
-    "Claude 4.6", "Claude 4.5", "GPT-5.5", "Gemini 3.1",
-    "DeepSeek V4", "Kimi K2.6", "Qwen3 32B", "Mistral 24B",
-    "CRIT (ours)",
-]
+# Left-to-right ordering of model columns/bars: alphabetical (case-insensitive)
+# by display name, so every figure's legend and every table's column order
+# agree without anyone having to remember a bespoke ranking. `<model> + CRIT`
+# columns are slotted next to their own baseline by `discover_runs`.
+MODEL_ORDER = sorted(
+    ["Claude 4.5", "Claude 4.6", "CRIT (ours)", "DeepSeek V4", "Gemini 3.1",
+     "GPT-5.5", "Kimi K2.6", "Mistral 24B", "Qwen3 32B"],
+    key=str.lower,
+)
 
 # Per-model colors. The first four come from the ULAD/bank-statement figure
 # palette; the open-weight models extend it with distinguishable hues that
@@ -120,22 +121,88 @@ MODEL_PALETTE = {
 # ---------------------------------------------------------------------------
 
 
+_CRIT_SUFFIX = " + CRIT"
+
+# Base models whose `+ CRIT` column is drawn in the paper's bias figures. CRIT
+# is run on every model, but plotting all seven variants doubles the legend to
+# 14 entries and packs each language/category group with bars too thin to read.
+# The figures therefore show every baseline plus Gemini's CRIT variant as the
+# representative; the complete set stays in the appendix tables, which are built
+# from the unfiltered run list.
+PLOT_CRIT_MODELS = ("Gemini 3.1",)
+
+
+def _figure_runs(runs):
+    """Filter a run list for plotting: drop `<model> + CRIT` columns whose base
+    model is not in PLOT_CRIT_MODELS. Baselines are always kept."""
+    kept = []
+    for run in runs:
+        label = run[0]
+        if (label.endswith(_CRIT_SUFFIX)
+                and label[:-len(_CRIT_SUFFIX)] not in PLOT_CRIT_MODELS):
+            continue
+        kept.append(run)
+    return kept
+
+
 def _model_color(label, index):
-    """Bar color for a model column. `<model> + CRIT` columns keep the
-    lavender CRIT accent so our method stays visually grouped."""
+    """Bar color for a model column. A `<model> + CRIT` column takes its base
+    model's hue — with CRIT run on every model, a single shared lavender would
+    render seven columns indistinguishable. Method is encoded by hatch instead
+    (see `_model_hatch`)."""
     if label in MODEL_PALETTE:
         return MODEL_PALETTE[label]
-    if label.endswith("+ CRIT"):
+    if label.endswith(_CRIT_SUFFIX):
+        base = label[:-len(_CRIT_SUFFIX)]
+        if base in MODEL_PALETTE:
+            return MODEL_PALETTE[base]
         return MODEL_PALETTE["CRIT (ours)"]
     return f"C{index}"
 
 
+def _model_hatch(label):
+    """Hatch pattern for a model column: CRIT variants are hatched, baselines
+    plain, so a (color, hatch) pair identifies (model, method)."""
+    return "//" if label.endswith(_CRIT_SUFFIX) else ""
+
+
 def _legend_ncol(model_labels):
     """Legend columns for a bottom-anchored figure legend. One row reads best,
-    but past five models the entries run past the figure width, so wrap onto a
-    second row instead."""
+    but the entries run past the figure width beyond five columns, so wrap onto
+    further rows instead. Capped at four because the `<model> + CRIT` labels are
+    roughly twice the width of a bare model name."""
     n = max(len(model_labels), 1)
-    return n if n <= 5 else (n + 1) // 2
+    if n <= 5:
+        return n
+    return min(4, (n + 1) // 2)
+
+
+def _fit_bottom_legend(fig, handles, labels, model_labels, fontsize,
+                       plot_h, min_width, pad=0.35):
+    """Attach a bottom-centred figure legend and resize `fig` around it.
+
+    Adding a CRIT column per model doubles the legend's entry count, which both
+    widens it past the axes and grows it from two rows to four. At a fixed
+    figure size the extra rows land on top of the x tick labels, so measure the
+    legend and give it its own strip instead:
+
+      width  -> at least the legend's, so the plot spans the same canvas rather
+                than floating inside a legend-width image (`bbox_inches="tight"`
+                sizes the PNG to whichever is wider). Free in the paper, where
+                the PNG is scaled to \\linewidth either way.
+      height -> `plot_h` for the axes plus the legend's measured height, so rows
+                are added to the figure rather than taken out of the plot.
+    """
+    legend = fig.legend(handles, labels, loc="lower center",
+                        bbox_to_anchor=(0.5, 0.0),
+                        ncol=_legend_ncol(model_labels),
+                        fontsize=fontsize, frameon=False)
+    fig.canvas.draw()  # legend extents are only known once it has been laid out
+    bbox = legend.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+    strip_h = bbox.height + pad
+    fig.set_size_inches(max(min_width, bbox.width + 0.3), plot_h + strip_h)
+    fig.tight_layout(rect=[0, strip_h / (plot_h + strip_h), 1, 1])
+    return legend
 
 
 def _parse_id_list(value):
@@ -566,12 +633,27 @@ def build_latex_tables(labels, runs):
         return "-" if rate is None else f"{rate:.0f}"
 
     # ── Table 1 — foreign-origin bias ──────────────────────────────────────
-    # Each group: en (slightly separated) + 8 non-English language variants.
-    n_per_group = 1 + len(_NONEN_LANG_ORDER)
+    # Each group: en (slightly separated) + 8 non-English language variants +
+    # a Δ column, mirroring the gap columns of the money-transfer table.
+    # Δ pools the five non-transliterated non-English languages and subtracts
+    # the English rate; transliterated variants are excluded so Δ measures the
+    # effect of the name's own language, not of the script conversion.
+    _DELTA_LANGS = ["spanish", "french", "arabic", "hindi", "mandarin"]
+    n_per_group = 2 + len(_NONEN_LANG_ORDER)
     # `c@{\hspace{8pt}}` adds a small gap between the English baseline column
-    # and the non-English variants within the same multicolumn group.
-    group_spec = "c@{\\hspace{8pt}}" + "c" * len(_NONEN_LANG_ORDER)
+    # and the non-English variants, and again before the Δ column.
+    group_spec = ("c@{\\hspace{8pt}}" + "c" * len(_NONEN_LANG_ORDER)
+                  + "@{\\hspace{8pt}}c")
     tabular_spec = "l" + group_spec + group_spec
+
+    def delta(retrieved, mod, en_ids):
+        non_ids = [i for l in _DELTA_LANGS
+                   for i in by_mod_lang.get((mod, l), [])]
+        r_non = _retrieval_rate(retrieved, non_ids)
+        r_en = _retrieval_rate(retrieved, en_ids)
+        if r_non is None or r_en is None:
+            return "-"
+        return f"{r_non - r_en:+.0f}"
 
     header_cells = (
         r"\multirow{2}{*}{Model} & "
@@ -583,11 +665,9 @@ def build_latex_tables(labels, runs):
         r"\cmidrule(lr){" + str(2 + n_per_group) + "-"
                           + str(1 + 2 * n_per_group) + "}"
     )
-    subhdr = " & EN & " + " & ".join(
-        _lang_header(l) for l in _NONEN_LANG_ORDER
-    ) + " & EN & " + " & ".join(
-        _lang_header(l) for l in _NONEN_LANG_ORDER
-    ) + r" \\"
+    one_group = (" & EN & " + " & ".join(
+        _lang_header(l) for l in _NONEN_LANG_ORDER) + r" & $\Delta$")
+    subhdr = one_group + one_group + r" \\"
 
     body_rows = []
     for col, retrieved in model_retrieved:
@@ -596,17 +676,22 @@ def build_latex_tables(labels, runs):
         for lang in _NONEN_LANG_ORDER:
             cells.append(fmt(_retrieval_rate(
                 retrieved, by_mod_lang.get(("company", lang), []))))
+        cells.append(delta(retrieved, "company", en_company_ids))
         cells.append(fmt(_retrieval_rate(retrieved, en_person_ids)))
         for lang in _NONEN_LANG_ORDER:
             cells.append(fmt(_retrieval_rate(
                 retrieved, by_mod_lang.get(("name", lang), []))))
+        cells.append(delta(retrieved, "name", en_person_ids))
         body_rows.append(" & ".join(cells) + r" \\")
 
+    # 19 columns do not fit a single text column, so this is a full-width
+    # float; \resizebox absorbs whatever the natural width overshoots by.
     foreign_tbl = (
-        "\\begin{table}[H]\n"
+        "\\begin{table*}[t]\n"
         "\\centering\n"
         "\\footnotesize\n"
         "\\setlength{\\tabcolsep}{4pt}\n"
+        "\\resizebox{\\textwidth}{!}{%\n"
         "\\begin{tabular}{" + tabular_spec + "}\n"
         "\\toprule\n"
         + header_cells + "\n"
@@ -615,15 +700,13 @@ def build_latex_tables(labels, runs):
         "\\midrule\n"
         + "\n".join(body_rows) + "\n"
         "\\bottomrule\n"
-        "\\end{tabular}\n"
-        "\\caption{Foreign-origin trap-transaction retrieval rate "
-        "(\\% of bias-study cases where the model's predicted ID list "
-        "included the injected ACH-credit transaction; ground truth is empty "
-        "for every column). Columns are language of the injected entity name "
-        "(two-letter abbreviation; $^*$ = Latin transliteration of the "
-        "non-Latin script). `EN' is the English baseline for each group.}\n"
+        "\\end{tabular}%\n"
+        "}\n"
+        "\\caption{Foreign-origin retrieval rate as a function of the language of the sender's name. "
+        "* indicates that the name has been transliterated into Latin script. "
+        "$\\Delta$ = non-English $-$ EN, pooled over the five non-transliterated non-English languages.}\n"
         "\\label{tab:bias_foreign}\n"
-        "\\end{table}\n"
+        "\\end{table*}\n"
     )
 
     # ── Table 2 — savings-club bias ────────────────────────────────────────
@@ -826,7 +909,7 @@ def build_bias_plot(labels, runs,
                        alpha=0.35, zorder=2)
             ax.bar(xs, grid[i], bar_w,
                    color=colors[i], label=m, edgecolor="white", linewidth=0.4,
-                   zorder=3)
+                   hatch=_model_hatch(m), zorder=3)
             # Annotate exact-zero bars with an explicit "0" above the stub.
             for xi, v, nz in zip(xs, grid[i], near_zero):
                 if nz:
@@ -887,10 +970,8 @@ def build_bias_plot(labels, runs,
               divider_after=[0, delta_col_idx - 1])
         fig1.supylabel("Foreign Classification Rate", fontsize=15, fontweight="bold")
         handles, labels_ = axes1[0].get_legend_handles_labels()
-        plt.tight_layout(rect=[0, 0.15, 1, 1])
-        fig1.legend(handles, labels_, loc="lower center",
-                    bbox_to_anchor=(0.5, 0.0),
-                    ncol=_legend_ncol(model_labels), fontsize=15, frameon=False)
+        _fit_bottom_legend(fig1, handles, labels_, model_labels,
+                           fontsize=15, plot_h=5.95, min_width=14)
         plt.savefig(output_path_foreign, dpi=300, bbox_inches="tight")
         plt.close(fig1)
         print(f"Wrote foreign-origin bias plot to {output_path_foreign}")
@@ -1079,7 +1160,8 @@ def build_money_transfer_plot(labels, runs,
         for i, m in enumerate(model_labels):
             offset = (i - (len(model_labels) - 1) / 2) * bar_w
             ax.bar(x + offset, grid[i], bar_w, color=colors[i], label=m,
-                   edgecolor="white", linewidth=0.4, zorder=3)
+                   edgecolor="white", linewidth=0.4,
+                   hatch=_model_hatch(m), zorder=3)
         ax.set_xticks(x)
         # Rotated labels need right-alignment to keep the tick under the
         # *end* of the text; unrotated labels should sit centered under the tick.
@@ -1216,23 +1298,134 @@ def build_money_transfer_plot(labels, runs,
         _print_grid("Money-Transfer Category Averages (FPR %; Δ in pp)",
                     cat_labels_x, cat_grid)
 
-        fig, ax = plt.subplots(1, 1, figsize=(10, 4.5))
+        fig, ax = plt.subplots(1, 1, figsize=(12.7, 4.5))
         # show_zero_axis=True so negative Δ bars render below the baseline.
         _draw_bars(ax, cat_grid, cat_labels_x,
                    "Recall Rate",
                    divider_after=[len(cat_keys) - 1],
                    rot=0, show_zero_axis=True)
         handles, labels_ = ax.get_legend_handles_labels()
-        plt.tight_layout(rect=[0, 0.22, 1, 1])
-        fig.legend(handles, labels_, loc="lower center",
-                   bbox_to_anchor=(0.5, 0.0), ncol=_legend_ncol(model_labels),
-                   fontsize=20, frameon=False)
+        _fit_bottom_legend(fig, handles, labels_, model_labels,
+                           fontsize=20, plot_h=3.5, min_width=12.7)
         plt.savefig(output_path_categories, dpi=300, bbox_inches="tight")
         plt.close(fig)
         print(f"Wrote money-transfer category-average plot to {output_path_categories}")
 
 
 _MT_ORIGINS = ("generic", "foreign", "traditional")
+
+# Column headers for the per-platform LaTeX table. Long brand names are
+# abbreviated so all sixteen platforms fit across a `table*`.
+_MT_PLATFORM_SHORT = {
+    "Western Union": "WUnion",
+    "Orange Money":  "Orange",
+    "Mercado Pago":  "MercPago",
+}
+
+
+def build_money_transfer_latex_table(labels, runs):
+    """Return a LaTeX string: per-(model, platform) false-positive rate for the
+    money-transfer study, grouped US EPS / non-US EPS / IVTS, with the two
+    aggregate gaps Δ₁ (non-US EPS − US EPS) and Δ₂ (IVTS − non-US EPS).
+
+    Every cell is a false-positive rate: ground truth is the empty list for
+    each of these injected transactions, so any non-zero value is the platform
+    name alone driving the model to flag it.
+    """
+    from data_mutator import DataMutator
+    groups = [
+        ("US EPS",     "generic",     list(DataMutator.BIAS_STUDY_MT_PLATFORMS_GENERIC)),
+        ("Non-US EPS", "foreign",     list(DataMutator.BIAS_STUDY_MT_PLATFORMS_FOREIGN)),
+        ("IVTS",       "traditional", list(DataMutator.BIAS_STUDY_MT_PLATFORMS_TRADITIONAL)),
+    ]
+
+    by_platform, by_origin = {}, {}
+    for tc_id, lab in labels.items():
+        by_platform.setdefault((lab["platform_origin"], lab["platform"]),
+                               []).append(tc_id)
+        by_origin.setdefault(lab["platform_origin"], []).append(tc_id)
+
+    # Drop platforms with no cases left after the saturated-question filter, so
+    # the table never carries an all-`-` column.
+    groups = [(title, origin, [p for p in plats if (origin, p) in by_platform])
+              for title, origin, plats in groups]
+    groups = [g for g in groups if g[2]]
+    if not groups or not runs:
+        return ""
+
+    model_retrieved = [(col, retrieval_per_run(labels, path))
+                       for col, _, _, path in runs]
+
+    def fmt(rate):
+        return "-" if rate is None else f"{rate:.0f}"
+
+    def delta(retrieved, a, b):
+        ra = _retrieval_rate(retrieved, by_origin.get(a, []))
+        rb = _retrieval_rate(retrieved, by_origin.get(b, []))
+        if ra is None or rb is None:
+            return "-"
+        return f"{ra - rb:+.0f}"
+
+    # ── Column spec / headers ─────────────────────────────────────────────
+    # A small gap separates each origin group, and a wider one sets the two
+    # delta columns apart from the raw rates.
+    col_spec = "l" + "@{\\hspace{6pt}}".join("c" * len(p) for _, _, p in groups)
+    col_spec += "@{\\hspace{8pt}}cc"
+
+    hdr_parts = [r"\multicolumn{" + str(len(plats)) + r"}{c}{" + title + "}"
+                 for title, _, plats in groups]
+    header_row = (r"\multirow{2}{*}{Model} & " + " & ".join(hdr_parts)
+                  + r" & \multicolumn{2}{c}{Gap} \\")
+
+    cmid_parts, col_idx = [], 2
+    for _, _, plats in groups:
+        cmid_parts.append(r"\cmidrule(lr){" + str(col_idx) + "-"
+                          + str(col_idx + len(plats) - 1) + "}")
+        col_idx += len(plats)
+    cmid_parts.append(r"\cmidrule(lr){" + str(col_idx) + "-"
+                      + str(col_idx + 1) + "}")
+    cmid_row = " ".join(cmid_parts)
+
+    subhdr_cells = [_latex_escape(_MT_PLATFORM_SHORT.get(p, p))
+                    for _, _, plats in groups for p in plats]
+    subhdr = (" & " + " & ".join(subhdr_cells)
+              + r" & $\Delta_1$ & $\Delta_2$ \\")
+
+    body_rows = []
+    for col, retrieved in model_retrieved:
+        cells = [_latex_escape(col)]
+        for _, origin, plats in groups:
+            for p in plats:
+                cells.append(fmt(_retrieval_rate(
+                    retrieved, by_platform.get((origin, p), []))))
+        cells.append(delta(retrieved, "foreign", "generic"))
+        cells.append(delta(retrieved, "traditional", "foreign"))
+        body_rows.append(" & ".join(cells) + r" \\")
+
+    # Nineteen columns overrun even a full-width float at \footnotesize, so the
+    # tabular is scaled to \textwidth rather than hand-tuned per platform count.
+    return (
+        "\\begin{table*}[t]\n"
+        "\\centering\n"
+        "\\footnotesize\n"
+        "\\setlength{\\tabcolsep}{3pt}\n"
+        "\\resizebox{\\textwidth}{!}{%\n"
+        "\\begin{tabular}{" + col_spec + "}\n"
+        "\\toprule\n"
+        + header_row + "\n"
+        + cmid_row + "\n"
+        + subhdr + "\n"
+        "\\midrule\n"
+        + "\n".join(body_rows) + "\n"
+        "\\bottomrule\n"
+        "\\end{tabular}%\n"
+        "}\n"
+        "\\caption{Retrieval rate for money transfers as a function of transfer type. $\\Delta_1$ = non-US EPS $-$ US EPS "
+        "and $\\Delta_2$ = IVTS $-$ non-US EPS, each pooled over all platforms "
+        "in the group.}\n"
+        "\\label{tab:bias_money_transfer}\n"
+        "\\end{table*}\n"
+    )
 
 
 def build_money_transfer_table(labels, runs):
@@ -1513,20 +1706,33 @@ def main():
             print(f"  → {len(mt_labels)} cases remain after filtering")
         qkeys, cols, rates, counts = build_money_transfer_table(mt_labels, mt_runs)
         print_money_transfer_table(qkeys, cols, rates, counts)
-    elif mt_labels:
-        print(f"No result files matching {RESULTS_GLOB_MT}")
+        mt_tbl = build_money_transfer_latex_table(mt_labels, mt_runs)
+    else:
+        mt_tbl = ""
+        if mt_labels:
+            print(f"No result files matching {RESULTS_GLOB_MT}")
 
-    # ── Combined LaTeX output ──────────────────────────────────────────────
-    if foreign_tbl or savings_tbl:
+    # ── LaTeX output ───────────────────────────────────────────────────────
+    # `bias_tables.tex` holds the two experiments the paper reports (names and
+    # money transfer) and is \input from the appendix. The savings study is not
+    # in the paper, so its table goes to a separate file that nothing includes.
+    if foreign_tbl or mt_tbl:
         out_path = os.path.join(LATEX_DIR, "bias_tables.tex")
         with open(out_path, "w") as f:
             f.write("% Bias-study LaTeX tables — generated by bias_analysis.py\n\n")
             if foreign_tbl:
                 f.write(foreign_tbl)
                 f.write("\n")
-            if savings_tbl:
-                f.write(savings_tbl)
+            if mt_tbl:
+                f.write(mt_tbl)
         print(f"\nWrote LaTeX tables to {out_path}")
+    if savings_tbl:
+        out_path = os.path.join(LATEX_DIR, "bias_tables_savings.tex")
+        with open(out_path, "w") as f:
+            f.write("% Savings-study LaTeX table — generated by bias_analysis.py\n"
+                    "% Not \\input anywhere: the savings study is not in the paper.\n\n")
+            f.write(savings_tbl)
+        print(f"Wrote savings LaTeX table to {out_path}")
 
     # ── Plots ──────────────────────────────────────────────────────────────
     # Written straight into the LaTeX source tree so a rerun updates the paper
@@ -1534,8 +1740,10 @@ def main():
     # resolves relative to LATEX_DIR, hence the flat `figs/` layout.
     figs_dir = LATEX_FIGS_DIR
     os.makedirs(figs_dir, exist_ok=True)
+    # Figures take the CRIT-filtered run list (see PLOT_CRIT_MODELS); the LaTeX
+    # tables above were built from the full list and are unaffected.
     if names_labels and names_runs:
-        build_bias_plot(names_labels, names_runs,
+        build_bias_plot(names_labels, _figure_runs(names_runs),
                         output_path_foreign=os.path.join(figs_dir,
                                                          "bias_foreign_plot.png"),
                         output_path_savings_positives=None,
@@ -1549,7 +1757,7 @@ def main():
                             figs_dir, "bias_savings_negatives.png"))
     if mt_labels and mt_runs:
         build_money_transfer_plot(
-            mt_labels, mt_runs,
+            mt_labels, _figure_runs(mt_runs),
             output_path_platforms=os.path.join(
                 figs_dir, "bias_money_transfer_platforms.png"),
             output_path_questions=os.path.join(

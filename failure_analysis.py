@@ -154,6 +154,7 @@ def pair_failure_correlation(rows, polarity_lookup):
 
     p_2w_g_1w = (n_2nd_wrong_given_1st_wrong / n_1st_wrong) if n_1st_wrong else 0.0
     p_2w_g_1r = (n_2nd_wrong_given_1st_right / n_1st_right) if n_1st_right else 0.0
+    n_errors = sum(1 for v in groups.values() for x in v if not x)
     return {
         "groups_used": groups_used,
         "groups_dropped_singleton": sum(1 for v in groups.values() if len(v) < 2),
@@ -163,6 +164,17 @@ def pair_failure_correlation(rows, polarity_lookup):
         "p_2nd_wrong_given_1st_wrong": p_2w_g_1w,
         "p_2nd_wrong_given_1st_right": p_2w_g_1r,
         "lift": (p_2w_g_1w / p_2w_g_1r) if p_2w_g_1r else None,
+        # Raw counts, so callers that span several trials can pool the
+        # contingency table before dividing rather than averaging ratios.
+        "counts": {
+            "n_1st_wrong": n_1st_wrong,
+            "n_1st_right": n_1st_right,
+            "n_2nd_wrong_given_1st_wrong": n_2nd_wrong_given_1st_wrong,
+            "n_2nd_wrong_given_1st_right": n_2nd_wrong_given_1st_right,
+            "n_instances": total_instances,
+            "n_errors": n_errors,
+            "groups_used": groups_used,
+        },
     }
 
 
