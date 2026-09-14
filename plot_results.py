@@ -786,6 +786,12 @@ def write_combined_table2(scan_dir=None, out_dir=None,
             # \textbf (not $\mathbf{}$) so the digits match the bolded numeric
             # p-values in the same column; only the < needs math mode.
             return r"\textbf{$<$0.001}"
+        # Mirror of the <0.001 rule at the top of the range: a permutation
+        # p-value is never exactly 1, so never print "1.00".
+        if p > 0.999:
+            return r"$>$0.999"
+        if p >= 0.995:          # would round to 1.00 at two decimals
+            return f"{p:.3f}"
         s = f"{p:.3f}" if p < 0.01 else f"{p:.2f}"
         return rf"\textbf{{{s}}}" if p < 0.05 else s
 
@@ -802,6 +808,10 @@ def write_combined_table2(scan_dir=None, out_dir=None,
             return "--"
         if p < 0.001:
             return "**<0.001**"
+        if p > 0.999:
+            return ">0.999"
+        if p >= 0.995:          # would round to 1.00 at two decimals
+            return f"{p:.3f}"
         s = f"{p:.3f}" if p < 0.01 else f"{p:.2f}"
         return f"**{s}**" if p < 0.05 else s
 
@@ -812,9 +822,9 @@ def write_combined_table2(scan_dir=None, out_dir=None,
             "+ CRIT" if c["crit"] else c["label"],
             mdbold(c["f1"], "f1") + c["f1_rng_md"],
             mdbold(c["em"], "em") + c["em_rng_md"],
-            mdbold(c["boolean"], "boolean"),
+            "--" if c["crit"] else mdbold(c["boolean"], "boolean"),
             mdbold(c["txn"], "txn"),
-            mdbold(c["acct"], "acct"),
+            "--" if c["crit"] else mdbold(c["acct"], "acct"),
             mdbold(c["q_fp"], "q_fp"), mdbold(c["fp_q"], "fp_q"),
             mdbold(c["q_fn"], "q_fn"), mdbold(c["fn_q"], "fn_q", ".2f"),
             pfmt_md(c.get("p")),
@@ -825,7 +835,8 @@ def write_combined_table2(scan_dir=None, out_dir=None,
         em_cell = bold(c["em"], "em") + (r"\," + c["em_rng"] if c["em_rng"] else "")
         cells_tex = [
             c["label"], f1_cell, em_cell,
-            bold(c["boolean"], "boolean"), txn_cell, bold(c["acct"], "acct"),
+            "--" if c["crit"] else bold(c["boolean"], "boolean"), txn_cell,
+            "--" if c["crit"] else bold(c["acct"], "acct"),
             bold(c["q_fp"], "q_fp"), bold(c["fp_q"], "fp_q", ".1f"),
             bold(c["q_fn"], "q_fn"), bold(c["fn_q"], "fn_q", ".2f"),
             pfmt(c.get("p")),
@@ -875,7 +886,9 @@ def write_combined_table2(scan_dir=None, out_dir=None,
         "$N=3$ trials), alongside error counts on transaction-list questions: the "
         "share of questions (Qs) with at least one false positive (FP) or false "
         "negative (FN) transaction and the average number of FP and FN transactions "
-        "per question.}\n"
+        "per question. CRIT edits only transaction lists, so its Boolean and "
+        "Account ID scores are identical to the corresponding baseline and are "
+        "shown as --.}\n"
         "\\label{tab:eval_mt_combined_nostd}\n\\end{table*}\n"
     )
 

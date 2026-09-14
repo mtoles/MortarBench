@@ -2,8 +2,8 @@
 
 % Change "review" to "final" to generate the final (sometimes called camera-ready) version.
 % Change to "preprint" to generate a non-anonymous version with page numbers.
-\usepackage[review]{acl}
-% \usepackage[final]{acl}
+% \usepackage[review]{acl}
+\usepackage[final]{acl}
 
 % Match the stock ACL review-mode layout: line numbers always in the
 % right margin of their column (col 1 in the column gap, col 2 in the
@@ -57,7 +57,18 @@
 % Custom
 \usepackage{xcolor}
 \newcommand{\red}[1]{\textcolor{red}{#1}}
-\usepackage{minted}
+\usepackage{listings}
+% JSON listing style. listings is pure TeX (no shell escape), unlike minted,
+% which arXiv cannot run.
+\lstdefinestyle{jsonstyle}{
+  basicstyle=\small\ttfamily,
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  showstringspaces=false,
+  keepspaces=true,
+  upquote=true,
+}
 
 \newcommand{\Lucy}[1]{[\textcolor{orange}{Lucy: {#1}}]}
 \newcommand{\Sally}[1]{[\textcolor{red}{Sally: {#1}}]}
@@ -141,7 +152,6 @@ We find that state-of-the-art large language models (LLMs) perform poorly, with 
 We also discover systematic biases in LLM perception of foreignness related to non-English names.
 Noting these weaknesses, we introduce CRIT, a confidence calibration framework.
 Our method increases peak F1 accuracy to 83.6\% while improving risk management steering and reducing bias.
-% The high error rate and biases in baseline models suggest they should not yet be deployed to loan origination without a human in the loop.
 
 
 
@@ -161,7 +171,7 @@ Although manual review is costly and automation is appealing, fully replacing hu
 \end{figure}
 
 The loan origination process focuses on validating specific facts about an applicant's financial status (Figure \ref{fig:main}) against their claims according to guidelines set by governing bodies such as Fannie Mae and Freddie Mac. 
-Underwriters primarily rely on 1) standardized documents containing the borrower's self-reported profile (assets, liabilities, accounts, marital status, etc.), and 2) official bank statements. 
+Underwriters primarily rely on 1. standardized documents containing the borrower's self-reported profile (assets, liabilities, accounts, marital status, etc.), and 2. official bank statements. 
 % The officer's goal is to ensure the structured claims in the ULAD—such as income, assets, and recurring debts—align perfectly with the ground truth found in the transaction records.
 The officer's goal is to ensure consistency between the profile and bank statements, and that the application adheres to regulatory guidelines.
 However, analyzing the application package, and especially bank statements, is a difficult and tedious process.
@@ -260,7 +270,7 @@ We present an example bank statement in Appendix \ref{sec:app:bank-statement}.
 \label{sec:ULAD-gen}
 
 To generate ULAD documents consistent with the bank statement, we adopt a template-driven approach based on the standardized ULAD schema \citep{freddiemac_ulad}.
-We populate each field relevant to dataset questions, including assets, collateral, liabilities, and loans with values computed from the bank statement using transaction property tags.
+We populate each field relevant to dataset questions, including assets, collateral, liabilities, and loans with values computed from the bank statement using transaction property tags with guidance from subject matter experts.
 We present a summary of ULAD contents in Appendix \ref{sec:app:ulad}.
 
 % To ensure consistency between financial activity and declared borrower information, we generate ULAD documents conditioned on the bank statement. We adopt a template-driven approach based on the standardized ULAD schema, which includes assets, collateral, liabilities, loan, party, and relationship fields. We populate these fields by directly mapping values from the bank statement to their corresponding structured entries. For example, asset accounts are instantiated from bank accounts, and liabilities are derived from repayment-related transactions. This design enforces cross-document consistency and produces application documents that reflect both borrower-reported information and verifiable financial activity.
@@ -356,7 +366,7 @@ CRIT is motivated by the severe imbalance between questions with false positives
 CRIT differs from the baseline implementation in that, for each transaction in its answer, the agent also generates a confidence score (1-5) indicating the probability the transaction is correctly included.
 The confidence is based on the number and strength of assumptions that must be made to justify the inclusion.
 Finally, we drop all transactions with confidence below a threshold $T$.
-We choose $T=5$ based on a parameter sweep using Gemini (Figure \ref{fig:fp_vs_fn}), but hold $T=5$ constant for all models.
+Based on the oversensitivity observed in reasoning traces, we set $T=5$ constant for all models, effectively permitting no assumptions be made during the transaction list process.
 Confidence adjustment serves both to align the model away from oversensitivity and to allow steering depending on the relative cost of false positives vs negatives.
 Full prompt templates for implementations are provided in Appendix \ref{appendix:prompts}.
 
@@ -438,6 +448,15 @@ In addition to improving overall EM and F1 compared to baseline, selective thres
 It can be adjusted to reflect real-world financial risk or human verification cost associated with each error.
 Additionally, self-reflective confidence values can be used by users to prioritize human review.
 
+Qualitative analysis of DeepSeek V4 indicates that the degredation between baseline and CRIT is due to a change in its reasoning behavior with respect to prompts.
+Baseline DeepSeek responses contain, on average, 164 reasoning tokens. 
+However, CRIT ($T=5$) responses contain only 19.6 reasoning tokens, with 82.7\% containing exactly 0.
+We attribute the reduction in accuracy to this phenomenon, and believe it could be address with model-specific prompting.
+
+Finally, we note that GPT-5.5 achieves increased accuracy at the expense of a large increase in false negatives. 
+For this model, a threshold of $T=4$ would achieve an even greater improvement than $T=5$.
+
+
 \subsection{Stochasticity Analysis}
 \label{sec:stochasticity}
 
@@ -498,7 +517,7 @@ This effect is substantially more pronounced in non-Latin scripts (AR, HI, ZH: 9
 % Baseline models classify Arabic and Chinese names as foreign origin in 60/60 cases.
 Gemini, DeepSeek, Kimi, and Claude classify Arabic, Hindi, and Mandarin Chinese names as foreign origin in a staggering 120/120 cases.
 We find that we can reduce the foreign classification bias on non-Latin scripts to a level similar to Spanish and French by transliterating into Latin script (AR\textsuperscript{*}, HI\textsuperscript{*}, ZH\textsuperscript{*}, 52.9\%).
-Our agent, CRIT, shows equal or lesser non-English bias than the corresponding baseline model in all cases, reducing the foreign origin classification gap between English and non-English names from 58.3\% to 33.1\% on average.
+Our agent, CRIT, shows equal or lesser non-English bias than the corresponding baseline model in all cases of personal names, reducing the foreign origin classification gap between English and non-English names from 58.3\% to 33.1\% on average.
 
 We perform a similar experiment where \{entity name\} is one of ten fictitious company names machine translated into target languages.
 We observe even more bias overall, with an average baseline model foreign origin classification delta of 64.9\%.
@@ -506,7 +525,7 @@ We observe even more bias overall, with an average baseline model foreign origin
 % These results indicate that transactions involving non-English entities, and especially non-Latin scripts, are likely to receive unequal classification as foreign as compared to those with English names.
 As with personal names, applying our agent framework CRIT to Gemini reduces average bias across languages from 88.0\% to 60.0\%.
 Across both experiments we notice that models produced by Chinese companies (Kimi, DeepSeek) show similarly extreme bias when classifying transactions involving Chinese names, even when transliterated.
-These results indicate that users who interact with companies or individuals with non-English names, especially in non-Latin scripts, are likely to receive unequal treatment compared to those who do not.
+These results indicate that users who interact with companies or individuals with non-English names, especially in non-Latin scripts, may receive unequal treatment compared to those who do not.
 
 % \subsubsection{Bias Involving Ethnically-Associated Saving Organizations}
 
@@ -584,7 +603,7 @@ The views and conclusions presented here are those of the authors and should not
 
 \section{Example Bank Statement}
 \label{sec:app:bank-statement}
-\begin{minted}[fontsize=\small, breaklines]{json}
+\begin{lstlisting}[style=jsonstyle]
 {
   "seed": "generated-test-15d7a496",
   "statement_type": "personal",
@@ -680,7 +699,7 @@ The views and conclusions presented here are those of the authors and should not
   // ...
   ]
 }
-\end{minted}
+\end{lstlisting}
 
 \section{ULAD Summary}
 \label{sec:app:ulad}
@@ -715,10 +734,15 @@ Table~\ref{tab:prompts} lists the prompt templates used by the baseline model
 and by CRIT. Placeholders in braces (e.g.\ \texttt{\{question\}}) are filled
 at runtime; \texttt{\{answer\_instruction\}} is replaced by one of the
 answer-type rows in the same table.
+The framing prompts differ from baseline prompts so that outputs can be parsed in the new format.
 
 \section{Additional Model Implementation Details}
 
 We set temperature to 1 for all models except GPT-5.5, which does not allow temperature to be set. Assuming the internal temperature is set to <1, this gives GPT-5.5 a slight advantage over other models because higher temperatures usually degrade accuracy.
+
+\section{Statistical Significance Testing}
+
+P-values in Table \ref{tab:eval_mt_combined_nostd} are estimated using a one-sided paired permutation test (20,000 permutations) clustered at the question level. For each transaction-id question we pool its baseline and CRIT per-trial F1 scores, randomly re-split them into groups of the original sizes, and the p-value is the fraction of permutations (with +1 smoothing) where the mean per-question F1 difference is at least as large as the observed CRIT-baseline difference 
 
 
 \renewcommand{\arraystretch}{1.15}
