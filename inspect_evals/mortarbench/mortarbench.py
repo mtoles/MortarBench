@@ -28,9 +28,15 @@ Usage:
 
 import ast
 import json
+import os
 import re
 import sys
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Ensure environment variables from .env are loaded
+load_dotenv(override=True)
 
 from inspect_ai import Task, task
 from inspect_ai.dataset import Sample, hf_dataset
@@ -46,16 +52,55 @@ from inspect_ai.scorer import (
 )
 from inspect_ai.solver import Generate, TaskState, generate, solver
 
-from .prompts import (
-    build_prompt,
-    cleaning_answer_instruction,
-    model_answer_instruction,
-    normalize_account_answer,
-    normalize_transaction_answer,
-)
+try:
+    from .prompts import (
+        build_prompt,
+        cleaning_answer_instruction,
+        model_answer_instruction,
+        normalize_account_answer,
+        normalize_transaction_answer,
+    )
+except (ImportError, ModuleNotFoundError):
+    try:
+        from inspect_evals.mortarbench.prompts import (
+            build_prompt,
+            cleaning_answer_instruction,
+            model_answer_instruction,
+            normalize_account_answer,
+            normalize_transaction_answer,
+        )
+    except (ImportError, ModuleNotFoundError):
+        from prompts import (
+            build_prompt,
+            cleaning_answer_instruction,
+            model_answer_instruction,
+            normalize_account_answer,
+            normalize_transaction_answer,
+        )
 
 HF_REPO = "ManavMunjal/MortarBench"
 
+
+THRESHOLD_MODEL_INSTRUCTION = (
+    "List every transaction in the bank statement that is plausibly related to "
+    "the question, even if you are not sure. For each one, assign an integer "
+    "confidence rating from 1 to 5 of how strongly the transaction matches the "
+    "question's criteria: 1 = least likely to be relevant, 5 = clearly relevant. "
+    "Do not mention any transactions that are definitely irrelevant (confidence 0). "
+    "Think outloud and state what assumptions you are making. "
+    "A confidence of 5 should require no assumptions whatsoever to be relevant."
+    "After stating your assumptions, return a JSON list starting with ```json of the form"
+    '`[{"transaction_id": "<TransactionID>", "confidence": <1-5>}, ...]`, or '
+    "`[]` if nothing is even plausibly related. Do not output any other text."
+)
+
+THRESHOLD_CLEANING_INSTRUCTION = (
+    "The answer above should be a JSON list of "
+    '`{"transaction_id", "confidence"}` objects rating candidate transactions. '
+    "Return ONLY a valid JSON list in EXACTLY that shape — preserve every "
+    "transaction_id and its confidence value unchanged. If the answer is empty "
+    "or no transactions are listed, return `[]`. Output ONLY the JSON list."
+)
 
 # ---------------------------------------------------------------------------
 # Document flattening (mirrors flatten_plaid_transactions / extract_plaid_accounts
@@ -112,36 +157,45 @@ def _extract_accounts(statement: dict) -> list[dict]:
     return accounts
 
 
-def record_to_sample(record: dict) -> Sample:
-    statement = json.loads(record["bank_statement"])
-    transactions = _flatten_transactions(statement)
-    accounts = _extract_accounts(statement)
-    answer_type = record["answer_type"]
+def create_record_to_sample(method: str = "baseline", confidence_threshold: int = 5):
+    def record_to_sample(record: dict) -> Sample:
+        statement = json.loads(record["bank_statement"])
+        transactions = _flatten_transactions(statement)
+        accounts = _extract_accounts(statement)
+        answer_type = record["answer_type"]
+        
+        if method == "crit" and answer_type == "txn_id_list":
+            instruction = THRESHOLD_MODEL_INSTRUCTION
+        else:
+            instruction = model_answer_instruction[answer_type]
 
-    return Sample(
-        id=record["question_id"],
-        input=build_prompt(
-            record["question"],
-            json.dumps(statement, indent=2),
-            record["ulad_du"],
-            use_domain_expertise=False,
-            answer_instruction=model_answer_instruction[answer_type],
-        ),
-        target=record["answer"],
-        metadata={
-            "answer_type": answer_type,
-            "question": record["question"],
-            "test_case_number": record["test_case_number"],
-            "loan_id": record["loan_id"],
-            "pii": record["pii"],
-            "transactions_json": json.dumps(transactions, indent=2),
-            "accounts_json": json.dumps(accounts, indent=2),
-            "account_last4": [
-                a["account_number_last4"] for a in accounts if a["account_number_last4"]
-            ],
-            "transactions": transactions,
-        },
-    )
+        return Sample(
+            id=record["question_id"],
+            input=build_prompt(
+                record["question"],
+                json.dumps(statement, indent=2),
+                record["ulad_du"],
+                use_domain_expertise=False,
+                answer_instruction=instruction,
+            ),
+            target=record["answer"],
+            metadata={
+                "answer_type": answer_type,
+                "question": record["question"],
+                "test_case_number": record["test_case_number"],
+                "loan_id": record["loan_id"],
+                "pii": record["pii"],
+                "transactions_json": json.dumps(transactions, indent=2),
+                "accounts_json": json.dumps(accounts, indent=2),
+                "account_last4": [
+                    a["account_number_last4"] for a in accounts if a["account_number_last4"]
+                ],
+                "transactions": transactions,
+                "method": method,
+                "confidence_threshold": confidence_threshold,
+            },
+        )
+    return record_to_sample
 
 
 # ---------------------------------------------------------------------------
@@ -202,6 +256,14 @@ def _build_cleaning_prompt(metadata: dict, raw_answer: str) -> str:
             accounts=metadata["accounts_json"],
             answer_instruction=instruction,
         )
+    if answer_type == "txn_id_list" and metadata.get("method") == "crit":
+        return (
+            f"Question: {question}\n\n"
+            f"Unformatted answer text (source of truth):\n{raw_answer}\n\n"
+            f"Reference bank statement transactions JSON:\n{metadata['transactions_json']}\n\n"
+            f"{THRESHOLD_CLEANING_INSTRUCTION}"
+        )
+        
     return TXN_CLEANING_PROMPT.format(
         question=question,
         solo_text=raw_answer,
@@ -289,6 +351,18 @@ def mortarbench_scorer():
 
         cleaned = _extract_list(completion)
         if answer_type == "txn_id_list":
+            if metadata.get("method") == "crit":
+                try:
+                    parsed = json.loads(cleaned)
+                    kept_ids = []
+                    for obj in parsed if isinstance(parsed, list) else []:
+                        if isinstance(obj, dict):
+                            conf = int(obj.get("confidence", 0))
+                            if obj.get("transaction_id") is not None and conf >= metadata.get("confidence_threshold", 5):
+                                kept_ids.append(str(obj["transaction_id"]))
+                    cleaned = json.dumps(kept_ids)
+                except (json.JSONDecodeError, ValueError, TypeError):
+                    cleaned = "[]"
             cleaned = normalize_transaction_answer(
                 cleaned, "txn_id_list", metadata.get("transactions") or []
             )
@@ -333,14 +407,20 @@ def mortarbench_scorer():
 
 
 @task
-def mortarbench(answer_types: str | None = None) -> Task:
+def mortarbench(answer_types: str | None = None, method: str = "baseline", confidence_threshold: int = 5) -> Task:
     """MortarBench mortgage underwriting benchmark (BaselineAgent protocol).
 
     Args:
         answer_types: Optional comma-separated filter, any of
             `boolean`, `txn_id_list`, `account_id_list`.
+        method: Evaluation method, either `baseline` or `crit`.
+        confidence_threshold: Confidence threshold for `crit` method (1-5).
     """
-    dataset = hf_dataset(HF_REPO, split="test", sample_fields=record_to_sample)
+    dataset = hf_dataset(
+        HF_REPO, 
+        split="test", 
+        sample_fields=create_record_to_sample(method, int(confidence_threshold))
+    )
 
     if answer_types:
         wanted = {t.strip() for t in answer_types.split(",")}
